@@ -24,6 +24,10 @@ import { localeStore } from '@/state/localeStore';
 import { DrinkPreset } from '@/core/types';
 import * as notificationService from '@/services/notifications';
 
+function formatHm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 const EMOJI_CANDIDATES = [
   '🍺', '🍻', '🥃', '🍷', '🍶', '🥂',
   '🍸', '🍹', '🍾', '🫗', '🧉', '🍇',
@@ -355,13 +359,20 @@ export default function AddDrinkScreen() {
   const [consumedAt, setConsumedAt] = useState(
     editRecord?.consumedAt ?? Date.now(),
   );
+  // null = 마시는중 (DB 재로드 시 null, 메모리 신규는 undefined이므로 ?? 로 통일)
+  const [finishedAt, setFinishedAt] = useState<number | null>(
+    editRecord?.finishedAt ?? null,
+  );
   const [abvErr, setAbvErr] = useState('');
   const [volErr, setVolErr] = useState('');
+  const [timeNotice, setTimeNotice] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Time picker
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  // Time picker — 시작/종료 중 어느 쪽을 편집 중인지
+  const [timeTarget, setTimeTarget] = useState<'start' | 'end' | null>(null);
   const consumedDate = new Date(consumedAt);
+  const finishedDate = finishedAt != null ? new Date(finishedAt) : null;
+  const pickerDate = timeTarget === 'end' ? (finishedDate ?? new Date()) : consumedDate;
 
   // Preset selection
   const [selectedPresetIdx, setSelectedPresetIdx] = useState<number | null>(null);
@@ -465,6 +476,7 @@ export default function AddDrinkScreen() {
         await updateRecord({
           ...editRecord,
           consumedAt,
+          finishedAt: finishedAt ?? undefined,
           abvPercent: abv,
           volumeMl: vol,
         });
@@ -493,14 +505,37 @@ export default function AddDrinkScreen() {
     }
   }
 
-  function handleTimePickerConfirm(h: number, m: number) {
-    setShowTimePicker(false);
+  /** h:m 을 "오늘 그 시각, 미래면 어제" 로 해석한다 (자정 넘긴 음주 대응) */
+  function resolveTime(h: number, m: number): number {
     const d = new Date();
     let dt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0);
     if (dt.getTime() > Date.now()) {
       dt = new Date(dt.getTime() - 86400000);
     }
-    setConsumedAt(dt.getTime());
+    return dt.getTime();
+  }
+
+  /**
+   * 시작·종료를 함께 반영한다.
+   * 불변식: 종료는 시작보다 빠를 수 없다 — 위반하면 종료를 지우고 마시는중으로 되돌린다.
+   */
+  function applyTimes(nextStart: number, nextEnd: number | null) {
+    setConsumedAt(nextStart);
+    if (nextEnd != null && nextEnd < nextStart) {
+      setFinishedAt(null);
+      setTimeNotice(i18n.t('editRecordEndCleared'));
+    } else {
+      setFinishedAt(nextEnd);
+      setTimeNotice('');
+    }
+  }
+
+  function handleTimePickerConfirm(h: number, m: number) {
+    const target = timeTarget;
+    setTimeTarget(null);
+    const picked = resolveTime(h, m);
+    if (target === 'end') applyTimes(consumedAt, picked);
+    else applyTimes(picked, finishedAt);
   }
 
   const title = isEdit ? i18n.t('editRecordTitle') : i18n.t('addDrinkTitle');
@@ -565,24 +600,57 @@ export default function AddDrinkScreen() {
             error={volErr || null}
           />
 
-          {/* Time row (edit mode only) */}
+          {/* Time rows (edit mode only) — 시작·종료를 각각 편집 */}
           {isEdit && (
-            <View style={styles.timeRow}>
-              <Text style={styles.timeLabel}>{i18n.t('addDrinkTimeLabel')}</Text>
-              <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                <Text style={styles.timeValue}>
-                  {String(consumedDate.getHours()).padStart(2, '0')}:
-                  {String(consumedDate.getMinutes()).padStart(2, '0')}
-                </Text>
-              </TouchableOpacity>
-              <View style={{ flex: 1 }} />
-              <TouchableOpacity
-                style={styles.nowBtn}
-                onPress={() => setConsumedAt(Date.now())}
-              >
-                <Text style={styles.nowBtnText}>🕐 {i18n.t('addDrinkSetNow')}</Text>
-              </TouchableOpacity>
-            </View>
+            <>
+              {/* 시작 */}
+              <View style={styles.timeRow}>
+                <Text style={styles.timeLabel}>{i18n.t('editRecordStartLabel')}</Text>
+                <TouchableOpacity onPress={() => setTimeTarget('start')}>
+                  <Text style={styles.timeValue}>{formatHm(consumedDate)}</Text>
+                </TouchableOpacity>
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity
+                  style={styles.nowBtn}
+                  onPress={() => applyTimes(Date.now(), finishedAt)}
+                >
+                  <Text style={styles.nowBtnText}>🕐 {i18n.t('addDrinkSetNow')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* 종료 — 마시는중이면 시각이 없고, "현재시간으로"를 누르면 다마심이 된다 */}
+              <View style={styles.timeRow}>
+                <Text style={styles.timeLabel}>{i18n.t('editRecordEndLabel')}</Text>
+                {finishedDate ? (
+                  <TouchableOpacity onPress={() => setTimeTarget('end')}>
+                    <Text style={styles.timeValue}>{formatHm(finishedDate)}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={styles.drinkingText}>{i18n.t('drinkingBadge')}</Text>
+                )}
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity
+                  style={styles.nowBtn}
+                  onPress={() => applyTimes(consumedAt, Date.now())}
+                >
+                  <Text style={styles.nowBtnText}>🕐 {i18n.t('addDrinkSetNow')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* 상태 되돌리기 — 완료 기록에서만 */}
+              {finishedDate && (
+                <View style={styles.timeRowRight}>
+                  <TouchableOpacity
+                    style={styles.revertBtn}
+                    onPress={() => { setFinishedAt(null); setTimeNotice(''); }}
+                  >
+                    <Text style={styles.revertBtnText}>↩ {i18n.t('editRecordMarkDrinking')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {!!timeNotice && <Text style={styles.timeNoticeText}>{timeNotice}</Text>}
+            </>
           )}
 
           <View style={{ height: 12 }} />
@@ -620,12 +688,16 @@ export default function AddDrinkScreen() {
         title={i18n.t('customPresetEdit')}
       />
       <TimePickerModal
-        title={i18n.t('addDrinkTimeLabel')}
-        visible={showTimePicker}
-        initialHour={consumedDate.getHours()}
-        initialMinute={consumedDate.getMinutes()}
+        title={
+          timeTarget === 'end'
+            ? i18n.t('editRecordEndLabel')
+            : i18n.t('editRecordStartLabel')
+        }
+        visible={timeTarget != null}
+        initialHour={pickerDate.getHours()}
+        initialMinute={pickerDate.getMinutes()}
         onConfirm={handleTimePickerConfirm}
-        onCancel={() => setShowTimePicker(false)}
+        onCancel={() => setTimeTarget(null)}
       />
     </SafeAreaView>
   );
@@ -676,6 +748,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   timeLabel: { fontSize: 13, color: AppColors.sub },
+  drinkingText: { fontSize: 14, fontWeight: '700', color: AppColors.sub, paddingHorizontal: 4 },
+  timeRowRight: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 },
+  revertBtn: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: AppColors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  revertBtnText: { fontSize: 12, color: AppColors.sub, fontWeight: '600' },
+  timeNoticeText: { fontSize: 11, color: AppColors.sub, marginTop: 8 },
   timeValue: {
     fontSize: 14,
     fontWeight: '700',
