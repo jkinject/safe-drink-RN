@@ -21,7 +21,13 @@ function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; l
         color={focused ? AppColors.accent : AppColors.sub}
         strokeWidth={focused ? 2.3 : 1.8}
       />
-      <Text style={[tabIconStyles.label, focused && tabIconStyles.labelFocused]}>{label}</Text>
+      {/* 영어 라벨(Settings)이 두 줄로 접히면 탭바 높이까지 밀린다 */}
+      <Text
+        style={[tabIconStyles.label, focused && tabIconStyles.labelFocused]}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
@@ -48,6 +54,9 @@ export default function TabsLayout() {
           },
         ],
         tabBarShowLabel: false,
+        // 아이콘 슬롯이 좁으면 라벨(Settings)이 접히거나 잘린다
+        tabBarIconStyle: { width: '100%' },
+        tabBarItemStyle: { paddingHorizontal: Space.xs },
       }}
     >
       <Tabs.Screen
@@ -80,8 +89,8 @@ export default function TabsLayout() {
 
 const tabIconStyles = StyleSheet.create({
   // 탭 아이템 높이를 다 쓰고 그 안에서 가운데 정렬해야 아이콘이 위로 붙지 않는다
-  container: { alignItems: 'center', justifyContent: 'center', gap: Space.xxs },
-  label: { fontSize: Font.micro, color: AppColors.sub },
+  container: { alignItems: 'center', justifyContent: 'center', gap: Space.xxs, width: '100%' },
+  label: { fontSize: Font.micro, color: AppColors.sub, textAlign: 'center' },
   labelFocused: { color: AppColors.accent, fontWeight: Weight.semibold },
 });
 

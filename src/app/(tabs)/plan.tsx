@@ -260,7 +260,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   appTitle: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
-  infoIcon: { fontSize: Font.h2 },
   scrollContent: { padding: Space.lg, gap: Space.lg },
   warningBanner: {
     backgroundColor: '#FFFBEB',

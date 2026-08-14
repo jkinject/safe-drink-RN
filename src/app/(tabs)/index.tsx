@@ -39,7 +39,7 @@ import { DrinkRecord } from '@/core/types';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
-import { Space, Radius, Font, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Animated character ───────────────────────────────────────────────────────
 
@@ -651,8 +651,11 @@ export default function TimerScreen() {
       {/* AppBar */}
       <View style={styles.appBar}>
         <Text style={styles.appTitle}>{i18n.t('appTitle').toLowerCase()}</Text>
-        <TouchableOpacity onPress={() => router.push('/info')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/info')}
+          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+        >
+          <Icon name="info" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -774,7 +777,6 @@ const styles = StyleSheet.create({
     color: AppColors.navy,
     letterSpacing: -0.5,
   },
-  infoIcon: { fontSize: Font.h2 },
   emptyContent: {
     flexGrow: 1,
     justifyContent: 'center',
