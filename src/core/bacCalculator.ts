@@ -17,7 +17,7 @@ const DEFAULT_AGE = 30;          // 나이 기본값 (birthYear 미설정 시)
 type FinishedRecord = DrinkRecord & { finishedAt: number };
 
 function isFinished(r: DrinkRecord): r is FinishedRecord {
-  return r.finishedAt !== undefined;
+  return r.finishedAt != null;
 }
 
 /** 완료된 기록만 반환 (finishedAt != undefined) */

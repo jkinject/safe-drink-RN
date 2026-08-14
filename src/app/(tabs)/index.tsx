@@ -24,6 +24,7 @@ import { i18n } from '@/i18n';
 import { sessionStore } from '@/state/sessionStore';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
+import { presetsStore } from '@/state/presetsStore';
 import {
   bacCurve,
   currentBac,
@@ -216,13 +217,21 @@ function formatTime(epochMs: number): string {
 
 interface RecordTileProps {
   record: DrinkRecord;
+  presetEmoji: string;
   onEdit: () => void;
   onFinish: () => void;
   onDelete: () => void;
 }
 
-function RecordTile({ record, onEdit, onFinish, onDelete }: RecordTileProps) {
-  const isDrinking = record.finishedAt === undefined;
+function RecordTile({ record, presetEmoji, onEdit, onFinish, onDelete }: RecordTileProps) {
+  const isDrinking = record.finishedAt == null;
+  const abvStr = record.abvPercent % 1 === 0
+    ? record.abvPercent.toString()
+    : record.abvPercent.toFixed(1);
+  const volumeStr = record.volumeMl.toFixed(0);
+  // 술 이름: 프리셋 라벨, 없으면(직접 입력) 도수·용량 라벨
+  const title = record.presetLabel
+    ?? i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr });
 
   return (
     <TouchableOpacity
@@ -230,41 +239,39 @@ function RecordTile({ record, onEdit, onFinish, onDelete }: RecordTileProps) {
       onPress={onEdit}
       activeOpacity={0.8}
     >
-      {/* Row 1: badges */}
+      {/* Row 1: 이모지 + 이름/시각 + 삭제 */}
       <View style={tileStyles.row}>
-        {isDrinking ? (
-          <View style={tileStyles.drinkingBadge}>
-            <Text style={tileStyles.drinkingBadgeText}>{i18n.t('drinkingBadge')}</Text>
+        <View style={tileStyles.emojiCircle}>
+          <Text style={tileStyles.emojiText}>{presetEmoji}</Text>
+        </View>
+        <View style={tileStyles.titleCol}>
+          <View style={tileStyles.titleRow}>
+            <Text style={tileStyles.titleText} numberOfLines={1}>{title}</Text>
+            {isDrinking && (
+              <View style={tileStyles.drinkingBadge}>
+                <Text style={tileStyles.drinkingBadgeText}>{i18n.t('drinkingBadge')}</Text>
+              </View>
+            )}
           </View>
-        ) : (
           <Text style={tileStyles.finishedText}>
-            {i18n.t('recordFinishedAtSuffix', { time: formatTime(record.finishedAt!) })}
+            {isDrinking
+              ? i18n.t('recordTimeSuffix', { time: formatTime(record.consumedAt) })
+              : i18n.t('recordFinishedAtSuffix', { time: formatTime(record.finishedAt!) })}
           </Text>
-        )}
+        </View>
+        <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={tileStyles.deleteText}>🗑</Text>
+        </TouchableOpacity>
+      </View>
+      {/* Row 2: 도수·용량 뱃지 (+ 다마심) */}
+      <View style={[tileStyles.row, { marginTop: 8 }]}>
         <View style={tileStyles.abvBadge}>
           <Text style={tileStyles.badgeText}>
-            {i18n.t('recordAbvVolumeLabel', {
-              abv: record.abvPercent % 1 === 0
-                ? record.abvPercent.toString()
-                : record.abvPercent.toFixed(1),
-              volume: record.volumeMl.toFixed(0),
-            })}
+            {i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr })}
           </Text>
         </View>
         <View style={tileStyles.spacer} />
-        {!isDrinking && (
-          <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={tileStyles.deleteText}>🗑</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      {/* Row 2 (drinking only): finish button */}
-      {isDrinking && (
-        <View style={[tileStyles.row, { marginTop: 8 }]}>
-          <Text style={tileStyles.recordedTime}>
-            {i18n.t('recordTimeSuffix', { time: formatTime(record.consumedAt) })}
-          </Text>
-          <View style={tileStyles.spacer} />
+        {isDrinking && (
           <TouchableOpacity
             style={tileStyles.finishBtn}
             onPress={onFinish}
@@ -272,8 +279,8 @@ function RecordTile({ record, onEdit, onFinish, onDelete }: RecordTileProps) {
           >
             <Text style={tileStyles.finishBtnText}>{i18n.t('finishedButton')}</Text>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -286,6 +293,14 @@ const tileStyles = StyleSheet.create({
     ...cardShadowSm,
   },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 },
+  emojiCircle: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#EEEDF8', alignItems: 'center', justifyContent: 'center',
+  },
+  emojiText: { fontSize: 20 },
+  titleCol: { flex: 1, minWidth: 0 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  titleText: { fontSize: 14, fontWeight: '600', color: '#2D2B52', flexShrink: 1 },
   spacer: { flex: 1 },
   drinkingBadge: {
     backgroundColor: '#FFF8E1',
@@ -345,7 +360,7 @@ function BacComparisonCard({
           <Text style={compStyles.methodDesc}>{i18n.t('bacComparisonWatsonDesc')}</Text>
         </View>
         <View style={compStyles.badgeArea}>
-          <Text style={compStyles.bacValue}>{(bacWatson * 100).toFixed(3)}%</Text>
+          <Text style={compStyles.bacValue}>{bacWatson.toFixed(3)}%</Text>
           {watsonBadge && (
             <View style={[compStyles.badge, { backgroundColor: watsonBadge.bg }]}>
               <Text style={[compStyles.badgeText, { color: watsonBadge.color }]}>
@@ -365,7 +380,7 @@ function BacComparisonCard({
           <Text style={compStyles.methodDesc}>{i18n.t('bacComparisonWidmarkDesc')}</Text>
         </View>
         <View style={compStyles.badgeArea}>
-          <Text style={compStyles.bacValue}>{(bacWidmark * 100).toFixed(3)}%</Text>
+          <Text style={compStyles.bacValue}>{bacWidmark.toFixed(3)}%</Text>
           <View style={compStyles.badgeRow}>
             {widmarkBadge && (
               <View style={[compStyles.badge, { backgroundColor: widmarkBadge.bg }]}>
@@ -489,6 +504,12 @@ export default function TimerScreen() {
   const deleteRecord = sessionStore(s => s.deleteRecord);
   const checkAutoClose = sessionStore(s => s.checkAutoClose);
   const profile = profileStore(s => s.profile);
+  const presets = presetsStore(s => s.presets);
+  const emojiFor = useCallback(
+    (label?: string) =>
+      presets.find(p => p.label === label)?.emoji ?? '🍹',
+    [presets],
+  );
 
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -508,9 +529,9 @@ export default function TimerScreen() {
   }, [nowMs, records.length, checkAutoClose]);
 
   const hasRecords = records.length > 0;
-  const finishedRecords = records.filter(r => r.finishedAt !== undefined);
+  const finishedRecords = records.filter(r => r.finishedAt != null);
   const hasFinishedRecords = finishedRecords.length > 0;
-  const drinkingCount = records.filter(r => r.finishedAt === undefined).length;
+  const drinkingCount = records.filter(r => r.finishedAt == null).length;
   const hasOnlyDrinking = hasRecords && drinkingCount === records.length;
 
   // BAC values (only computed when profile exists)
@@ -634,6 +655,7 @@ export default function TimerScreen() {
               <RecordTile
                 key={record.id}
                 record={record}
+                presetEmoji={emojiFor(record.presetLabel)}
                 onEdit={() => handleEditRecord(record)}
                 onFinish={() => handleFinishRecord(record)}
                 onDelete={() => handleDeleteRecord(record)}

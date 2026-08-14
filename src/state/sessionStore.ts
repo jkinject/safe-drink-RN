@@ -139,7 +139,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
     if (records.length === 0) return;
 
     // 마시는중 기록이 있으면 세션 유지 (BAC 가 0 이어도)
-    if (records.some(r => r.finishedAt === undefined)) return;
+    if (records.some(r => r.finishedAt == null)) return;
 
     const bac = currentBac(records, profile, Date.now());
     if (bac > 0) return;
@@ -151,7 +151,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
 
       const { records: innerRecords } = get();
       if (innerRecords.length === 0) return;
-      if (innerRecords.some(r => r.finishedAt === undefined)) return;
+      if (innerRecords.some(r => r.finishedAt == null)) return;
 
       const innerBac = currentBac(innerRecords, innerProfile, Date.now());
       if (innerBac <= 0) {
