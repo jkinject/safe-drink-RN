@@ -22,3 +22,15 @@ export const cardShadowSm = {
   shadowRadius: 8,
   elevation: 2,
 } as const;
+
+/**
+ * 다이얼로그처럼 어두운 오버레이 위에 뜨는 것.
+ * 카드용 그림자는 어두운 배경에 묻혀 떠 있는 느낌이 사라지므로 훨씬 세게 준다.
+ */
+export const dialogShadow = {
+  shadowColor: '#1A1836',
+  shadowOffset: { width: 0, height: 12 },
+  shadowOpacity: 0.45,
+  shadowRadius: 28,
+  elevation: 24,
+} as const;

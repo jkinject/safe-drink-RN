@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { FONTS } from '@/components/typography';
+import { DialogHost } from '@/components/dialog';
 import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -64,23 +65,27 @@ export default function RootLayout() {
   }, [profile, initialized, segments, router]);
 
   return (
-    <Stack>
-      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="add-drink"
-        options={{
-          presentation: 'modal',
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="info"
-        options={{
-          presentation: 'modal',
-          headerShown: false,
-        }}
-      />
-    </Stack>
+    <>
+      <Stack>
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="add-drink"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="info"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
+      </Stack>
+      {/* OS 기본 Alert 대신 쓰는 공통 다이얼로그 — 모든 화면 위에 뜬다 */}
+      <DialogHost />
+    </>
   );
 }

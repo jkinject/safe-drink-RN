@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -11,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
+import { alert, confirm } from '@/components/dialog';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { FloatingLabelInput } from '@/components/floating-label-input';
@@ -180,45 +180,35 @@ export default function SettingsScreen() {
         sex,
         birthYear: birthYear.trim() ? parseInt(birthYear, 10) : undefined,
       });
-      Alert.alert('', i18n.t('settingsSaved'));
+      await alert({ message: i18n.t('settingsSaved'), confirmLabel: i18n.t('dialogOk') });
     } finally {
       setSaving(false);
     }
   }
 
-  function handleRestorePresets() {
-    Alert.alert(
-      i18n.t('settingsRestorePresetsTitle'),
-      i18n.t('settingsRestorePresetsConfirm'),
-      [
-        { text: i18n.t('settingsCancel'), style: 'cancel' },
-        {
-          text: i18n.t('settingsRestorePresets'),
-          onPress: async () => {
-            await restorePresets();
-            Alert.alert('', i18n.t('settingsRestored'));
-          },
-        },
-      ],
-    );
+  async function handleRestorePresets() {
+    const ok = await confirm({
+      title: i18n.t('settingsRestorePresetsTitle'),
+      message: i18n.t('settingsRestorePresetsConfirm'),
+      confirmLabel: i18n.t('settingsRestorePresets'),
+      cancelLabel: i18n.t('settingsCancel'),
+    });
+    if (!ok) return;
+    await restorePresets();
+    await alert({ message: i18n.t('settingsRestored'), confirmLabel: i18n.t('dialogOk') });
   }
 
-  function handleDeleteAll() {
-    Alert.alert(
-      i18n.t('settingsDeleteAllTitle'),
-      i18n.t('settingsDeleteAllConfirm'),
-      [
-        { text: i18n.t('settingsCancel'), style: 'cancel' },
-        {
-          text: i18n.t('settingsDelete'),
-          style: 'destructive',
-          onPress: async () => {
-            await clearAll();
-            Alert.alert('', i18n.t('settingsDeletedAll'));
-          },
-        },
-      ],
-    );
+  async function handleDeleteAll() {
+    const ok = await confirm({
+      title: i18n.t('settingsDeleteAllTitle'),
+      message: i18n.t('settingsDeleteAllConfirm'),
+      confirmLabel: i18n.t('settingsDelete'),
+      cancelLabel: i18n.t('settingsCancel'),
+      destructive: true,
+    });
+    if (!ok) return;
+    await clearAll();
+    await alert({ message: i18n.t('settingsDeletedAll'), confirmLabel: i18n.t('dialogOk') });
   }
 
   return (

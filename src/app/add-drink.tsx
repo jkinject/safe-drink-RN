@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -13,11 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { AppColors, cardShadow, cardShadowSm, dialogShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
 import { Icon } from '@/components/icon';
+import { actionSheet, confirm } from '@/components/dialog';
 import {
   DRINK_ICON_NAMES,
   DrinkIcon,
@@ -55,7 +55,7 @@ const tpStyles = StyleSheet.create({
     padding: Space.xxl,
     width: 280,
     gap: Space.lg,
-    ...cardShadow,
+    ...dialogShadow,
   },
   title: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy, textAlign: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Space.sm },
@@ -429,30 +429,33 @@ export default function AddDrinkScreen() {
     setVolErr('');
   }
 
-  function handlePresetLongPress(idx: number) {
+  async function handlePresetLongPress(idx: number) {
     const preset = presets[idx];
-    Alert.alert(preset.label, undefined, [
-      { text: i18n.t('customPresetEdit'), onPress: () => { setEditPresetIdx(idx); setShowEditDialog(true); } },
-      {
-        text: i18n.t('customPresetDelete'),
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert('', i18n.t('customPresetDeleteConfirm'), [
-            { text: i18n.t('customPresetCancel'), style: 'cancel' },
-            {
-              text: i18n.t('customPresetDelete'),
-              style: 'destructive',
-              onPress: async () => {
-                const newList = presets.filter((_, i) => i !== idx);
-                await savePresets(newList);
-                if (selectedPresetIdx === idx) setSelectedPresetIdx(null);
-              },
-            },
-          ]);
-        },
-      },
-      { text: i18n.t('customPresetCancel'), style: 'cancel' },
-    ]);
+    const picked = await actionSheet({
+      title: preset.label,
+      actions: [
+        { label: i18n.t('customPresetEdit') },
+        { label: i18n.t('customPresetDelete'), destructive: true },
+      ],
+      cancelLabel: i18n.t('customPresetCancel'),
+    });
+    if (picked === 0) {
+      setEditPresetIdx(idx);
+      setShowEditDialog(true);
+      return;
+    }
+    if (picked !== 1) return;
+
+    const ok = await confirm({
+      message: i18n.t('customPresetDeleteConfirm'),
+      confirmLabel: i18n.t('customPresetDelete'),
+      cancelLabel: i18n.t('customPresetCancel'),
+      destructive: true,
+    });
+    if (!ok) return;
+    const newList = presets.filter((_, i) => i !== idx);
+    await savePresets(newList);
+    if (selectedPresetIdx === idx) setSelectedPresetIdx(null);
   }
 
   async function handleAddPreset(preset: DrinkPreset) {

@@ -93,6 +93,7 @@ const en = {
   languageEnglish: 'English',
   formulaDialogTitle: 'Calculation Method',
   formulaDialogClose: 'Close',
+  dialogOk: 'OK',
   editRecordTitle: 'Edit record',
   editRecordSubmit: 'Save changes',
   editRecordStartLabel: 'Started: ',

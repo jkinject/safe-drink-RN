@@ -93,6 +93,7 @@ const ko = {
   languageEnglish: 'English',
   formulaDialogTitle: '계산 공식 안내',
   formulaDialogClose: '닫기',
+  dialogOk: '확인',
   editRecordTitle: '기록 수정',
   editRecordSubmit: '변경 저장',
   editRecordStartLabel: '음주 시작: ',

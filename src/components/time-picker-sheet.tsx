@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { AppColors, cardShadow } from '@/constants/colors';
+import { AppColors, dialogShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
     padding: Space.xl,
-    ...cardShadow,
+    ...dialogShadow,
   },
   title: {
     fontSize: Font.h4,

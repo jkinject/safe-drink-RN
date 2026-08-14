@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/components/icon';
+import { confirm } from '@/components/dialog';
 import { DrinkIcon, DrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
 import { Text } from '@/components/typography';
 import Animated, {
@@ -635,15 +635,15 @@ export default function TimerScreen() {
     if (record.id != null) finishRecord(record.id).catch(() => {});
   }
 
-  function handleDeleteRecord(record: DrinkRecord) {
-    Alert.alert(i18n.t('deleteRecordTitle'), i18n.t('deleteRecordConfirm'), [
-      { text: i18n.t('settingsCancel'), style: 'cancel' },
-      {
-        text: i18n.t('settingsDelete'),
-        style: 'destructive',
-        onPress: () => { if (record.id != null) deleteRecord(record.id).catch(() => {}); },
-      },
-    ]);
+  async function handleDeleteRecord(record: DrinkRecord) {
+    const ok = await confirm({
+      title: i18n.t('deleteRecordTitle'),
+      message: i18n.t('deleteRecordConfirm'),
+      confirmLabel: i18n.t('settingsDelete'),
+      cancelLabel: i18n.t('settingsCancel'),
+      destructive: true,
+    });
+    if (ok && record.id != null) deleteRecord(record.id).catch(() => {});
   }
 
   return (

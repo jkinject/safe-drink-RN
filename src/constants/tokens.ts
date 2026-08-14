@@ -72,9 +72,11 @@ export const Weight = {
  * | 버튼·입력               | Radius.md   | 없음          |
  * | 칩·뱃지                 | Radius.sm   | 없음          |
  * | 떠 있는 것 (모달·말풍선)| Radius.xl   | cardShadow    |
+ * | 다이얼로그(오버레이 위) | Radius.xl   | dialogShadow  |
  *
- * 그림자는 `@/constants/colors` 의 cardShadow(떠 있는 것) /
- * cardShadowSm(화면 안 카드) 두 가지만 쓴다.
+ * 그림자는 `@/constants/colors` 의 세 가지만 쓴다 —
+ * cardShadowSm(화면 안 카드) / cardShadow(떠 있는 것) /
+ * dialogShadow(어두운 오버레이 위 다이얼로그·모달).
  */
 
 /** 아이콘 크기 — 글자 크기와 짝을 맞춘다 */
