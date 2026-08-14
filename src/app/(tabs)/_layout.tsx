@@ -6,7 +6,10 @@ import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
-import { Space, Font, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+
+/** 아이콘 + 라벨 한 줄의 높이 (탭바 높이를 여기에 맞춘다) */
+const TAB_CONTENT_HEIGHT = IconSize.lg + Space.xxs + Font.micro + 4;
 
 function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; label: string }) {
   return (
@@ -14,7 +17,7 @@ function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; l
       {/* 선택 상태는 색과 선 굵기로 표현한다 (이모지로는 불가능했던 부분) */}
       <Icon
         name={icon}
-        size={22}
+        size={IconSize.lg}
         color={focused ? AppColors.accent : AppColors.sub}
         strokeWidth={focused ? 2.3 : 1.8}
       />
@@ -34,9 +37,15 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // 아이콘 슬롯은 상단 정렬이라 컨테이너에 flex 를 줘도 가운데로 오지 않는다.
+        // 탭바 높이를 콘텐츠(아이콘+라벨)에 맞추고 상하 여백을 같게 줘서 맞춘다.
         tabBarStyle: [
           styles.tabBar,
-          { height: 64 + insets.bottom, paddingBottom: insets.bottom },
+          {
+            height: TAB_CONTENT_HEIGHT + Space.md * 2 + insets.bottom,
+            paddingTop: Space.md,
+            paddingBottom: Space.md + insets.bottom,
+          },
         ],
         tabBarShowLabel: false,
       }}
@@ -70,8 +79,9 @@ export default function TabsLayout() {
 }
 
 const tabIconStyles = StyleSheet.create({
-  container: { alignItems: 'center', paddingTop: Space.sm },
-  label: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.xxs },
+  // 탭 아이템 높이를 다 쓰고 그 안에서 가운데 정렬해야 아이콘이 위로 붙지 않는다
+  container: { alignItems: 'center', justifyContent: 'center', gap: Space.xxs },
+  label: { fontSize: Font.micro, color: AppColors.sub },
   labelFocused: { color: AppColors.accent, fontWeight: Weight.semibold },
 });
 
@@ -79,8 +89,8 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
     position: 'absolute',
     shadowColor: '#6C63E0',
     shadowOffset: { width: 0, height: -4 },

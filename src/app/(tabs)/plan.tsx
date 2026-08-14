@@ -20,7 +20,7 @@ import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
 import { calculate as planCalculate } from '@/core/planCalculator';
 import { PlanResult } from '@/core/types';
-import { Space, Radius, Font, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Simple time picker modal ──────────────────────────────────────────────────
 
@@ -168,7 +168,7 @@ export default function PlanScreen() {
           onPress={() => router.push('/info')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Icon name="info" size={22} color={AppColors.sub} strokeWidth={2} />
+          <Icon name="info" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 

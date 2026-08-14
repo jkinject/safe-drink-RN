@@ -30,7 +30,10 @@ import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
 import { DrinkPreset } from '@/core/types';
 import * as notificationService from '@/services/notifications';
-import { Space, Radius, Font, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+
+/** 빠른 선택 그리드 열 수 */
+const PRESET_COLUMNS = 3;
 
 function formatHm(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -178,7 +181,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
                     onPress={() => setIcon(n)}
                   >
                     {/* 아이콘 자체가 컬러라 선택 상태는 테두리로만 표시한다 */}
-                    <DrinkIcon name={n} size={30} />
+                    <DrinkIcon name={n} size={IconSize.drink} />
                   </TouchableOpacity>
                 );
               })}
@@ -289,7 +292,7 @@ function PresetCard({ preset, selected, onPress, onLongPress }: PresetCardProps)
       delayLongPress={400}
       activeOpacity={0.8}
     >
-      <DrinkIcon name={resolveDrinkIcon(preset)} size={30} />
+      <DrinkIcon name={resolveDrinkIcon(preset)} size={IconSize.drink} />
       <Text style={pcStyles.label} numberOfLines={2}>{preset.label}</Text>
       <Text style={pcStyles.detail}>
         {preset.abvPercent % 1 === 0 ? preset.abvPercent : preset.abvPercent.toFixed(1)}% · {Math.round(preset.volumeMl)}ml
@@ -374,6 +377,12 @@ export default function AddDrinkScreen() {
   const [volErr, setVolErr] = useState('');
   const [timeNotice, setTimeNotice] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // 프리셋 그리드 — 실측 폭으로 3열을 정확히 나눈다
+  const [gridWidth, setGridWidth] = useState(0);
+  const cellStyle = gridWidth
+    ? { width: (gridWidth - Space.sm * (PRESET_COLUMNS - 1)) / PRESET_COLUMNS }
+    : undefined;
 
   // Time picker — 시작/종료 중 어느 쪽을 편집 중인지
   const [timeTarget, setTimeTarget] = useState<'start' | 'end' | null>(null);
@@ -552,11 +561,16 @@ export default function AddDrinkScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       {/* AppBar */}
       <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="close" size={22} color={AppColors.sub} />
+        {/* 좌우 폭이 같아야 가운데 타이틀이 실제로 가운데 온다 */}
+        <TouchableOpacity
+          style={styles.appBarSide}
+          onPress={() => router.back()}
+          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+        >
+          <Icon name="close" size={IconSize.lg} color={AppColors.sub} />
         </TouchableOpacity>
         <Text style={styles.appTitle}>{title}</Text>
-        <View style={{ width: 32 }} />
+        <View style={styles.appBarSide} />
       </View>
 
       <ScrollView
@@ -568,9 +582,14 @@ export default function AddDrinkScreen() {
         {!isEdit && (
           <>
             <Text style={styles.sectionTitle}>{i18n.t('addDrinkQuickSelect')}</Text>
-            <View style={styles.presetGrid}>
+            {/* 셀 폭은 퍼센트가 아니라 실측으로 계산한다 — 31%×3 + gap 이면
+                딱 떨어지지 않아 오른쪽에만 여백이 남았다 */}
+            <View
+              style={styles.presetGrid}
+              onLayout={e => setGridWidth(e.nativeEvent.layout.width)}
+            >
               {presets.map((preset, idx) => (
-                <View key={idx} style={styles.presetCell}>
+                <View key={idx} style={[styles.presetCell, cellStyle]}>
                   <PresetCard
                     preset={preset}
                     selected={selectedPresetIdx === idx}
@@ -579,7 +598,7 @@ export default function AddDrinkScreen() {
                   />
                 </View>
               ))}
-              <View style={styles.presetCell}>
+              <View style={[styles.presetCell, cellStyle]}>
                 <AddPresetCard onPress={() => setShowAddDialog(true)} />
               </View>
             </View>
@@ -722,7 +741,7 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
-  backBtn: { fontSize: Font.h3, color: AppColors.sub, fontWeight: Weight.semibold, width: 32 },
+  appBarSide: { width: Space.xxxl, alignItems: 'flex-start' },
   appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
   scrollContent: { padding: Space.lg, gap: Space.md },
   sectionTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
@@ -731,7 +750,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Space.sm,
   },
-  presetCell: { width: '31%' },
+  presetCell: {},
   divider: { height: 1, backgroundColor: AppColors.border },
   formCard: {
     backgroundColor: AppColors.cardBg,

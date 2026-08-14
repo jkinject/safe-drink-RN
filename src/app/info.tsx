@@ -12,7 +12,7 @@ import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
-import { Space, Radius, Font, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -117,14 +117,16 @@ export default function InfoScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       {/* AppBar */}
       <View style={styles.appBar}>
+        {/* 좌우 폭이 같아야 가운데 타이틀이 실제로 가운데 온다 */}
         <TouchableOpacity
+          style={styles.appBarSide}
           onPress={() => router.back()}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
         >
-          <Icon name="close" size={22} color={AppColors.sub} />
+          <Icon name="close" size={IconSize.lg} color={AppColors.sub} />
         </TouchableOpacity>
         <Text style={styles.appTitle}>{i18n.t('infoScreenTitle')}</Text>
-        <View style={{ width: 32 }} />
+        <View style={styles.appBarSide} />
       </View>
 
       <ScrollView
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
-  backBtn: { fontSize: Font.h3, color: AppColors.sub, fontWeight: Weight.semibold, width: 32 },
+  appBarSide: { width: Space.xxxl, alignItems: 'flex-start' },
   appTitle: {
     fontSize: Font.h3,
     fontWeight: Weight.bold,
