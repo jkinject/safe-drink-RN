@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
@@ -17,12 +18,17 @@ export default function TabsLayout() {
   // Subscribe to locale changes to re-render tab labels
   const locale = localeStore(s => s.locale);
   void locale;
+  // Android edge-to-edge: 시스템 네비게이션 바 높이만큼 하단 여백 확보
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          { height: 64 + insets.bottom, paddingBottom: insets.bottom },
+        ],
         tabBarShowLabel: false,
       }}
     >
@@ -69,7 +75,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     position: 'absolute',
-    height: 70,
     shadowColor: '#6C63E0',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.10,
