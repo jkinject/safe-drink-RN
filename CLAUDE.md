@@ -23,8 +23,11 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - **JDK: 반드시 17** — `android/gradle.properties`의 `org.gradle.java.home`이 Android Studio JBR로 고정되어 있음. 시스템 기본(JDK 25)으로 빌드하면 CMake 단계에서 "restricted method" 오류.
 - `android/local.properties`: `sdk.dir=/Users/tim/Library/Android/sdk`
 - adb는 PATH에 없음 → `~/Library/Android/sdk/platform-tools/adb`
-- 무선 기기: `adb mdns services`로 페어링 IP:포트 탐지 → `adb pair IP:PORT 코드` → `adb connect IP:연결포트`
-- 알려진 기기: 레노버 태블릿 TB331FC(192.168.200.195:5555), 갤럭시 폴드 R3CY8031TKF(192.168.200.111 — 무선 디버깅 재연결 필요할 수 있음). USB 연결 시 갤럭시 F766N(R3CY7057FCY)도 사용 이력 있음
+- 무선 기기: `adb pair IP:페어링포트 코드` → **`adb mdns services`로 연결 포트 확인** → `adb connect IP:연결포트`. 페어링 포트와 연결 포트는 다르다(연결은 `_adb-tls-connect._tcp` 항목의 포트).
+- 알려진 기기:
+  - 레노버 태블릿 TB331FC — 192.168.200.195:5555 (TCP 모드라 페어링 없이 `adb connect`만으로 재연결)
+  - 갤럭시 폴드 SM-F966N(R3CY8031TKF) — 192.168.200.111, 무선 디버깅 포트가 매번 바뀌므로 페어링 후 mdns로 포트 확인 필요
+  - USB 연결 시 갤럭시 F766N(R3CY7057FCY)도 사용 이력 있음
 
 ## OTA (EAS Update)
 
