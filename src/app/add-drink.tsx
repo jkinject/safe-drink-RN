@@ -295,8 +295,11 @@ const pcStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border,
     gap: 4,
+    // 같은 줄의 카드끼리 높이를 맞춘다 (추가 카드는 줄 수가 적어 짧아짐)
+    flex: 1,
     ...cardShadowSm,
   },
+  cardCentered: { justifyContent: 'center' },
   cardSelected: {
     borderColor: AppColors.accent,
     borderWidth: 2,
@@ -311,7 +314,11 @@ const pcStyles = StyleSheet.create({
 
 function AddPresetCard({ onPress }: { onPress: () => void }) {
   return (
-    <TouchableOpacity style={pcStyles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[pcStyles.card, pcStyles.cardCentered]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
       <Text style={{ fontSize: 28 }}>➕</Text>
       <Text style={pcStyles.label}>{i18n.t('customPresetAddCard')}</Text>
     </TouchableOpacity>
