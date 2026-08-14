@@ -43,3 +43,6 @@ example
 /android
 
 dist/
+
+# 로컬 도구가 만드는 상태 파일 (oh-my-claudecode)
+.omc/
