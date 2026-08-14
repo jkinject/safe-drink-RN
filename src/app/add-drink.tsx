@@ -3,8 +3,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
@@ -92,6 +92,8 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
   const [nameErr, setNameErr] = useState('');
   const [abvErr, setAbvErr] = useState('');
   const [volErr, setVolErr] = useState('');
+  // Android edge-to-edge에선 시트가 내비게이션 바 아래까지 그려져 버튼이 잘린다
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (visible) {
@@ -132,47 +134,68 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
   }
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onCancel}>
-      <View style={dlgStyles.overlay}>
-        <View style={dlgStyles.container}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onCancel}
+      statusBarTranslucent
+    >
+      {/* Android edge-to-edge에선 adjustResize로 창이 줄지 않으므로
+          두 플랫폼 모두 behavior="padding"이 필요하다 (기기 확인 완료) */}
+      <KeyboardAvoidingView
+        style={dlgStyles.overlay}
+        behavior="padding"
+        // 키보드가 뜨면 내비게이션 바 인셋만큼은 회피량에서 빼야 여백이 두 번 붙지 않는다
+        keyboardVerticalOffset={-insets.bottom}
+      >
+        <View style={[dlgStyles.container, { paddingBottom: 24 + insets.bottom }]}>
           <Text style={dlgStyles.title}>{title}</Text>
-          {/* Emoji picker */}
-          <View style={dlgStyles.emojiGrid}>
-            {EMOJI_CANDIDATES.map(e => (
-              <TouchableOpacity
-                key={e}
-                style={[dlgStyles.emojiBtn, emoji === e && dlgStyles.emojiBtnSelected]}
-                onPress={() => setEmoji(e)}
-              >
-                <Text style={dlgStyles.emojiText}>{e}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {/* Name */}
-          <FloatingLabelInput
-            label={i18n.t('customPresetNameLabel')}
-            value={name}
-            onChangeText={setName}
-            maxLength={20}
-            error={nameErr || null}
-          />
-          {/* ABV */}
-          <FloatingLabelInput
-            label={i18n.t('addDrinkAbvLabel')}
-            value={abv}
-            onChangeText={setAbv}
-            keyboardType="numeric"
-            error={abvErr || null}
-          />
-          {/* Volume */}
-          <FloatingLabelInput
-            label={i18n.t('addDrinkVolumeLabel')}
-            value={vol}
-            onChangeText={setVol}
-            keyboardType="numeric"
-            error={volErr || null}
-          />
-          {/* Actions */}
+          <ScrollView
+            style={dlgStyles.scroll}
+            contentContainerStyle={dlgStyles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Emoji picker */}
+            <View style={dlgStyles.emojiGrid}>
+              {EMOJI_CANDIDATES.map(e => (
+                <TouchableOpacity
+                  key={e}
+                  style={[dlgStyles.emojiBtn, emoji === e && dlgStyles.emojiBtnSelected]}
+                  onPress={() => setEmoji(e)}
+                >
+                  <Text style={dlgStyles.emojiText}>{e}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {/* Name */}
+            <FloatingLabelInput
+              label={i18n.t('customPresetNameLabel')}
+              value={name}
+              onChangeText={setName}
+              maxLength={20}
+              error={nameErr || null}
+            />
+            {/* ABV */}
+            <FloatingLabelInput
+              label={i18n.t('addDrinkAbvLabel')}
+              value={abv}
+              onChangeText={setAbv}
+              keyboardType="numeric"
+              error={abvErr || null}
+            />
+            {/* Volume */}
+            <FloatingLabelInput
+              label={i18n.t('addDrinkVolumeLabel')}
+              value={vol}
+              onChangeText={setVol}
+              keyboardType="numeric"
+              error={volErr || null}
+            />
+          </ScrollView>
+          {/* Actions — 키보드가 올라와도 항상 보이도록 스크롤 밖에 고정 */}
           <View style={dlgStyles.actions}>
             <TouchableOpacity onPress={onCancel} style={dlgStyles.cancelBtn}>
               <Text style={dlgStyles.cancelText}>{i18n.t('customPresetCancel')}</Text>
@@ -182,7 +205,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -197,10 +220,13 @@ const dlgStyles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     gap: 8,
     maxHeight: '85%',
+    // 키보드로 공간이 줄면 시트가 같이 줄어들 수 있어야 함
+    flexShrink: 1,
   },
+  scroll: { flexGrow: 0, flexShrink: 1 },
+  scrollContent: { gap: 8, paddingBottom: 4 },
   title: { fontSize: 16, fontWeight: '700', color: AppColors.navy, marginBottom: 8 },
   emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
   emojiBtn: {
