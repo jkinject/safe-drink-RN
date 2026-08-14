@@ -13,6 +13,7 @@ import Svg, {
 import { AppColors } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
+import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 const CHART_HEIGHT = 170;
 const PAD_LEFT = 4;
@@ -203,8 +204,8 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Space.lg,
     shadowColor: '#6C63E0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -212,15 +213,15 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: Font.body,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
-    marginBottom: 10,
+    marginBottom: Space.md,
   },
   bottomLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: Space.xs,
   },
-  bottomLabel: { fontSize: 10, color: AppColors.sub },
+  bottomLabel: { fontSize: Font.micro, color: AppColors.sub },
 });

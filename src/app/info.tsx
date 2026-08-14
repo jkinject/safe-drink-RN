@@ -7,11 +7,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { AppColors, cardShadow } from '@/constants/colors';
+import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
+import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -37,14 +38,14 @@ function SectionCard({ icon, title, children, bgColor }: SectionCardProps) {
 const sectionStyles = StyleSheet.create({
   card: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 20,
-    padding: 20,
-    ...cardShadow,
+    borderRadius: Radius.xl,
+    padding: Space.xl,
+    ...cardShadowSm,
     gap: 0,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  icon: { fontSize: 22 },
-  title: { flex: 1, fontSize: 16, fontWeight: '700', color: AppColors.navy },
+  header: { flexDirection: 'row', alignItems: 'center', gap: Space.sm, marginBottom: Space.lg },
+  icon: { fontSize: Font.h2 },
+  title: { flex: 1, fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
 });
 
 // ── Formula box ───────────────────────────────────────────────────────────────
@@ -66,12 +67,12 @@ function FormulaBox({ title, children }: FormulaBoxProps) {
 const formulaStyles = StyleSheet.create({
   box: {
     backgroundColor: '#F5F4FC',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    borderRadius: Radius.md,
+    padding: Space.lg,
+    marginBottom: Space.sm,
   },
-  title: { fontSize: 13, fontWeight: '600', color: AppColors.accent, marginBottom: 6 },
-  content: { gap: 4 },
+  title: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent, marginBottom: Space.sm },
+  content: { gap: Space.xs },
 });
 
 // ── Law box ───────────────────────────────────────────────────────────────────
@@ -95,14 +96,14 @@ function LawBox({ title, detail, titleColor, borderColor, bgColor }: LawBoxProps
 
 const lawStyles = StyleSheet.create({
   box: {
-    borderRadius: 12,
+    borderRadius: Radius.md,
     borderWidth: 1.5,
-    padding: 14,
-    marginBottom: 8,
-    gap: 6,
+    padding: Space.lg,
+    marginBottom: Space.sm,
+    gap: Space.sm,
   },
-  title: { fontSize: 14, fontWeight: '700' },
-  detail: { fontSize: 13, color: AppColors.navy, lineHeight: 18 },
+  title: { fontSize: Font.body, fontWeight: Weight.bold },
+  detail: { fontSize: Font.bodySm, color: AppColors.navy, lineHeight: 18 },
 });
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -153,7 +154,7 @@ export default function InfoScreen() {
           <FormulaBox title={i18n.t('infoFormula4Title')}>
             <Text style={styles.monoSmText}>{i18n.t('infoFormula4Male')}</Text>
             <Text style={styles.monoSmText}>{i18n.t('infoFormula4Female')}</Text>
-            <Text style={[styles.monoSmText, { fontWeight: '600' }]}>{i18n.t('infoFormula4R')}</Text>
+            <Text style={[styles.monoSmText, { fontWeight: Weight.semibold }]}>{i18n.t('infoFormula4R')}</Text>
             <Text style={styles.descText}>{i18n.t('infoFormula4Desc')}</Text>
           </FormulaBox>
         </SectionCard>
@@ -219,65 +220,65 @@ const styles = StyleSheet.create({
   appBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Space.lg,
+    paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
-  backBtn: { fontSize: 18, color: AppColors.sub, fontWeight: '600', width: 32 },
+  backBtn: { fontSize: Font.h3, color: AppColors.sub, fontWeight: Weight.semibold, width: 32 },
   appTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: Font.h3,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
     flex: 1,
     textAlign: 'center',
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 32,
-    gap: 16,
+    paddingHorizontal: Space.lg,
+    paddingTop: Space.xs,
+    paddingBottom: Space.xxxl,
+    gap: Space.lg,
   },
   introText: {
-    fontSize: 14,
+    fontSize: Font.body,
     color: AppColors.navy,
     lineHeight: 21,
   },
   subtitleText: {
-    fontSize: 12,
+    fontSize: Font.caption,
     color: AppColors.sub,
-    fontWeight: '500',
+    fontWeight: Weight.regular,
   },
   monoText: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    fontSize: 13,
+    fontSize: Font.bodySm,
     color: AppColors.navy,
-    fontWeight: '500',
+    fontWeight: Weight.regular,
   },
   monoSmText: {
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    fontSize: 12,
+    fontSize: Font.caption,
     color: AppColors.navy,
   },
   descText: {
-    fontSize: 12,
+    fontSize: Font.caption,
     color: AppColors.sub,
   },
   footnoteText: {
-    fontSize: 11,
+    fontSize: Font.micro,
     color: AppColors.sub,
     fontStyle: 'italic',
     lineHeight: 16,
-    marginTop: 4,
+    marginTop: Space.xs,
   },
   closeBtn: {
     alignSelf: 'center',
     width: 220,
     backgroundColor: AppColors.accent,
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: Radius.md,
+    paddingVertical: Space.lg,
     alignItems: 'center',
     ...cardShadow,
     shadowOpacity: 0.20,
   },
-  closeBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  closeBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
 });

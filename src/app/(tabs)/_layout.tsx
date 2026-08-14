@@ -6,6 +6,7 @@ import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
+import { Space, Font, Weight } from '@/constants/tokens';
 
 function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; label: string }) {
   return (
@@ -69,9 +70,9 @@ export default function TabsLayout() {
 }
 
 const tabIconStyles = StyleSheet.create({
-  container: { alignItems: 'center', paddingTop: 6 },
-  label: { fontSize: 10, color: AppColors.sub, marginTop: 2 },
-  labelFocused: { color: AppColors.accent, fontWeight: '600' },
+  container: { alignItems: 'center', paddingTop: Space.sm },
+  label: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.xxs },
+  labelFocused: { color: AppColors.accent, fontWeight: Weight.semibold },
 });
 
 const styles = StyleSheet.create({

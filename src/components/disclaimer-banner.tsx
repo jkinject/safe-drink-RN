@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
+import { Space, Font } from '@/constants/tokens';
 
 export function DisclaimerBanner() {
   return (
@@ -15,11 +16,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF8E1',
     borderBottomWidth: 1,
     borderBottomColor: '#FFD97D',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: Space.sm,
+    paddingHorizontal: Space.lg,
   },
   text: {
-    fontSize: 11,
+    fontSize: Font.micro,
     color: '#7A6000',
     textAlign: 'center',
   },

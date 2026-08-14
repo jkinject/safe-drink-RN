@@ -39,6 +39,7 @@ import { DrinkRecord } from '@/core/types';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
+import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 // ── Animated character ───────────────────────────────────────────────────────
 
@@ -130,17 +131,17 @@ function SpeechBubble({ message }: { message: string }) {
 const bubbleStyles = StyleSheet.create({
   container: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Space.lg,
+    paddingVertical: Space.md,
     alignSelf: 'center',
     maxWidth: '85%',
     ...cardShadowSm,
   },
   text: {
     color: AppColors.navy,
-    fontWeight: '500',
-    fontSize: 14,
+    fontWeight: Weight.regular,
+    fontSize: Font.body,
     textAlign: 'center',
   },
 });
@@ -182,33 +183,33 @@ function CountdownCard({
 const countdownStyles = StyleSheet.create({
   card: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Space.lg,
     alignItems: 'center',
-    ...cardShadow,
+    ...cardShadowSm,
   },
-  label: { fontSize: 12, color: AppColors.sub, fontWeight: '500' },
+  label: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular },
   time: {
-    fontSize: 44,
-    fontWeight: '800',
+    fontSize: Font.display,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
     letterSpacing: 2,
-    marginVertical: 8,
+    marginVertical: Space.sm,
     fontVariant: ['tabular-nums'],
   },
   progressBg: {
     width: '100%',
     height: 6,
     backgroundColor: '#E8E6FF',
-    borderRadius: 3,
+    borderRadius: Radius.pill,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     backgroundColor: AppColors.accent,
-    borderRadius: 3,
+    borderRadius: Radius.pill,
   },
-  subLabel: { fontSize: 11, color: AppColors.sub, marginTop: 6 },
+  subLabel: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.sm },
 });
 
 // ── Record tile ───────────────────────────────────────────────────────────────
@@ -267,7 +268,7 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTi
         </TouchableOpacity>
       </View>
       {/* Row 2: 도수·용량 뱃지 (+ 다마심) */}
-      <View style={[tileStyles.row, { marginTop: 8 }]}>
+      <View style={[tileStyles.row, { marginTop: Space.sm }]}>
         <View style={tileStyles.abvBadge}>
           <Text style={tileStyles.badgeText}>
             {i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr })}
@@ -291,44 +292,44 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTi
 const tileStyles = StyleSheet.create({
   container: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: Radius.lg,
+    padding: Space.md,
     ...cardShadowSm,
   },
-  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 },
+  row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Space.sm },
   iconCircle: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 40, height: 40, borderRadius: Radius.xl,
     backgroundColor: '#EEEDF8', alignItems: 'center', justifyContent: 'center',
   },
   titleCol: { flex: 1, minWidth: 0 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  titleText: { fontSize: 14, fontWeight: '600', color: '#2D2B52', flexShrink: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
+  titleText: { fontSize: Font.body, fontWeight: Weight.semibold, color: '#2D2B52', flexShrink: 1 },
   spacer: { flex: 1 },
   drinkingBadge: {
     backgroundColor: '#FFF8E1',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Space.sm,
+    paddingVertical: Space.xs,
     borderWidth: 1,
     borderColor: '#FFD97D',
   },
-  drinkingBadgeText: { fontSize: 11, fontWeight: '600', color: '#B07B00' },
+  drinkingBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: '#B07B00' },
   abvBadge: {
     backgroundColor: '#F0EEFF',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Space.sm,
+    paddingVertical: Space.xs,
   },
-  badgeText: { fontSize: 11, color: AppColors.accent, fontWeight: '500' },
-  finishedText: { fontSize: 12, color: AppColors.sub, fontWeight: '500', flex: 1 },
-  recordedTime: { fontSize: 11, color: AppColors.sub },
+  badgeText: { fontSize: Font.micro, color: AppColors.accent, fontWeight: Weight.regular },
+  finishedText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, flex: 1 },
+  recordedTime: { fontSize: Font.micro, color: AppColors.sub },
   finishBtn: {
     backgroundColor: AppColors.accent,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderRadius: Radius.md,
+    paddingHorizontal: Space.md,
+    paddingVertical: Space.xs,
   },
-  finishBtnText: { color: '#fff', fontWeight: '600', fontSize: 12 },
+  finishBtnText: { color: '#fff', fontWeight: Weight.semibold, fontSize: Font.caption },
 });
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
@@ -437,43 +438,43 @@ function MethodPanel({
 const compStyles = StyleSheet.create({
   card: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 20,
-    padding: 16,
-    ...cardShadow,
-    gap: 12,
+    borderRadius: Radius.xl,
+    padding: Space.lg,
+    ...cardShadowSm,
+    gap: Space.md,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 15, fontWeight: '700', color: AppColors.navy },
-  statusBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  statusBadgeText: { fontSize: 12, fontWeight: '700' },
-  panels: { flexDirection: 'row', gap: 10 },
+  title: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
+  statusBadge: { borderRadius: Radius.xl, paddingHorizontal: Space.md, paddingVertical: Space.xs },
+  statusBadgeText: { fontSize: Font.caption, fontWeight: Weight.bold },
+  panels: { flexDirection: 'row', gap: Space.md },
   panel: {
     flex: 1,
     backgroundColor: '#F4F3FC',
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: Radius.lg,
+    padding: Space.md,
   },
   panelConservative: {
     borderWidth: 1.2,
     borderColor: '#B3C7F7',
   },
-  panelLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  methodLabel: { fontSize: 12, fontWeight: '700', color: AppColors.navy, flexShrink: 1 },
+  panelLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
+  methodLabel: { fontSize: Font.caption, fontWeight: Weight.bold, color: AppColors.navy, flexShrink: 1 },
   consBadge: {
     backgroundColor: '#E3F2FD',
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Space.sm,
+    paddingVertical: Space.xxs,
   },
-  consBadgeText: { fontSize: 9, fontWeight: '600', color: '#1565C0' },
-  methodDesc: { fontSize: 10, color: AppColors.sub, marginTop: 2, minHeight: 26 },
-  bacRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 8 },
-  bigBac: { fontSize: 22, fontWeight: '800', color: AppColors.accent, letterSpacing: -0.5 },
-  bigBacUnit: { fontSize: 13, fontWeight: '600', color: AppColors.accent, marginLeft: 1 },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
-  timeIcon: { fontSize: 10 },
-  timeText: { fontSize: 13, fontWeight: '600', color: AppColors.navy },
-  footnote: { fontSize: 11, color: AppColors.sub, lineHeight: 16 },
+  consBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: '#1565C0' },
+  methodDesc: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.xxs, minHeight: 26 },
+  bacRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: Space.sm },
+  bigBac: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.accent, letterSpacing: -0.5 },
+  bigBacUnit: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent, marginLeft: 1 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, marginTop: Space.xs },
+  timeIcon: { fontSize: Font.micro },
+  timeText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.navy },
+  footnote: { fontSize: Font.micro, color: AppColors.sub, lineHeight: 16 },
 });
 
 // ── Safe status display ───────────────────────────────────────────────────────
@@ -499,20 +500,20 @@ function SafeStatusDisplay({
 }
 
 const safeStyles = StyleSheet.create({
-  container: { alignItems: 'center', gap: 12, paddingVertical: 24 },
-  title: { fontSize: 22, fontWeight: '800', color: AppColors.navy },
-  subtitle: { fontSize: 13, color: AppColors.sub, textAlign: 'center' },
+  container: { alignItems: 'center', gap: Space.md, paddingVertical: Space.xxl },
+  title: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.navy },
+  subtitle: { fontSize: Font.bodySm, color: AppColors.sub, textAlign: 'center' },
   infoBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Space.sm,
     borderWidth: 1,
     borderColor: '#C9C4F0',
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    borderRadius: Radius.xxl,
+    paddingHorizontal: Space.xl,
+    paddingVertical: Space.md,
   },
-  infoBtnText: { color: AppColors.accent, fontWeight: '600', fontSize: 13 },
+  infoBtnText: { color: AppColors.accent, fontWeight: Weight.semibold, fontSize: Font.bodySm },
 });
 
 // ── Tip banner ────────────────────────────────────────────────────────────────
@@ -529,16 +530,16 @@ function TipBanner() {
 const tipStyles = StyleSheet.create({
   container: {
     backgroundColor: AppColors.bg,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: '#D5D2F5',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Space.lg,
+    paddingVertical: Space.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: Space.md,
   },
-  text: { flex: 1, fontSize: 13, color: AppColors.accent, fontWeight: '500' },
+  text: { flex: 1, fontSize: Font.bodySm, color: AppColors.accent, fontWeight: Weight.regular },
 });
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -763,54 +764,54 @@ const styles = StyleSheet.create({
   appBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Space.lg,
+    paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
   appTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: Font.h2,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
     letterSpacing: -0.5,
   },
-  infoIcon: { fontSize: 22 },
+  infoIcon: { fontSize: Font.h2 },
   emptyContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 24,
+    paddingHorizontal: Space.xxxl,
+    paddingVertical: Space.xxl,
     paddingBottom: 100,
   },
   scrollContent: {
-    padding: 16,
-    gap: 12,
+    padding: Space.lg,
+    gap: Space.md,
   },
   charWrapper: { alignItems: 'center' },
   drinkingOnlyBadge: {
     alignSelf: 'center',
     backgroundColor: '#FFF8E1',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderRadius: Radius.md,
+    paddingHorizontal: Space.lg,
+    paddingVertical: Space.sm,
     borderWidth: 1,
     borderColor: '#FFD97D',
   },
-  drinkingOnlyText: { fontSize: 13, fontWeight: '600', color: '#B07B00' },
-  section: { gap: 8 },
+  drinkingOnlyText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: '#B07B00' },
+  section: { gap: Space.sm },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: AppColors.navy },
-  addBtn: { fontSize: 13, fontWeight: '600', color: AppColors.accent },
+  sectionTitle: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
+  addBtn: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent },
   fab: {
     position: 'absolute',
     bottom: 84,
     right: 20,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: Radius.xxl,
     backgroundColor: AppColors.accent,
     alignItems: 'center',
     justifyContent: 'center',
@@ -820,5 +821,5 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  fabText: { color: '#fff', fontSize: 28, fontWeight: '300', lineHeight: 32 },
+  fabText: { color: '#fff', fontSize: Font.h1, fontWeight: Weight.regular, lineHeight: 32 },
 });

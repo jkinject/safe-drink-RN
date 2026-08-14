@@ -10,6 +10,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppColors, cardShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
+import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 interface TimePickerModalProps {
   visible: boolean;
@@ -104,34 +105,34 @@ const styles = StyleSheet.create({
   container: {
     width: '82%',
     backgroundColor: AppColors.cardBg,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: Radius.xl,
+    padding: Space.xl,
     ...cardShadow,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: Font.h4,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: Space.xs,
   },
   spinner: { alignSelf: 'center' },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  actions: { flexDirection: 'row', gap: Space.md, marginTop: Space.sm },
   cancelBtn: {
     flex: 1,
     borderWidth: 1,
     borderColor: AppColors.border,
-    borderRadius: 14,
-    paddingVertical: 12,
+    borderRadius: Radius.md,
+    paddingVertical: Space.md,
     alignItems: 'center',
   },
-  cancelText: { color: AppColors.sub, fontWeight: '600' },
+  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold },
   confirmBtn: {
     flex: 1,
     backgroundColor: AppColors.accent,
-    borderRadius: 14,
-    paddingVertical: 12,
+    borderRadius: Radius.md,
+    paddingVertical: Space.md,
     alignItems: 'center',
   },
-  confirmText: { color: '#fff', fontWeight: '700' },
+  confirmText: { color: '#fff', fontWeight: Weight.bold },
 });

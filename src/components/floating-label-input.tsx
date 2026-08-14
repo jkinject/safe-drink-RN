@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { AppColors } from '@/constants/colors';
 import { Text, TextInput } from '@/components/typography';
+import { Space, Radius, Font } from '@/constants/tokens';
 
 interface FloatingLabelInputProps extends Omit<TextInputProps, 'placeholder'> {
   label: string;
@@ -88,30 +89,30 @@ export function FloatingLabelInput({
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: 12 },
+  wrapper: { marginBottom: Space.md },
   container: {
-    borderRadius: 14,
+    borderRadius: Radius.md,
     backgroundColor: AppColors.cardBg,
-    paddingHorizontal: 14,
+    paddingHorizontal: Space.lg,
     height: 52,
     justifyContent: 'center',
   },
   label: {
     position: 'absolute',
     left: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: Space.xs,
     backgroundColor: AppColors.cardBg,
     zIndex: 1,
   },
   input: {
-    fontSize: 15,
+    fontSize: Font.body,
     color: AppColors.navy,
     paddingVertical: 0,
   },
   errorText: {
     color: '#D93025',
-    fontSize: 11,
-    marginTop: 4,
-    marginLeft: 6,
+    fontSize: Font.micro,
+    marginTop: Space.xs,
+    marginLeft: Space.sm,
   },
 });
