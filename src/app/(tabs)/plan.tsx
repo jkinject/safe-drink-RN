@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors, cardShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
 import { sessionStore } from '@/state/sessionStore';
@@ -21,71 +22,6 @@ import { PlanResult } from '@/core/types';
 
 // ── Simple time picker modal ──────────────────────────────────────────────────
 
-interface TimePickerModalProps {
-  visible: boolean;
-  initialHour: number;
-  initialMinute: number;
-  onConfirm: (hour: number, minute: number) => void;
-  onCancel: () => void;
-}
-
-function TimePickerModal({
-  visible,
-  initialHour,
-  initialMinute,
-  onConfirm,
-  onCancel,
-}: TimePickerModalProps) {
-  const [hour, setHour] = useState(String(initialHour).padStart(2, '0'));
-  const [minute, setMinute] = useState(String(initialMinute).padStart(2, '0'));
-
-  function confirm() {
-    const h = parseInt(hour, 10);
-    const m = parseInt(minute, 10);
-    if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-      onConfirm(h, m);
-    }
-  }
-
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <View style={pickerStyles.overlay}>
-        <View style={pickerStyles.container}>
-          <Text style={pickerStyles.title}>{i18n.t('planTargetTime')}</Text>
-          <View style={pickerStyles.row}>
-            <TextInput
-              style={pickerStyles.input}
-              value={hour}
-              onChangeText={setHour}
-              keyboardType="numeric"
-              maxLength={2}
-              placeholder="HH"
-              placeholderTextColor={AppColors.sub}
-            />
-            <Text style={pickerStyles.colon}>:</Text>
-            <TextInput
-              style={pickerStyles.input}
-              value={minute}
-              onChangeText={setMinute}
-              keyboardType="numeric"
-              maxLength={2}
-              placeholder="MM"
-              placeholderTextColor={AppColors.sub}
-            />
-          </View>
-          <View style={pickerStyles.actions}>
-            <TouchableOpacity onPress={onCancel} style={pickerStyles.cancelBtn}>
-              <Text style={pickerStyles.cancelText}>{i18n.t('settingsCancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={confirm} style={pickerStyles.confirmBtn}>
-              <Text style={pickerStyles.confirmText}>{i18n.t('settingsSave')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
 
 const pickerStyles = StyleSheet.create({
   overlay: {
@@ -301,6 +237,7 @@ export default function PlanScreen() {
       </ScrollView>
 
       <TimePickerModal
+        title={i18n.t('planTargetTime')}
         visible={showPicker}
         initialHour={pickerHour}
         initialMinute={pickerMinute}

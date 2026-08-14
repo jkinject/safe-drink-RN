@@ -46,7 +46,8 @@
         {
           "color": "#6C63E0"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "updates": {
       "enabled": true,

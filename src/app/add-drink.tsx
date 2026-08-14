@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
@@ -30,74 +31,6 @@ const EMOJI_CANDIDATES = [
 
 // ── Time picker modal ─────────────────────────────────────────────────────────
 
-interface TimePickerModalProps {
-  visible: boolean;
-  initialHour: number;
-  initialMinute: number;
-  onConfirm: (h: number, m: number) => void;
-  onCancel: () => void;
-}
-
-function TimePickerModal({
-  visible, initialHour, initialMinute, onConfirm, onCancel,
-}: TimePickerModalProps) {
-  const [hour, setHour] = useState(String(initialHour).padStart(2, '0'));
-  const [minute, setMinute] = useState(String(initialMinute).padStart(2, '0'));
-
-  useEffect(() => {
-    if (visible) {
-      setHour(String(initialHour).padStart(2, '0'));
-      setMinute(String(initialMinute).padStart(2, '0'));
-    }
-  }, [visible, initialHour, initialMinute]);
-
-  function confirm() {
-    const h = parseInt(hour, 10);
-    const m = parseInt(minute, 10);
-    if (!isNaN(h) && !isNaN(m) && h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-      onConfirm(h, m);
-    }
-  }
-
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <View style={tpStyles.overlay}>
-        <View style={tpStyles.container}>
-          <Text style={tpStyles.title}>{i18n.t('addDrinkTimeLabel')}</Text>
-          <View style={tpStyles.row}>
-            <TextInput
-              style={tpStyles.input}
-              value={hour}
-              onChangeText={setHour}
-              keyboardType="numeric"
-              maxLength={2}
-              placeholder="HH"
-              placeholderTextColor={AppColors.sub}
-            />
-            <Text style={tpStyles.colon}>:</Text>
-            <TextInput
-              style={tpStyles.input}
-              value={minute}
-              onChangeText={setMinute}
-              keyboardType="numeric"
-              maxLength={2}
-              placeholder="MM"
-              placeholderTextColor={AppColors.sub}
-            />
-          </View>
-          <View style={tpStyles.actions}>
-            <TouchableOpacity onPress={onCancel} style={tpStyles.cancelBtn}>
-              <Text style={tpStyles.cancelText}>{i18n.t('settingsCancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={confirm} style={tpStyles.confirmBtn}>
-              <Text style={tpStyles.confirmText}>{i18n.t('settingsSave')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
 
 const tpStyles = StyleSheet.create({
   overlay: {
@@ -654,6 +587,7 @@ export default function AddDrinkScreen() {
         title={i18n.t('customPresetEdit')}
       />
       <TimePickerModal
+        title={i18n.t('addDrinkTimeLabel')}
         visible={showTimePicker}
         initialHour={consumedDate.getHours()}
         initialMinute={consumedDate.getMinutes()}
