@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Animated, {
   cancelAnimation,
@@ -550,6 +550,7 @@ export default function TimerScreen() {
   const checkAutoClose = sessionStore(s => s.checkAutoClose);
   const profile = profileStore(s => s.profile);
   const presets = presetsStore(s => s.presets);
+  const insets = useSafeAreaInsets();
   const emojiFor = useCallback(
     (label?: string) =>
       presets.find(p => p.label === label)?.emoji ?? '🍹',
@@ -735,13 +736,13 @@ export default function TimerScreen() {
           <TipBanner />
 
           {/* Bottom padding for tab bar */}
-          <View style={{ height: 90 }} />
+          <View style={{ height: 90 + insets.bottom }} />
         </ScrollView>
       )}
 
       {/* FAB */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: 84 + insets.bottom }]}
         onPress={() => router.push('/add-drink')}
         activeOpacity={0.85}
       >
