@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { FONTS } from '@/components/typography';
 import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -12,6 +14,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [initialized, setInitialized] = useState(false);
+  const [fontsLoaded, fontError] = useFonts({
+    [FONTS.regular]: require('../../assets/fonts/Pretendard-Regular.ttf'),
+    [FONTS.semiBold]: require('../../assets/fonts/Pretendard-SemiBold.ttf'),
+    [FONTS.bold]: require('../../assets/fonts/Pretendard-Bold.ttf'),
+  });
   useOtaUpdates();
   const profile = profileStore(s => s.profile);
   const loadProfile = profileStore(s => s.load);
@@ -30,12 +37,17 @@ export default function RootLayout() {
       notificationService.initialize(),
     ])
       .catch(() => {})
-      .finally(() => {
-        setInitialized(true);
-        SplashScreen.hideAsync().catch(() => {});
-      });
+      .finally(() => setInitialized(true));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 폰트가 준비되기 전에 스플래시를 내리면 시스템 폰트로 한 프레임 깜빡인다
+  useEffect(() => {
+    // 폰트 로드에 실패해도 앱은 시스템 폰트로 계속 뜬다
+    if (initialized && (fontsLoaded || fontError)) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [initialized, fontsLoaded, fontError]);
 
   useEffect(() => {
     if (!initialized) return;

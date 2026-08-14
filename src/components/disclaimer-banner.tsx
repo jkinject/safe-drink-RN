@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { i18n } from '@/i18n';
+import { Text } from '@/components/typography';
 
 export function DisclaimerBanner() {
   return (

@@ -1,14 +1,22 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors } from '@/constants/colors';
+import { Icon, IconName } from '@/components/icon';
+import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 
-function TabIcon({ focused, icon, label }: { focused: boolean; icon: string; label: string }) {
+function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; label: string }) {
   return (
     <View style={tabIconStyles.container}>
-      <Text style={[tabIconStyles.icon, focused && tabIconStyles.iconFocused]}>{icon}</Text>
+      {/* 선택 상태는 색과 선 굵기로 표현한다 (이모지로는 불가능했던 부분) */}
+      <Icon
+        name={icon}
+        size={22}
+        color={focused ? AppColors.accent : AppColors.sub}
+        strokeWidth={focused ? 2.3 : 1.8}
+      />
       <Text style={[tabIconStyles.label, focused && tabIconStyles.labelFocused]}>{label}</Text>
     </View>
   );
@@ -36,7 +44,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon="⏱" label={i18n.t('navTimer')} />
+            <TabIcon focused={focused} icon="timer" label={i18n.t('navTimer')} />
           ),
         }}
       />
@@ -44,7 +52,7 @@ export default function TabsLayout() {
         name="plan"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon="📊" label={i18n.t('navPlan')} />
+            <TabIcon focused={focused} icon="plan" label={i18n.t('navPlan')} />
           ),
         }}
       />
@@ -52,7 +60,7 @@ export default function TabsLayout() {
         name="settings"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon="⚙️" label={i18n.t('navSettings')} />
+            <TabIcon focused={focused} icon="settings" label={i18n.t('navSettings')} />
           ),
         }}
       />
@@ -62,8 +70,6 @@ export default function TabsLayout() {
 
 const tabIconStyles = StyleSheet.create({
   container: { alignItems: 'center', paddingTop: 6 },
-  icon: { fontSize: 22, opacity: 0.5 },
-  iconFocused: { opacity: 1 },
   label: { fontSize: 10, color: AppColors.sub, marginTop: 2 },
   labelFocused: { color: AppColors.accent, fontWeight: '600' },
 });

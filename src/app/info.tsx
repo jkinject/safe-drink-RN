@@ -2,20 +2,21 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors, cardShadow } from '@/constants/colors';
+import { Icon, IconName } from '@/components/icon';
+import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
 interface SectionCardProps {
-  icon: string;
+  icon: IconName;
   title: string;
   children: React.ReactNode;
   bgColor?: string;
@@ -25,7 +26,7 @@ function SectionCard({ icon, title, children, bgColor }: SectionCardProps) {
   return (
     <View style={[sectionStyles.card, bgColor ? { backgroundColor: bgColor } : null]}>
       <View style={sectionStyles.header}>
-        <Text style={sectionStyles.icon}>{icon}</Text>
+        <Icon name={icon} size={20} color={AppColors.accent} strokeWidth={2.1} />
         <Text style={sectionStyles.title}>{title}</Text>
       </View>
       {children}
@@ -119,7 +120,7 @@ export default function InfoScreen() {
           onPress={() => router.back()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={styles.backBtn}>✕</Text>
+          <Icon name="close" size={22} color={AppColors.sub} />
         </TouchableOpacity>
         <Text style={styles.appTitle}>{i18n.t('infoScreenTitle')}</Text>
         <View style={{ width: 32 }} />
@@ -130,7 +131,7 @@ export default function InfoScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Card 1: Calculation method */}
-        <SectionCard icon="📐" title={i18n.t('infoCard1Title')}>
+        <SectionCard icon="height" title={i18n.t('infoCard1Title')}>
           <Text style={styles.introText}>{i18n.t('infoCard1Intro')}</Text>
           <View style={{ height: 12 }} />
 
@@ -158,7 +159,7 @@ export default function InfoScreen() {
         </SectionCard>
 
         {/* Card 2: Law */}
-        <SectionCard icon="⚖️" title={i18n.t('infoCard2Title')}>
+        <SectionCard icon="weight" title={i18n.t('infoCard2Title')}>
           <Text style={styles.subtitleText}>{i18n.t('infoCard2Subtitle')}</Text>
           <View style={{ height: 12 }} />
 
@@ -187,14 +188,14 @@ export default function InfoScreen() {
         </SectionCard>
 
         {/* Card 3: Breastfeeding */}
-        <SectionCard icon="🤱" title={i18n.t('infoCard3Title')} bgColor="#EFF6FF">
+        <SectionCard icon="safe" title={i18n.t('infoCard3Title')} bgColor="#EFF6FF">
           <Text style={[styles.introText, { color: '#1A4E8C' }]}>
             {i18n.t('infoCard3Content')}
           </Text>
         </SectionCard>
 
         {/* Card 4: Disclaimer */}
-        <SectionCard icon="⚠️" title={i18n.t('infoCard4Title')} bgColor="#F0EEFF">
+        <SectionCard icon="warning" title={i18n.t('infoCard4Title')} bgColor="#F0EEFF">
           <Text style={styles.introText}>{i18n.t('infoCard4Content')}</Text>
         </SectionCard>
 

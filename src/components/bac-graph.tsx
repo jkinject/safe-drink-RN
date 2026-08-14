@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
@@ -12,6 +12,7 @@ import Svg, {
 } from 'react-native-svg';
 import { AppColors } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { Text } from '@/components/typography';
 
 const CHART_HEIGHT = 170;
 const PAD_LEFT = 4;

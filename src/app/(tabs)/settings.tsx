@@ -4,13 +4,14 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { Icon, IconName } from '@/components/icon';
+import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
@@ -24,7 +25,7 @@ import type { LocalePreference } from '@/storage/localeStorage';
 // ── Section card ──────────────────────────────────────────────────────────────
 
 interface SectionCardProps {
-  icon: string;
+  icon: IconName;
   title: string;
   iconColor?: string;
   children: React.ReactNode;
@@ -36,7 +37,7 @@ function SectionCard({ icon, title, iconColor, children }: SectionCardProps) {
     <View style={sectionStyles.card}>
       <View style={sectionStyles.header}>
         <View style={[sectionStyles.iconCircle, { backgroundColor: color + '22' }]}>
-          <Text style={[sectionStyles.iconText, { color }]}>{icon}</Text>
+          <Icon name={icon} size={18} color={color} strokeWidth={2.1} />
         </View>
         <Text style={sectionStyles.title}>{title}</Text>
       </View>
@@ -83,7 +84,7 @@ function LangOption({ label, value, current, onSelect }: LangOptionProps) {
       activeOpacity={0.8}
     >
       <Text style={[langStyles.label, selected && langStyles.labelSelected]}>{label}</Text>
-      {selected && <Text style={langStyles.check}>✓</Text>}
+      {selected && <Icon name="check" size={16} color={AppColors.accent} strokeWidth={2.4} />}
     </TouchableOpacity>
   );
 }
@@ -241,7 +242,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Profile edit card */}
-        <SectionCard icon="👤" title={i18n.t('settingsProfileEdit')}>
+        <SectionCard icon="profile" title={i18n.t('settingsProfileEdit')}>
           {/* Height */}
           <FloatingLabelInput
             label={i18n.t('settingsHeightLabel')}
@@ -283,8 +284,14 @@ export default function SettingsScreen() {
               onPress={() => setSex('male')}
               activeOpacity={0.8}
             >
+              <Icon
+                name="male"
+                size={16}
+                color={sex === 'male' ? AppColors.accent : AppColors.sub}
+                strokeWidth={2.1}
+              />
               <Text style={[fieldStyles.sexLabel, sex === 'male' && fieldStyles.sexLabelActive]}>
-                👦 {i18n.t('settingsMale')}
+                {i18n.t('settingsMale')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -292,8 +299,14 @@ export default function SettingsScreen() {
               onPress={() => setSex('female')}
               activeOpacity={0.8}
             >
+              <Icon
+                name="female"
+                size={16}
+                color={sex === 'female' ? AppColors.accent : AppColors.sub}
+                strokeWidth={2.1}
+              />
               <Text style={[fieldStyles.sexLabel, sex === 'female' && fieldStyles.sexLabelActive]}>
-                👧 {i18n.t('settingsFemale')}
+                {i18n.t('settingsFemale')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -315,7 +328,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Language card */}
-        <SectionCard icon="🌐" title={i18n.t('languageTitle')}>
+        <SectionCard icon="language" title={i18n.t('languageTitle')}>
           <LangOption
             label={i18n.t('languageSystem')}
             value="system"
@@ -337,7 +350,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Restore presets */}
-        <SectionCard icon="🔄" title={i18n.t('settingsRestorePresets')}>
+        <SectionCard icon="restore" title={i18n.t('settingsRestorePresets')}>
           <TouchableOpacity
             style={styles.outlineBtn}
             onPress={handleRestorePresets}
@@ -348,7 +361,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* Delete all records */}
-        <SectionCard icon="🗑" title={i18n.t('settingsDeleteAll')} iconColor="#FF3B30">
+        <SectionCard icon="delete" title={i18n.t('settingsDeleteAll')} iconColor="#FF3B30">
           <TouchableOpacity
             style={styles.dangerBtn}
             onPress={handleDeleteAll}
@@ -419,6 +432,9 @@ const fieldStyles = StyleSheet.create({
   sexRow: { flexDirection: 'row', gap: 10 },
   sexBtn: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: 12,

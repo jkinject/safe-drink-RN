@@ -4,12 +4,14 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Icon } from '@/components/icon';
+import { DrinkIcon, DrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
+import { Text } from '@/components/typography';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -218,13 +220,13 @@ function formatTime(epochMs: number): string {
 
 interface RecordTileProps {
   record: DrinkRecord;
-  presetEmoji: string;
+  presetIcon: DrinkIconName;
   onEdit: () => void;
   onFinish: () => void;
   onDelete: () => void;
 }
 
-function RecordTile({ record, presetEmoji, onEdit, onFinish, onDelete }: RecordTileProps) {
+function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTileProps) {
   const isDrinking = record.finishedAt == null;
   const abvStr = record.abvPercent % 1 === 0
     ? record.abvPercent.toString()
@@ -242,8 +244,8 @@ function RecordTile({ record, presetEmoji, onEdit, onFinish, onDelete }: RecordT
     >
       {/* Row 1: 이모지 + 이름/시각 + 삭제 */}
       <View style={tileStyles.row}>
-        <View style={tileStyles.emojiCircle}>
-          <Text style={tileStyles.emojiText}>{presetEmoji}</Text>
+        <View style={tileStyles.iconCircle}>
+          <DrinkIcon name={presetIcon} size={24} />
         </View>
         <View style={tileStyles.titleCol}>
           <View style={tileStyles.titleRow}>
@@ -261,7 +263,7 @@ function RecordTile({ record, presetEmoji, onEdit, onFinish, onDelete }: RecordT
           </Text>
         </View>
         <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Text style={tileStyles.deleteText}>🗑</Text>
+          <Icon name="delete" size={20} color={AppColors.sub} strokeWidth={1.8} />
         </TouchableOpacity>
       </View>
       {/* Row 2: 도수·용량 뱃지 (+ 다마심) */}
@@ -294,11 +296,10 @@ const tileStyles = StyleSheet.create({
     ...cardShadowSm,
   },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 },
-  emojiCircle: {
+  iconCircle: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: '#EEEDF8', alignItems: 'center', justifyContent: 'center',
   },
-  emojiText: { fontSize: 20 },
   titleCol: { flex: 1, minWidth: 0 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   titleText: { fontSize: 14, fontWeight: '600', color: '#2D2B52', flexShrink: 1 },
@@ -320,7 +321,6 @@ const tileStyles = StyleSheet.create({
   },
   badgeText: { fontSize: 11, color: AppColors.accent, fontWeight: '500' },
   finishedText: { fontSize: 12, color: AppColors.sub, fontWeight: '500', flex: 1 },
-  deleteText: { fontSize: 18 },
   recordedTime: { fontSize: 11, color: AppColors.sub },
   finishBtn: {
     backgroundColor: AppColors.accent,
@@ -425,7 +425,7 @@ function MethodPanel({
         <Text style={compStyles.bigBacUnit}>%</Text>
       </View>
       <View style={compStyles.timeRow}>
-        <Text style={compStyles.timeIcon}>🕐</Text>
+        <Icon name="clock" size={13} color={AppColors.sub} strokeWidth={2} />
         <Text style={compStyles.timeText}>
           {soberMs != null ? formatTime(soberMs) : '--:--'}
         </Text>
@@ -491,7 +491,8 @@ function SafeStatusDisplay({
       <Text style={safeStyles.title}>{i18n.t('safeStatus')}</Text>
       <Text style={safeStyles.subtitle}>{i18n.t('safeStatusSubtitle')}</Text>
       <TouchableOpacity style={safeStyles.infoBtn} onPress={onInfoPress} activeOpacity={0.8}>
-        <Text style={safeStyles.infoBtnText}>📖 {i18n.t('infoScreenTitle')}</Text>
+        <Icon name="guide" size={15} color={AppColors.accent} strokeWidth={2} />
+        <Text style={safeStyles.infoBtnText}>{i18n.t('infoScreenTitle')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -502,6 +503,9 @@ const safeStyles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', color: AppColors.navy },
   subtitle: { fontSize: 13, color: AppColors.sub, textAlign: 'center' },
   infoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderWidth: 1,
     borderColor: '#C9C4F0',
     borderRadius: 24,
@@ -516,7 +520,7 @@ const safeStyles = StyleSheet.create({
 function TipBanner() {
   return (
     <View style={tipStyles.container}>
-      <Text style={{ fontSize: 26 }}>💧</Text>
+      <Icon name="water" size={24} color={AppColors.accent} strokeWidth={1.9} />
       <Text style={tipStyles.text}>{i18n.t('tipBannerText')}</Text>
     </View>
   );
@@ -551,9 +555,11 @@ export default function TimerScreen() {
   const profile = profileStore(s => s.profile);
   const presets = presetsStore(s => s.presets);
   const insets = useSafeAreaInsets();
-  const emojiFor = useCallback(
-    (label?: string) =>
-      presets.find(p => p.label === label)?.emoji ?? '🍹',
+  const iconFor = useCallback(
+    (label?: string): DrinkIconName => {
+      const preset = presets.find(p => p.label === label);
+      return preset ? resolveDrinkIcon(preset) : 'cup';
+    },
     [presets],
   );
 
@@ -704,7 +710,7 @@ export default function TimerScreen() {
               <RecordTile
                 key={record.id}
                 record={record}
-                presetEmoji={emojiFor(record.presetLabel)}
+                presetIcon={iconFor(record.presetLabel)}
                 onEdit={() => handleEditRecord(record)}
                 onFinish={() => handleFinishRecord(record)}
                 onDelete={() => handleDeleteRecord(record)}

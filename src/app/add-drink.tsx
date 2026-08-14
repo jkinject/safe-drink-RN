@@ -7,7 +7,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -18,6 +17,14 @@ import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
+import { Icon } from '@/components/icon';
+import {
+  DRINK_ICON_NAMES,
+  DrinkIcon,
+  DrinkIconName,
+  resolveDrinkIcon,
+} from '@/components/drink-icon';
+import { Text } from '@/components/typography';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -27,11 +34,6 @@ import * as notificationService from '@/services/notifications';
 function formatHm(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
-
-const EMOJI_CANDIDATES = [
-  '🍺', '🍻', '🥃', '🍷', '🍶', '🥂',
-  '🍸', '🍹', '🍾', '🫗', '🧉', '🍇',
-];
 
 // ── Time picker modal ─────────────────────────────────────────────────────────
 
@@ -89,7 +91,9 @@ interface PresetDialogProps {
 }
 
 function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialogProps) {
-  const [emoji, setEmoji] = useState(initial?.emoji ?? '🍹');
+  const [icon, setIcon] = useState<DrinkIconName>(
+    initial ? resolveDrinkIcon(initial) : 'cup',
+  );
   const [name, setName] = useState(initial?.label ?? '');
   const [abv, setAbv] = useState(initial ? String(initial.abvPercent) : '');
   const [vol, setVol] = useState(initial ? String(Math.round(initial.volumeMl)) : '');
@@ -101,7 +105,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
 
   useEffect(() => {
     if (visible) {
-      setEmoji(initial?.emoji ?? '🍹');
+      setIcon(initial ? resolveDrinkIcon(initial) : 'cup');
       setName(initial?.label ?? '');
       setAbv(initial ? String(initial.abvPercent) : '');
       setVol(initial ? String(Math.round(initial.volumeMl)) : '');
@@ -129,7 +133,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
   function handleSave() {
     if (!validate()) return;
     onSave({
-      emoji,
+      icon,
       label: name.trim(),
       abvPercent: parseFloat(abv),
       volumeMl: parseFloat(vol),
@@ -162,17 +166,21 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
             keyboardDismissMode="on-drag"
             showsVerticalScrollIndicator={false}
           >
-            {/* Emoji picker */}
-            <View style={dlgStyles.emojiGrid}>
-              {EMOJI_CANDIDATES.map(e => (
-                <TouchableOpacity
-                  key={e}
-                  style={[dlgStyles.emojiBtn, emoji === e && dlgStyles.emojiBtnSelected]}
-                  onPress={() => setEmoji(e)}
-                >
-                  <Text style={dlgStyles.emojiText}>{e}</Text>
-                </TouchableOpacity>
-              ))}
+            {/* Icon picker */}
+            <View style={dlgStyles.iconGrid}>
+              {DRINK_ICON_NAMES.map(n => {
+                const selected = icon === n;
+                return (
+                  <TouchableOpacity
+                    key={n}
+                    style={[dlgStyles.iconBtn, selected && dlgStyles.iconBtnSelected]}
+                    onPress={() => setIcon(n)}
+                  >
+                    {/* 아이콘 자체가 컬러라 선택 상태는 테두리로만 표시한다 */}
+                    <DrinkIcon name={n} size={30} />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
             {/* Name */}
             <FloatingLabelInput
@@ -232,17 +240,16 @@ const dlgStyles = StyleSheet.create({
   scroll: { flexGrow: 0, flexShrink: 1 },
   scrollContent: { gap: 8, paddingBottom: 4 },
   title: { fontSize: 16, fontWeight: '700', color: AppColors.navy, marginBottom: 8 },
-  emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-  emojiBtn: {
+  iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
+  iconBtn: {
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'transparent',
   },
-  emojiBtnSelected: {
+  iconBtnSelected: {
     borderColor: AppColors.accent,
     backgroundColor: AppColors.bg,
   },
-  emojiText: { fontSize: 22 },
   input: {
     borderWidth: 1, borderColor: AppColors.border, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 10, fontSize: 14,
@@ -281,7 +288,7 @@ function PresetCard({ preset, selected, onPress, onLongPress }: PresetCardProps)
       delayLongPress={400}
       activeOpacity={0.8}
     >
-      <Text style={pcStyles.emoji}>{preset.emoji}</Text>
+      <DrinkIcon name={resolveDrinkIcon(preset)} size={30} />
       <Text style={pcStyles.label} numberOfLines={2}>{preset.label}</Text>
       <Text style={pcStyles.detail}>
         {preset.abvPercent % 1 === 0 ? preset.abvPercent : preset.abvPercent.toFixed(1)}% · {Math.round(preset.volumeMl)}ml
@@ -309,7 +316,6 @@ const pcStyles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: '#EAE8FF',
   },
-  emoji: { fontSize: 28 },
   label: { fontSize: 11, fontWeight: '600', color: AppColors.navy, textAlign: 'center' },
   detail: { fontSize: 10, color: AppColors.sub },
 });
@@ -323,7 +329,7 @@ function AddPresetCard({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={{ fontSize: 28 }}>➕</Text>
+      <Icon name="add" size={28} color={AppColors.navy} strokeWidth={2.2} />
       <Text style={pcStyles.label}>{i18n.t('customPresetAddCard')}</Text>
     </TouchableOpacity>
   );
@@ -546,7 +552,7 @@ export default function AddDrinkScreen() {
       {/* AppBar */}
       <View style={styles.appBar}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Text style={styles.backBtn}>✕</Text>
+          <Icon name="close" size={22} color={AppColors.sub} />
         </TouchableOpacity>
         <Text style={styles.appTitle}>{title}</Text>
         <View style={{ width: 32 }} />
@@ -614,7 +620,8 @@ export default function AddDrinkScreen() {
                   style={styles.nowBtn}
                   onPress={() => applyTimes(Date.now(), finishedAt)}
                 >
-                  <Text style={styles.nowBtnText}>🕐 {i18n.t('addDrinkSetNow')}</Text>
+                  <Icon name="clock" size={13} color={AppColors.accent} strokeWidth={2.2} />
+                  <Text style={styles.nowBtnText}>{i18n.t('addDrinkSetNow')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -633,7 +640,8 @@ export default function AddDrinkScreen() {
                   style={styles.nowBtn}
                   onPress={() => applyTimes(consumedAt, Date.now())}
                 >
-                  <Text style={styles.nowBtnText}>🕐 {i18n.t('addDrinkSetNow')}</Text>
+                  <Icon name="clock" size={13} color={AppColors.accent} strokeWidth={2.2} />
+                  <Text style={styles.nowBtnText}>{i18n.t('addDrinkSetNow')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -644,7 +652,8 @@ export default function AddDrinkScreen() {
                     style={styles.revertBtn}
                     onPress={() => { setFinishedAt(null); setTimeNotice(''); }}
                   >
-                    <Text style={styles.revertBtnText}>↩ {i18n.t('editRecordMarkDrinking')}</Text>
+                    <Icon name="restore" size={13} color={AppColors.sub} strokeWidth={2.2} />
+                    <Text style={styles.revertBtnText}>{i18n.t('editRecordMarkDrinking')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -751,6 +760,9 @@ const styles = StyleSheet.create({
   drinkingText: { fontSize: 14, fontWeight: '700', color: AppColors.sub, paddingHorizontal: 4 },
   timeRowRight: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 },
   revertBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: AppColors.border,
@@ -766,10 +778,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   nowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: AppColors.bg,
     borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
   },
   nowBtnText: { fontSize: 12, color: AppColors.accent, fontWeight: '600' },
   submitBtn: {

@@ -3,13 +3,13 @@ import {
   Modal,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppColors, cardShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { Text } from '@/components/typography';
 
 interface TimePickerModalProps {
   visible: boolean;

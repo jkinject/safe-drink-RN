@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   StyleSheet,
-  Text,
-  TextInput,
   TextInputProps,
   View,
 } from 'react-native';
 import { AppColors } from '@/constants/colors';
+import { Text, TextInput } from '@/components/typography';
 
 interface FloatingLabelInputProps extends Omit<TextInputProps, 'placeholder'> {
   label: string;

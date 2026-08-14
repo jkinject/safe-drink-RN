@@ -6,7 +6,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -19,6 +18,8 @@ import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
 import { AppColors, cardShadow } from '@/constants/colors';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
+import { Icon, IconName } from '@/components/icon';
+import { Text } from '@/components/typography';
 
 interface FieldError {
   height?: string;
@@ -121,7 +122,7 @@ export default function OnboardingScreen() {
           <View style={styles.inputCard}>
             {/* Height */}
             <FieldRow
-              icon="📏"
+              icon="height"
               label={i18n.t('onboardingFieldHeight')}
               hint={i18n.t('onboardingHeightHint')}
               unit={i18n.t('unitCm')}
@@ -132,7 +133,7 @@ export default function OnboardingScreen() {
             <View style={styles.divider} />
             {/* Weight */}
             <FieldRow
-              icon="⚖️"
+              icon="weight"
               label={i18n.t('onboardingFieldWeight')}
               hint={i18n.t('onboardingWeightHint')}
               unit={i18n.t('unitKg')}
@@ -143,7 +144,7 @@ export default function OnboardingScreen() {
             <View style={styles.divider} />
             {/* Birth Year */}
             <FieldRow
-              icon="🎂"
+              icon="birthYear"
               label={i18n.t('onboardingFieldBirthYear')}
               hint={i18n.t('onboardingBirthYearHint')}
               unit={i18n.t('unitYear')}
@@ -160,14 +161,14 @@ export default function OnboardingScreen() {
           <Text style={styles.genderLabel}>{i18n.t('settingsSex')}</Text>
           <View style={styles.genderRow}>
             <GenderCard
-              emoji="👦"
+              icon="male"
               label={i18n.t('settingsMale')}
               selected={sex === 'male'}
               onPress={() => setSex('male')}
             />
             <View style={{ width: 12 }} />
             <GenderCard
-              emoji="👧"
+              icon="female"
               label={i18n.t('settingsFemale')}
               selected={sex === 'female'}
               onPress={() => setSex('female')}
@@ -196,7 +197,7 @@ export default function OnboardingScreen() {
             />
           </View>
           <Text style={styles.privacyNote}>
-            🔒 {i18n.t('onboardingPrivacyNote')}
+            {i18n.t('onboardingPrivacyNote')}
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -205,7 +206,7 @@ export default function OnboardingScreen() {
 }
 
 interface FieldRowProps {
-  icon: string;
+  icon: IconName;
   label: string;
   hint: string;
   unit: string;
@@ -218,7 +219,7 @@ function FieldRow({ icon, label, hint, unit, value, onChangeText, error }: Field
   return (
     <View style={fieldStyles.row}>
       <View style={fieldStyles.iconCircle}>
-        <Text style={fieldStyles.iconText}>{icon}</Text>
+        <Icon name={icon} size={18} color={AppColors.accent} strokeWidth={2.1} />
       </View>
       <View style={fieldStyles.inputWrapper}>
         <Text style={fieldStyles.labelText}>{label}</Text>
@@ -240,20 +241,25 @@ function FieldRow({ icon, label, hint, unit, value, onChangeText, error }: Field
 }
 
 interface GenderCardProps {
-  emoji: string;
+  icon: IconName;
   label: string;
   selected: boolean;
   onPress: () => void;
 }
 
-function GenderCard({ emoji, label, selected, onPress }: GenderCardProps) {
+function GenderCard({ icon, label, selected, onPress }: GenderCardProps) {
   return (
     <TouchableOpacity
       style={[genderStyles.card, selected && genderStyles.cardSelected]}
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Text style={genderStyles.emoji}>{emoji}</Text>
+      <Icon
+        name={icon}
+        size={24}
+        color={selected ? AppColors.accent : AppColors.sub}
+        strokeWidth={2}
+      />
       <Text style={[genderStyles.label, selected && genderStyles.labelSelected]}>
         {label}
       </Text>
@@ -402,7 +408,6 @@ const genderStyles = StyleSheet.create({
     borderColor: AppColors.accent,
     borderWidth: 2,
   },
-  emoji: { fontSize: 26 },
   label: { fontSize: 14, fontWeight: '600', color: AppColors.navy },
   labelSelected: { color: AppColors.accent },
 });

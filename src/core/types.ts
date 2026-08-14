@@ -21,7 +21,10 @@ export interface DrinkRecord {
 /** 음주 프리셋 */
 export interface DrinkPreset {
   label: string;
-  emoji: string;
+  /** 아이콘 키 (components/drink-icon 의 이름). 구버전 기록에는 없을 수 있다 */
+  icon?: string;
+  /** @deprecated 구버전 저장 데이터 호환용 — 표시에는 icon 을 쓴다 */
+  emoji?: string;
   abvPercent: number;
   volumeMl: number;
   isCustom?: boolean;

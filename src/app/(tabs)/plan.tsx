@@ -3,7 +3,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -11,6 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors, cardShadow } from '@/constants/colors';
+import { Icon } from '@/components/icon';
+import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
@@ -166,7 +167,7 @@ export default function PlanScreen() {
           onPress={() => router.push('/info')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={styles.infoIcon}>ℹ️</Text>
+          <Icon name="info" size={22} color={AppColors.sub} strokeWidth={2} />
         </TouchableOpacity>
       </View>
 
@@ -178,7 +179,7 @@ export default function PlanScreen() {
         {/* Has records warning */}
         {hasRecords && (
           <View style={styles.warningBanner}>
-            <Text style={{ fontSize: 16 }}>⚠️</Text>
+            <Icon name="warning" size={16} color="#B7791F" strokeWidth={2.1} />
             <Text style={styles.warningText}>{i18n.t('planHasRecordsWarning')}</Text>
           </View>
         )}
@@ -187,7 +188,7 @@ export default function PlanScreen() {
         <View style={styles.card}>
           <Text style={styles.fieldLabel}>{i18n.t('planTargetTime')}</Text>
           <TouchableOpacity style={styles.timeBtn} onPress={openPicker} activeOpacity={0.8}>
-            <Text style={styles.timeBtnIcon}>🕐</Text>
+            <Icon name="clock" size={18} color={AppColors.accent} strokeWidth={2} />
             <Text style={[styles.timeBtnText, !targetMs && { color: AppColors.sub }]}>
               {formatTarget()}
             </Text>
