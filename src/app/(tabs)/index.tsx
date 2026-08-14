@@ -30,6 +30,7 @@ import {
   currentBac,
   currentBacWithConstantR,
   estimatedSoberAt,
+  estimatedSoberAtWithConstantR,
   remainingHours,
 } from '@/core/bacCalculator';
 import { DrinkRecord } from '@/core/types';
@@ -341,66 +342,94 @@ function getBacBadge(bac: number): { label: string; color: string; bg: string } 
 function BacComparisonCard({
   bacWatson,
   bacWidmark,
+  soberWatsonMs,
+  soberWidmarkMs,
 }: {
   bacWatson: number;
   bacWidmark: number;
+  soberWatsonMs: number | null;
+  soberWidmarkMs: number | null;
 }) {
-  const watsonBadge = getBacBadge(bacWatson);
-  const widmarkBadge = getBacBadge(bacWidmark);
-  const widmarkHigher = bacWidmark > bacWatson;
+  const statusBadge = getBacBadge(bacWatson);
+  // 회복이 더 늦은 쪽이 "보수적" (시각이 없으면 BAC 비교로 fallback)
+  const widmarkConservative =
+    soberWatsonMs != null && soberWidmarkMs != null
+      ? soberWidmarkMs > soberWatsonMs
+      : bacWidmark > bacWatson;
 
   return (
     <View style={compStyles.card}>
-      <Text style={compStyles.title}>{i18n.t('bacComparisonTitle')}</Text>
-
-      {/* Watson row */}
-      <View style={compStyles.row}>
-        <View style={compStyles.methodInfo}>
-          <Text style={compStyles.methodLabel}>{i18n.t('bacComparisonWatsonLabel')}</Text>
-          <Text style={compStyles.methodDesc}>{i18n.t('bacComparisonWatsonDesc')}</Text>
-        </View>
-        <View style={compStyles.badgeArea}>
-          <Text style={compStyles.bacValue}>{bacWatson.toFixed(3)}%</Text>
-          {watsonBadge && (
-            <View style={[compStyles.badge, { backgroundColor: watsonBadge.bg }]}>
-              <Text style={[compStyles.badgeText, { color: watsonBadge.color }]}>
-                {watsonBadge.label}
-              </Text>
-            </View>
-          )}
-        </View>
+      {/* 헤더: 제목 + 상태 뱃지 */}
+      <View style={compStyles.headerRow}>
+        <Text style={compStyles.title}>{i18n.t('bacComparisonTitle')}</Text>
+        {statusBadge && (
+          <View style={[compStyles.statusBadge, { backgroundColor: statusBadge.bg }]}>
+            <Text style={[compStyles.statusBadgeText, { color: statusBadge.color }]}>
+              {statusBadge.label}
+            </Text>
+          </View>
+        )}
       </View>
 
-      <View style={compStyles.divider} />
-
-      {/* Widmark row */}
-      <View style={compStyles.row}>
-        <View style={compStyles.methodInfo}>
-          <Text style={compStyles.methodLabel}>{i18n.t('bacComparisonWidmarkLabel')}</Text>
-          <Text style={compStyles.methodDesc}>{i18n.t('bacComparisonWidmarkDesc')}</Text>
-        </View>
-        <View style={compStyles.badgeArea}>
-          <Text style={compStyles.bacValue}>{bacWidmark.toFixed(3)}%</Text>
-          <View style={compStyles.badgeRow}>
-            {widmarkBadge && (
-              <View style={[compStyles.badge, { backgroundColor: widmarkBadge.bg }]}>
-                <Text style={[compStyles.badgeText, { color: widmarkBadge.color }]}>
-                  {widmarkBadge.label}
-                </Text>
-              </View>
-            )}
-            {widmarkHigher && (
-              <View style={[compStyles.badge, { backgroundColor: '#F0EEFF' }]}>
-                <Text style={[compStyles.badgeText, { color: AppColors.accent }]}>
-                  {i18n.t('bacComparisonConservativeLabel')}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
+      {/* 2열 파스텔 패널 */}
+      <View style={compStyles.panels}>
+        <MethodPanel
+          label={i18n.t('bacComparisonWatsonLabel')}
+          desc={i18n.t('bacComparisonWatsonDesc')}
+          bac={bacWatson}
+          soberMs={soberWatsonMs}
+          conservative={!widmarkConservative}
+        />
+        <MethodPanel
+          label={i18n.t('bacComparisonWidmarkLabel')}
+          desc={i18n.t('bacComparisonWidmarkDesc')}
+          bac={bacWidmark}
+          soberMs={soberWidmarkMs}
+          conservative={widmarkConservative}
+        />
       </View>
 
       <Text style={compStyles.footnote}>{i18n.t('bacComparisonFootnote')}</Text>
+    </View>
+  );
+}
+
+function MethodPanel({
+  label,
+  desc,
+  bac,
+  soberMs,
+  conservative,
+}: {
+  label: string;
+  desc: string;
+  bac: number;
+  soberMs: number | null;
+  conservative: boolean;
+}) {
+  return (
+    <View style={[compStyles.panel, conservative && compStyles.panelConservative]}>
+      <View style={compStyles.panelLabelRow}>
+        <Text style={compStyles.methodLabel} numberOfLines={1}>{label}</Text>
+        {conservative && (
+          <View style={compStyles.consBadge}>
+            <Text style={compStyles.consBadgeText}>
+              {i18n.t('bacComparisonConservativeLabel')}
+            </Text>
+          </View>
+        )}
+      </View>
+      <Text style={compStyles.methodDesc}>{desc}</Text>
+      <View style={compStyles.bacRow}>
+        <Text style={compStyles.bigBac}>{bac.toFixed(3)}</Text>
+        <Text style={compStyles.bigBacUnit}>%</Text>
+      </View>
+      <View style={compStyles.timeRow}>
+        <Text style={compStyles.timeIcon}>🕐</Text>
+        <Text style={compStyles.timeText}>
+          {soberMs != null ? formatTime(soberMs) : '--:--'}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -411,23 +440,39 @@ const compStyles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     ...cardShadow,
-    gap: 10,
+    gap: 12,
   },
-  title: { fontSize: 14, fontWeight: '700', color: AppColors.navy },
-  row: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
-  methodInfo: { flex: 1, marginRight: 8 },
-  methodLabel: { fontSize: 13, fontWeight: '600', color: AppColors.navy },
-  methodDesc: { fontSize: 11, color: AppColors.sub, marginTop: 2 },
-  badgeArea: { alignItems: 'flex-end', gap: 4 },
-  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end' },
-  bacValue: { fontSize: 15, fontWeight: '700', color: AppColors.navy },
-  badge: {
-    borderRadius: 6,
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  title: { fontSize: 15, fontWeight: '700', color: AppColors.navy },
+  statusBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
+  statusBadgeText: { fontSize: 12, fontWeight: '700' },
+  panels: { flexDirection: 'row', gap: 10 },
+  panel: {
+    flex: 1,
+    backgroundColor: '#F4F3FC',
+    borderRadius: 14,
+    padding: 12,
+  },
+  panelConservative: {
+    borderWidth: 1.2,
+    borderColor: '#B3C7F7',
+  },
+  panelLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  methodLabel: { fontSize: 12, fontWeight: '700', color: AppColors.navy, flexShrink: 1 },
+  consBadge: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 8,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  badgeText: { fontSize: 10, fontWeight: '600' },
-  divider: { height: 1, backgroundColor: AppColors.border },
+  consBadgeText: { fontSize: 9, fontWeight: '600', color: '#1565C0' },
+  methodDesc: { fontSize: 10, color: AppColors.sub, marginTop: 2, minHeight: 26 },
+  bacRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 8 },
+  bigBac: { fontSize: 22, fontWeight: '800', color: AppColors.accent, letterSpacing: -0.5 },
+  bigBacUnit: { fontSize: 13, fontWeight: '600', color: AppColors.accent, marginLeft: 1 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 4 },
+  timeIcon: { fontSize: 10 },
+  timeText: { fontSize: 13, fontWeight: '600', color: AppColors.navy },
   footnote: { fontSize: 11, color: AppColors.sub, lineHeight: 16 },
 });
 
@@ -543,6 +588,9 @@ export default function TimerScreen() {
     : 0;
   const remHours = profile ? remainingHours(records, profile, nowMs) : 0;
   const soberAtMs = profile ? estimatedSoberAt(records, profile) : null;
+  const soberWidmarkMs = profile
+    ? estimatedSoberAtWithConstantR(records, profile)
+    : null;
 
   // Progress: elapsed / total
   let progress = 0;
@@ -665,7 +713,12 @@ export default function TimerScreen() {
 
           {/* BAC comparison (only when finished records exist) */}
           {hasFinishedRecords && (
-            <BacComparisonCard bacWatson={bacWatson} bacWidmark={bacWidmark} />
+            <BacComparisonCard
+              bacWatson={bacWatson}
+              bacWidmark={bacWidmark}
+              soberWatsonMs={soberAtMs}
+              soberWidmarkMs={soberWidmarkMs}
+            />
           )}
 
           {/* BAC Graph (only when finished records exist and curve has data) */}

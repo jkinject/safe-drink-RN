@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
@@ -242,44 +243,35 @@ export default function SettingsScreen() {
         {/* Profile edit card */}
         <SectionCard icon="👤" title={i18n.t('settingsProfileEdit')}>
           {/* Height */}
-          <Text style={fieldStyles.label}>{i18n.t('settingsHeightLabel')}</Text>
-          <TextInput
-            style={[fieldStyles.input, errors.height ? fieldStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('settingsHeightLabel')}
             value={height}
             onChangeText={v => { setHeight(v); setErrors(e => ({ ...e, height: undefined })); }}
             keyboardType="numeric"
-            placeholder="e.g. 175"
-            placeholderTextColor={AppColors.sub}
+            error={errors.height ?? null}
           />
-          {errors.height ? <Text style={fieldStyles.errorText}>{errors.height}</Text> : null}
 
           <View style={fieldStyles.gap} />
 
           {/* Weight */}
-          <Text style={fieldStyles.label}>{i18n.t('settingsWeightLabel')}</Text>
-          <TextInput
-            style={[fieldStyles.input, errors.weight ? fieldStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('settingsWeightLabel')}
             value={weight}
             onChangeText={v => { setWeight(v); setErrors(e => ({ ...e, weight: undefined })); }}
             keyboardType="numeric"
-            placeholder="e.g. 70"
-            placeholderTextColor={AppColors.sub}
+            error={errors.weight ?? null}
           />
-          {errors.weight ? <Text style={fieldStyles.errorText}>{errors.weight}</Text> : null}
 
           <View style={fieldStyles.gap} />
 
           {/* Birth year */}
-          <Text style={fieldStyles.label}>{i18n.t('settingsBirthYearLabel')}</Text>
-          <TextInput
-            style={[fieldStyles.input, errors.birthYear ? fieldStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('settingsBirthYearLabel')}
             value={birthYear}
             onChangeText={v => { setBirthYear(v); setErrors(e => ({ ...e, birthYear: undefined })); }}
             keyboardType="numeric"
-            placeholder="e.g. 1990"
-            placeholderTextColor={AppColors.sub}
+            error={errors.birthYear ?? null}
           />
-          {errors.birthYear ? <Text style={fieldStyles.errorText}>{errors.birthYear}</Text> : null}
 
           <View style={fieldStyles.gap} />
 

@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors, cardShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
@@ -257,16 +258,13 @@ export default function PlanScreen() {
           </TouchableOpacity>
 
           <View style={styles.fieldGap} />
-          <Text style={styles.fieldLabel}>{i18n.t('planAbvLabel')}</Text>
-          <TextInput
-            style={[styles.textInput, abvError ? styles.textInputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('planAbvLabel')}
             value={abvText}
             onChangeText={v => { setAbvText(v); setAbvError(''); }}
             keyboardType="numeric"
-            placeholder="e.g. 4.5"
-            placeholderTextColor={AppColors.sub}
+            error={abvError || null}
           />
-          {abvError ? <Text style={styles.errorText}>{abvError}</Text> : null}
 
           <View style={styles.fieldGap} />
           <TouchableOpacity

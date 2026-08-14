@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
+import { FloatingLabelInput } from '@/components/floating-label-input';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -215,35 +216,29 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
             ))}
           </View>
           {/* Name */}
-          <TextInput
-            style={[dlgStyles.input, nameErr ? dlgStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('customPresetNameLabel')}
             value={name}
             onChangeText={setName}
-            placeholder={i18n.t('customPresetNameLabel')}
-            placeholderTextColor={AppColors.sub}
             maxLength={20}
+            error={nameErr || null}
           />
-          {nameErr ? <Text style={dlgStyles.errorText}>{nameErr}</Text> : null}
           {/* ABV */}
-          <TextInput
-            style={[dlgStyles.input, abvErr ? dlgStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('addDrinkAbvLabel')}
             value={abv}
             onChangeText={setAbv}
-            placeholder={i18n.t('addDrinkAbvLabel')}
-            placeholderTextColor={AppColors.sub}
             keyboardType="numeric"
+            error={abvErr || null}
           />
-          {abvErr ? <Text style={dlgStyles.errorText}>{abvErr}</Text> : null}
           {/* Volume */}
-          <TextInput
-            style={[dlgStyles.input, volErr ? dlgStyles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('addDrinkVolumeLabel')}
             value={vol}
             onChangeText={setVol}
-            placeholder={i18n.t('addDrinkVolumeLabel')}
-            placeholderTextColor={AppColors.sub}
             keyboardType="numeric"
+            error={volErr || null}
           />
-          {volErr ? <Text style={dlgStyles.errorText}>{volErr}</Text> : null}
           {/* Actions */}
           <View style={dlgStyles.actions}>
             <TouchableOpacity onPress={onCancel} style={dlgStyles.cancelBtn}>
@@ -587,28 +582,22 @@ export default function AddDrinkScreen() {
         {/* Manual form */}
         <View style={styles.formCard}>
           {/* ABV */}
-          <TextInput
-            style={[styles.input, abvErr ? styles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('addDrinkAbvLabel')}
             value={abvText}
             onChangeText={v => { setAbvText(v); setAbvErr(''); }}
             keyboardType="numeric"
-            placeholder={i18n.t('addDrinkAbvLabel')}
-            placeholderTextColor={AppColors.sub}
+            error={abvErr || null}
           />
-          {abvErr ? <Text style={styles.errorText}>{abvErr}</Text> : null}
-
-          <View style={{ height: 10 }} />
 
           {/* Volume */}
-          <TextInput
-            style={[styles.input, volErr ? styles.inputError : null]}
+          <FloatingLabelInput
+            label={i18n.t('addDrinkVolumeLabel')}
             value={volText}
             onChangeText={v => { setVolText(v); setVolErr(''); }}
             keyboardType="numeric"
-            placeholder={i18n.t('addDrinkVolumeLabel')}
-            placeholderTextColor={AppColors.sub}
+            error={volErr || null}
           />
-          {volErr ? <Text style={styles.errorText}>{volErr}</Text> : null}
 
           {/* Time row (edit mode only) */}
           {isEdit && (
