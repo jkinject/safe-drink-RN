@@ -1,5 +1,12 @@
 // ── 타입 ─────────────────────────────────────────────────────────────────────
-export type { Sex, UserProfile, DrinkRecord, DrinkPreset, PlanResult } from './core/types';
+export type {
+  Sex,
+  UserProfile,
+  DrinkRecord,
+  DrinkSession,
+  DrinkPreset,
+  PlanResult,
+} from './core/types';
 
 // ── BAC 계산기 (순수 함수) ────────────────────────────────────────────────────
 export {
@@ -25,10 +32,14 @@ export { calculate as planCalculate } from './core/planCalculator';
 // ── 저장소 ────────────────────────────────────────────────────────────────────
 export {
   insertRecord,
-  getAllRecords,
+  getOpenSessionRecords,
+  getAllSessions,
+  getSessionRecords,
   updateRecord,
   deleteRecord,
-  deleteAllRecords,
+  closeSession,
+  deleteSession,
+  deleteAllData,
   closeDb,
 } from './storage/db';
 

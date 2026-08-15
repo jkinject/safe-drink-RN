@@ -26,6 +26,7 @@ export default function RootLayout() {
   const loadPresets = presetsStore(s => s.load);
   const loadLocale = localeStore(s => s.load);
   const loadSession = sessionStore(s => s.load);
+  const loadSessions = sessionStore(s => s.loadSessions);
   const router = useRouter();
   const segments = useSegments();
 
@@ -35,6 +36,7 @@ export default function RootLayout() {
       loadPresets(),
       loadLocale(),
       loadSession(),
+      loadSessions(),
       notificationService.initialize(),
     ])
       .catch(() => {})
@@ -81,6 +83,13 @@ export default function RootLayout() {
           options={{
             presentation: 'modal',
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="history"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
           }}
         />
       </Stack>

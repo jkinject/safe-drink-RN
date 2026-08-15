@@ -35,7 +35,9 @@ import {
   estimatedSoberAtWithConstantR,
   remainingHours,
 } from '@/core/bacCalculator';
+import { getBacBadge } from '@/core/sessionUtils';
 import { DrinkRecord } from '@/core/types';
+import { LastSessionCard } from '@/components/last-session-card';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
@@ -334,12 +336,6 @@ const tileStyles = StyleSheet.create({
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
 
-function getBacBadge(bac: number): { label: string; color: string; bg: string } | null {
-  if (bac >= 0.08) return { label: i18n.t('bacStatusRevocation'), color: '#FF3B30', bg: '#FFF0EF' };
-  if (bac >= 0.03) return { label: i18n.t('bacStatusSuspension'), color: '#FF9500', bg: '#FFF8F0' };
-  return null;
-}
-
 function BacComparisonCard({
   bacWatson,
   bacWidmark,
@@ -366,7 +362,7 @@ function BacComparisonCard({
         {statusBadge && (
           <View style={[compStyles.statusBadge, { backgroundColor: statusBadge.bg }]}>
             <Text style={[compStyles.statusBadgeText, { color: statusBadge.color }]}>
-              {statusBadge.label}
+              {i18n.t(statusBadge.labelKey)}
             </Text>
           </View>
         )}
@@ -550,6 +546,7 @@ export default function TimerScreen() {
   void locale;
 
   const records = sessionStore(s => s.records);
+  const sessions = sessionStore(s => s.sessions);
   const finishRecord = sessionStore(s => s.finishRecord);
   const deleteRecord = sessionStore(s => s.deleteRecord);
   const checkAutoClose = sessionStore(s => s.checkAutoClose);
@@ -651,12 +648,20 @@ export default function TimerScreen() {
       {/* AppBar */}
       <View style={styles.appBar}>
         <Text style={styles.appTitle}>{i18n.t('appTitle').toLowerCase()}</Text>
-        <TouchableOpacity
-          onPress={() => router.push('/info')}
-          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
-        >
-          <Icon name="info" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
-        </TouchableOpacity>
+        <View style={styles.appBarActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/history')}
+            hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+          >
+            <Icon name="history" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push('/info')}
+            hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+          >
+            <Icon name="info" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <DisclaimerBanner />
@@ -671,6 +676,15 @@ export default function TimerScreen() {
             sex={profile?.sex}
             onInfoPress={() => router.push('/info')}
           />
+          {/* 지난 술자리가 있을 때만 — 없으면 빈 자리 표시 없이 그대로 둔다 */}
+          {sessions.length > 0 && (
+            <View style={styles.lastSessionWrap}>
+              <LastSessionCard
+                session={sessions[0]}
+                onPress={() => router.push('/history')}
+              />
+            </View>
+          )}
         </ScrollView>
       ) : (
         /* Has records */
@@ -771,12 +785,14 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
+  appBarActions: { flexDirection: 'row', alignItems: 'center', gap: Space.md },
   appTitle: {
     fontSize: Font.h2,
     fontWeight: Weight.bold,
     color: AppColors.navy,
     letterSpacing: -0.5,
   },
+  lastSessionWrap: { marginTop: Space.xxl },
   emptyContent: {
     flexGrow: 1,
     justifyContent: 'center',
