@@ -317,7 +317,7 @@ const tileStyles = StyleSheet.create({
   },
   drinkingBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: '#B07B00' },
   abvBadge: {
-    backgroundColor: '#F0EEFF',
+    backgroundColor: AppColors.chipBg,
     borderRadius: Radius.sm,
     paddingHorizontal: Space.sm,
     paddingVertical: Space.xs,

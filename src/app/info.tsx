@@ -198,7 +198,7 @@ export default function InfoScreen() {
         </SectionCard>
 
         {/* Card 4: Disclaimer */}
-        <SectionCard icon="warning" title={i18n.t('infoCard4Title')} bgColor="#F0EEFF">
+        <SectionCard icon="warning" title={i18n.t('infoCard4Title')} bgColor={AppColors.chipBg}>
           <Text style={styles.introText}>{i18n.t('infoCard4Content')}</Text>
         </SectionCard>
 

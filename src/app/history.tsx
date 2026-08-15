@@ -1,14 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors, cardShadowSm } from '@/constants/colors';
 import { CharacterImage } from '@/components/character-image';
 import { confirm } from '@/components/dialog';
+import { DrinkIcon, DrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
+import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
 import { getBacBadge } from '@/core/sessionUtils';
 import { DrinkRecord, DrinkSession } from '@/core/types';
@@ -17,8 +19,9 @@ import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 /**
  * 지난 술자리 기록 화면.
  *
- * 카드를 누르면 그때서야 해당 세션의 잔 목록을 DB 에서 읽는다.
- * 세션이 쌓일수록 전체를 미리 불러오면 첫 화면이 느려지므로 펼칠 때만 조회한다.
+ * 상세 기록(잔 목록)은 접지 않고 항상 펼쳐 둔다.
+ * 대신 각 카드가 마운트될 때 자기 몫만 읽어, 세션이 쌓여도 첫 화면에서
+ * 전체를 한꺼번에 긁지 않는다 (FlatList 가 보이는 행만 마운트한다).
  */
 
 // ── 표시용 포맷 ────────────────────────────────────────────────────────────────
@@ -36,14 +39,21 @@ function formatDate(epochMs: number, locale: string): string {
   });
 }
 
+const MINUTE_MS = 60000;
 const HOUR_MS = 3600000;
 const DAY_MS = 86400000;
 
+/** 술 아이콘을 감싸는 원 — 홈의 기록 타일과 같은 40 */
+const ICON_CIRCLE = Space.xxxl + Space.sm;
+
 /**
- * ms → 「N시간 M분」. 하루를 넘기면 「N일 N시간」으로 넘긴다.
+ * 이 화면의 유일한 기간 포맷 — 지표 타일과 잔 목록이 같은 함수를 쓴다.
  *
- * consumedAt 을 손으로 과거 시각으로 잡을 수 있어 24시간 초과가 실제로 나온다.
- * 그 자리에서 분까지 쓰면 세 단위가 되어 타일 폭을 넘기므로 일·시간만 쓴다.
+ * 세 단계: 1시간 미만은 분만, 하루 미만은 시간+분, 그 이상은 일+시간.
+ * 타일과 행이 서로 다른 포맷을 쓰면 같은 화면에서 1분짜리가 한쪽은
+ * 「1분」, 다른 쪽은 「0시간 1분」으로 찍힌다. 분기를 늘리지 말고 여기만 고칠 것.
+ * (24시간 초과는 consumedAt 을 손으로 과거로 잡을 수 있어 실제로 도달한다.
+ *  그 자리에서 분까지 쓰면 세 단위가 되어 타일 폭을 넘기므로 일·시간만 쓴다.)
  */
 function formatDuration(ms: number): string {
   const clamped = Math.max(0, ms);
@@ -53,9 +63,14 @@ function formatDuration(ms: number): string {
       hours: Math.floor((clamped % DAY_MS) / HOUR_MS),
     });
   }
-  return i18n.t('historyDuration', {
-    hours: Math.floor(clamped / HOUR_MS),
-    minutes: Math.floor((clamped % HOUR_MS) / 60000),
+  if (clamped >= HOUR_MS) {
+    return i18n.t('historyDuration', {
+      hours: Math.floor(clamped / HOUR_MS),
+      minutes: Math.floor((clamped % HOUR_MS) / MINUTE_MS),
+    });
+  }
+  return i18n.t('historyDurationMinutes', {
+    minutes: Math.floor(clamped / MINUTE_MS),
   });
 }
 
@@ -63,11 +78,13 @@ function formatDuration(ms: number): string {
  * 해독 소요 시간 표시.
  *
  * estimatedSoberAt 은 firstFinishedAt 기준이라(bacCalculator.ts:148)
- * 천천히 오래 마신 자리에서는 soberAt 이 lastFinishedAt 보다 앞설 수 있다.
- * 그 경우 「0시간 0분」은 고장으로 보이므로 별도 문구를 쓴다.
+ * soberAt 이 lastFinishedAt 보다 앞서거나(한 잔이면 아주 조금 뒤에) 놓인다.
+ * 분 단위로 0이 되는 값은 음수든 양수든 사용자에게는 같은 사실 —
+ * 마지막 잔을 비웠을 때 이미 깬 상태 — 이므로 한 문구로 묶는다.
+ * `<= 0` 으로만 잡으면 1잔짜리 세션이 「0분」으로 새어 나간다.
  */
 function formatSoberDuration(ms: number): string {
-  if (ms <= 0) return i18n.t('historySoberImmediate');
+  if (ms < MINUTE_MS) return i18n.t('historySoberImmediate');
   return formatDuration(ms);
 }
 
@@ -102,9 +119,14 @@ function Metric({ icon, label, value, badge }: MetricProps) {
 }
 
 const metricStyles = StyleSheet.create({
-  item: { flex: 1, gap: Space.xxs },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
-  label: { fontSize: Font.caption, color: AppColors.sub },
+  // 라벨이 길어 한쪽만 두 줄이 되면 값의 높이가 서로 어긋난다.
+  // 행이 stretch 라 두 타일 높이는 같으므로, 라벨은 위·값은 아래로 붙여
+  // 줄 수와 무관하게 값끼리 같은 선에 놓이게 한다
+  item: { flex: 1, gap: Space.xxs, justifyContent: 'space-between' },
+  // 두 줄로 접힐 때 아이콘이 가운데 뜨지 않고 첫 줄에 맞도록
+  labelRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Space.xs },
+  // flex 가 없으면 행 안에서 줄바꿈되지 않고 타일 밖으로 밀린다
+  label: { flex: 1, fontSize: Font.caption, color: AppColors.sub },
   valueRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, flexWrap: 'wrap' },
   value: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
   badge: {
@@ -120,45 +142,43 @@ const metricStyles = StyleSheet.create({
 interface SessionCardProps {
   session: DrinkSession;
   locale: string;
+  iconFor: (label?: string) => DrinkIconName;
   onDelete: () => void;
 }
 
-function SessionCard({ session, locale, onDelete }: SessionCardProps) {
+function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
   const getSessionRecords = sessionStore(s => s.getSessionRecords);
-  const [expanded, setExpanded] = useState(false);
   const [records, setRecords] = useState<DrinkRecord[] | null>(null);
 
-  const toggle = useCallback(() => {
-    if (expanded) {
-      setExpanded(false);
-      return;
-    }
-    // 한 번 읽어온 세션은 다시 조회하지 않는다 — 닫힌 세션은 변하지 않는다
-    if (records != null) {
-      setExpanded(true);
-      return;
-    }
-    // 조회에 실패하면 반쯤 펼쳐진 빈 목록을 남기지 말고 접힌 채로 둔다.
-    // onPress 에 async 함수를 직접 물리면 여기서 unhandled rejection 이 된다
+  // 마운트될 때 그 카드 몫만 읽는다. FlatList 가 보이는 행만 그리므로
+  // 화면 전체 세션을 미리 긁지 않고도 실질적으로 지연 로딩이 된다
+  useEffect(() => {
+    let alive = true;
     getSessionRecords(session.id)
       .then(loaded => {
-        setRecords(loaded);
-        setExpanded(true);
+        if (alive) setRecords(loaded);
       })
-      .catch(() => setExpanded(false));
-  }, [expanded, records, getSessionRecords, session.id]);
+      // 조회에 실패하면 상세 기록 없이 카드만 보여준다 (조용한 degradation)
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [getSessionRecords, session.id]);
 
   const badge = getBacBadge(session.peakBac);
 
   return (
     <View style={cardStyles.card}>
-      <TouchableOpacity onPress={toggle} activeOpacity={0.85} style={cardStyles.body}>
+      <View style={cardStyles.body}>
         {/* 헤더: 날짜 + 시간대 + 삭제 */}
         <View style={cardStyles.header}>
           <View style={cardStyles.headerText}>
             <Text style={cardStyles.date}>{formatDate(session.startedAt, locale)}</Text>
             <Text style={cardStyles.range}>
-              {`${formatTime(session.startedAt)} ~ ${formatTime(session.lastFinishedAt)} · ${i18n.t('historyDrinkCount', { n: session.drinkCount })}`}
+              {`${i18n.t('historyTimeRange', {
+                start: formatTime(session.startedAt),
+                end: formatTime(session.lastFinishedAt),
+              })} · ${i18n.t('historyDrinkCount', { n: session.drinkCount })}`}
             </Text>
           </View>
           <TouchableOpacity
@@ -195,14 +215,20 @@ function SessionCard({ session, locale, onDelete }: SessionCardProps) {
             value={formatDuration(session.lastFinishedAt - session.startedAt)}
           />
         </View>
-      </TouchableOpacity>
+      </View>
 
-      {/* 펼친 상태: 잔 목록 */}
-      {expanded && (
+      {/* 상세 기록 — 항상 펼쳐진 상태.
+          구분선·제목까지 묶어서 기다렸다가 한 번에 넣는다. 제목만 먼저 띄우면
+          스크롤할 때마다 카드가 두 번 자라 보인다 */}
+      {records != null && records.length > 0 && (
         <View style={cardStyles.drinkList}>
           <Text style={cardStyles.drinkListTitle}>{i18n.t('historyDrinkList')}</Text>
-          {(records ?? []).map((record, index) => (
-            <DrinkRow key={record.id ?? index} record={record} />
+          {records.map((record, index) => (
+            <DrinkRow
+              key={record.id ?? index}
+              record={record}
+              icon={iconFor(record.presetLabel)}
+            />
           ))}
         </View>
       )}
@@ -227,7 +253,8 @@ const cardStyles = StyleSheet.create({
     borderTopColor: AppColors.border,
     paddingHorizontal: Space.xl,
     paddingVertical: Space.lg,
-    gap: Space.sm,
+    // 행이 아이콘·2줄 텍스트·칩으로 커져서 sm 로는 서로 붙어 보인다
+    gap: Space.md,
   },
   drinkListTitle: {
     fontSize: Font.caption,
@@ -238,31 +265,69 @@ const cardStyles = StyleSheet.create({
 
 // ── 잔 한 줄 ──────────────────────────────────────────────────────────────────
 
-function DrinkRow({ record }: { record: DrinkRecord }) {
+/**
+ * 잔 한 줄 — 홈의 「오늘의 음주 기록」 타일과 같은 생김새로 맞춘다.
+ * 좌측 원형 틴트 안 술 아이콘 / 이름 · 시간대 · 소요 시간 / 도수·용량 칩.
+ */
+function DrinkRow({ record, icon }: { record: DrinkRecord; icon: DrinkIconName }) {
   const abvStr = record.abvPercent % 1 === 0
     ? record.abvPercent.toString()
     : record.abvPercent.toFixed(1);
   const volumeStr = record.volumeMl.toFixed(0);
   const abvVolume = i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr });
-  // 직접 입력 기록은 이름 자체가 도수·용량이라, 오른쪽에 같은 값을 또 쓰지 않는다
+  // 직접 입력 기록은 이름이 따로 없어 도수·용량을 이름 자리에 쓴다
   const title = record.presetLabel ?? abvVolume;
+
+  // 닫힌 세션이라 finishedAt 은 항상 있지만, DB 재로드 시 null 이 되는 필드라
+  // 단언하지 않고 규약대로 != null 로 확인한다
+  const finishedAt = record.finishedAt;
+  const timeLine = finishedAt != null
+    ? `${i18n.t('historyTimeRange', {
+        start: formatTime(record.consumedAt),
+        end: formatTime(finishedAt),
+      })} · ${formatDuration(finishedAt - record.consumedAt)}`
+    : formatTime(record.consumedAt);
 
   return (
     <View style={rowStyles.row}>
-      <Text style={rowStyles.time}>{formatTime(record.consumedAt)}</Text>
-      <Text style={rowStyles.title} numberOfLines={1}>{title}</Text>
-      {record.presetLabel != null && (
-        <Text style={rowStyles.detail}>{abvVolume}</Text>
-      )}
+      <View style={rowStyles.iconCircle}>
+        <DrinkIcon name={icon} size={IconSize.lg} />
+      </View>
+      <View style={rowStyles.textCol}>
+        {/* 높이는 자유롭게 써도 된다는 요청이라, 긴 이름은 잘라내지 않고 접는다 */}
+        <Text style={rowStyles.title}>{title}</Text>
+        <Text style={rowStyles.time}>{timeLine}</Text>
+        {/* 이름 자리에 이미 같은 값이 있으면 칩을 또 붙이지 않는다 */}
+        {record.presetLabel != null && (
+          <View style={rowStyles.abvChip}>
+            <Text style={rowStyles.abvChipText}>{abvVolume}</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const rowStyles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
+  row: { flexDirection: 'row', alignItems: 'center', gap: Space.md },
+  iconCircle: {
+    width: ICON_CIRCLE,
+    height: ICON_CIRCLE,
+    borderRadius: Radius.xl,
+    backgroundColor: AppColors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textCol: { flex: 1, minWidth: 0, gap: Space.xxs, alignItems: 'flex-start' },
+  title: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
   time: { fontSize: Font.caption, color: AppColors.sub },
-  title: { flex: 1, fontSize: Font.bodySm, color: AppColors.navy },
-  detail: { fontSize: Font.caption, color: AppColors.sub },
+  abvChip: {
+    backgroundColor: AppColors.chipBg,
+    borderRadius: Radius.sm,
+    paddingHorizontal: Space.sm,
+    paddingVertical: Space.xxs,
+  },
+  abvChipText: { fontSize: Font.micro, color: AppColors.accent },
 });
 
 // ── 화면 ──────────────────────────────────────────────────────────────────────
@@ -272,6 +337,17 @@ export default function HistoryScreen() {
   const locale = localeStore(s => s.locale);
   const sessions = sessionStore(s => s.sessions);
   const deleteSession = sessionStore(s => s.deleteSession);
+  const presets = presetsStore(s => s.presets);
+
+  // 기록에는 라벨만 남아 있어 프리셋을 되짚어 아이콘을 찾는다.
+  // 홈 화면(index.tsx)의 iconFor 와 같은 경로 — 직접 입력 기록은 기본 컵
+  const iconFor = useCallback(
+    (label?: string): DrinkIconName => {
+      const preset = presets.find(p => p.label === label);
+      return preset ? resolveDrinkIcon(preset) : 'cup';
+    },
+    [presets],
+  );
 
   const handleDelete = useCallback(
     async (sessionId: number) => {
@@ -309,6 +385,7 @@ export default function HistoryScreen() {
           <SessionCard
             session={item}
             locale={locale}
+            iconFor={iconFor}
             onDelete={() => handleDelete(item.id)}
           />
         )}

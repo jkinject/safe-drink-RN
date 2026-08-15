@@ -189,6 +189,7 @@ const en = {
   historyLastSession: 'Last Session',
   historyTotalAlcohol: 'Alcohol %{g}g',
   historySoberTime: 'Sobered up in %{hours}h %{minutes}m',
+  historySoberTimeMinutes: 'Sobered up in %{minutes}m',
   historyViewAll: 'View All',
   // Session history screen
   historyScreenTitle: 'Session History',
@@ -204,6 +205,8 @@ const en = {
   historyDrinkList: 'Drinks',
   historySoberImmediate: 'Immediate',
   historyDurationDays: '%{days}d %{hours}h',
+  historyDurationMinutes: '%{minutes}m',
+  historyTimeRange: '%{start} ~ %{end}',
   drinkingBadge: 'Drinking',
   finishedButton: 'Finished',
   recordFinishedAtSuffix: 'Finished at %{time}',

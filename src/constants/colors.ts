@@ -5,6 +5,8 @@ export const AppColors = {
   sub: '#9E9AC8',
   border: '#E8E6FF',
   cardBg: '#FFFFFF',
+  /** 도수/용량 등 작은 칩 배경 — 연보라 */
+  chipBg: '#F0EEFF',
 } as const;
 
 export const cardShadow = {
