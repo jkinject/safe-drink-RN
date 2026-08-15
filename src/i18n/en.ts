@@ -75,6 +75,7 @@ const en = {
   statusDizzyMessage: 'That\'s enough for today! Get some rest.',
   recordTimeSuffix: 'recorded at %{time}',
   recordAbvVolumeLabel: 'ABV %{abv}% · %{volume}ml',
+  recordManualEntry: 'Manual entry',
   notificationTitle: 'Alcohol Metabolized',
   notificationBody: 'Your BAC has reached 0. Check your condition before driving.',
   soberNotificationTitle: 'You\'re safe now! 🎉',

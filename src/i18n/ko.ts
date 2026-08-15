@@ -75,6 +75,7 @@ const ko = {
   statusDizzyMessage: '오늘은 여기까지! 충분히 쉬세요.',
   recordTimeSuffix: '%{time} 기록',
   recordAbvVolumeLabel: '도수 %{abv}% · %{volume}ml',
+  recordManualEntry: '수동입력',
   notificationTitle: '음주 분해 완료',
   notificationBody: '이제 BAC가 0에 도달했습니다. 운전 전 상태를 확인하세요.',
   soberNotificationTitle: '이제 안전해요! 🎉',

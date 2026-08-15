@@ -275,8 +275,9 @@ function DrinkRow({ record, icon }: { record: DrinkRecord; icon: DrinkIconName }
     : record.abvPercent.toFixed(1);
   const volumeStr = record.volumeMl.toFixed(0);
   const abvVolume = i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr });
-  // 직접 입력 기록은 이름이 따로 없어 도수·용량을 이름 자리에 쓴다
-  const title = record.presetLabel ?? abvVolume;
+  // 이름 자리에 도수·용량을 넣으면 아래 칩과 같은 값이 두 번 보인다.
+  // 이름이 없는 기록은 「수동입력」로 표시하고 숫자는 칩에만 맡긴다
+  const title = record.presetLabel ?? i18n.t('recordManualEntry');
 
   // 닫힌 세션이라 finishedAt 은 항상 있지만, DB 재로드 시 null 이 되는 필드라
   // 단언하지 않고 규약대로 != null 로 확인한다
@@ -297,12 +298,9 @@ function DrinkRow({ record, icon }: { record: DrinkRecord; icon: DrinkIconName }
         {/* 높이는 자유롭게 써도 된다는 요청이라, 긴 이름은 잘라내지 않고 접는다 */}
         <Text style={rowStyles.title}>{title}</Text>
         <Text style={rowStyles.time}>{timeLine}</Text>
-        {/* 이름 자리에 이미 같은 값이 있으면 칩을 또 붙이지 않는다 */}
-        {record.presetLabel != null && (
-          <View style={rowStyles.abvChip}>
-            <Text style={rowStyles.abvChipText}>{abvVolume}</Text>
-          </View>
-        )}
+        <View style={rowStyles.abvChip}>
+          <Text style={rowStyles.abvChipText}>{abvVolume}</Text>
+        </View>
       </View>
     </View>
   );

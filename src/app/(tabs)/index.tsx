@@ -235,9 +235,9 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTi
     ? record.abvPercent.toString()
     : record.abvPercent.toFixed(1);
   const volumeStr = record.volumeMl.toFixed(0);
-  // 술 이름: 프리셋 라벨, 없으면(직접 입력) 도수·용량 라벨
-  const title = record.presetLabel
-    ?? i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr });
+  // 술 이름: 프리셋 라벨, 없으면 「수동입력」.
+  // 여기에 도수·용량을 넣으면 아래 뱃지와 같은 값이 한 카드에 두 번 나온다
+  const title = record.presetLabel ?? i18n.t('recordManualEntry');
 
   return (
     <TouchableOpacity
