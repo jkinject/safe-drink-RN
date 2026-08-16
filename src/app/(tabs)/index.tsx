@@ -10,7 +10,12 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { confirm } from '@/components/dialog';
-import { DrinkIcon, DrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
+import {
+  DrinkIcon,
+  DrinkIconName,
+  isDrinkIconName,
+  resolveDrinkIcon,
+} from '@/components/drink-icon';
 import { Text } from '@/components/typography';
 import Animated, {
   cancelAnimation,
@@ -553,9 +558,12 @@ export default function TimerScreen() {
   const profile = profileStore(s => s.profile);
   const presets = presetsStore(s => s.presets);
   const insets = useSafeAreaInsets();
+  // 기록에 저장된 아이콘이 우선. v4 이전 기록은 icon 이 없으므로
+  // 예전처럼 프리셋 라벨로 되짚는다 (과거 데이터는 소급 채우지 않기로 했다).
   const iconFor = useCallback(
-    (label?: string): DrinkIconName => {
-      const preset = presets.find(p => p.label === label);
+    (record: DrinkRecord): DrinkIconName => {
+      if (record.icon && isDrinkIconName(record.icon)) return record.icon;
+      const preset = presets.find(p => p.label === record.presetLabel);
       return preset ? resolveDrinkIcon(preset) : 'cup';
     },
     [presets],
@@ -728,7 +736,7 @@ export default function TimerScreen() {
               <RecordTile
                 key={record.id}
                 record={record}
-                presetIcon={iconFor(record.presetLabel)}
+                presetIcon={iconFor(record)}
                 onEdit={() => handleEditRecord(record)}
                 onFinish={() => handleFinishRecord(record)}
                 onDelete={() => handleDeleteRecord(record)}

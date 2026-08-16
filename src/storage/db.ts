@@ -8,7 +8,7 @@ import * as SQLite from 'expo-sqlite';
 import { DrinkRecord, DrinkSession } from '../core/types';
 
 const DB_NAME = 'safedrink.db';
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 interface DrinkRecordRow {
   id: number;
@@ -18,6 +18,7 @@ interface DrinkRecordRow {
   preset_label: string | null;
   finished_at: number | null;
   session_id: number | null;
+  icon: string | null;
 }
 
 interface DrinkSessionRow {
@@ -59,7 +60,8 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
       volume_ml REAL NOT NULL,
       preset_label TEXT,
       finished_at INTEGER,
-      session_id INTEGER
+      session_id INTEGER,
+      icon TEXT
     )
   `);
 
@@ -83,6 +85,16 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
     await db.execAsync(
       'ALTER TABLE drink_records ADD COLUMN session_id INTEGER',
     );
+  }
+
+  // v3 → v4: icon 컬럼 추가.
+  // 기존 기록은 NULL 로 남는다 — 과거 데이터 소급 채우기는 하지 않기로 했다.
+  // 렌더 쪽이 icon 이 없으면 예전처럼 프리셋 라벨로 되짚으므로 보이는 건 그대로다.
+  if (!isFreshInstall && !existingColumns.some(c => c.name === 'icon')) {
+    console.warn(
+      `[DB] Migrating v${currentVersion} → ${SCHEMA_VERSION}: drink_records.icon 추가`,
+    );
+    await db.execAsync('ALTER TABLE drink_records ADD COLUMN icon TEXT');
   }
 
   // 세션 요약 테이블 (IF NOT EXISTS 라 그 자체로 멱등)
@@ -126,6 +138,7 @@ function rowToRecord(row: DrinkRecordRow): DrinkRecord {
     presetLabel: row.preset_label ?? undefined,
     finishedAt: row.finished_at ?? undefined,
     sessionId: row.session_id ?? undefined,
+    icon: row.icon ?? undefined,
   };
 }
 
@@ -147,14 +160,15 @@ export async function insertRecord(
 ): Promise<number> {
   const db = await openDb();
   const result = await db.runAsync(
-    `INSERT INTO drink_records (consumed_at, abv_percent, volume_ml, preset_label, finished_at)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO drink_records (consumed_at, abv_percent, volume_ml, preset_label, finished_at, icon)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
       record.consumedAt,
       record.abvPercent,
       record.volumeMl,
       record.presetLabel ?? null,
       record.finishedAt ?? null,
+      record.icon ?? null,
     ],
   );
   return result.lastInsertRowId;
@@ -199,7 +213,7 @@ export async function updateRecord(record: DrinkRecord): Promise<void> {
   const db = await openDb();
   await db.runAsync(
     `UPDATE drink_records
-     SET consumed_at = ?, abv_percent = ?, volume_ml = ?, preset_label = ?, finished_at = ?
+     SET consumed_at = ?, abv_percent = ?, volume_ml = ?, preset_label = ?, finished_at = ?, icon = ?
      WHERE id = ?`,
     [
       record.consumedAt,
@@ -207,6 +221,7 @@ export async function updateRecord(record: DrinkRecord): Promise<void> {
       record.volumeMl,
       record.presetLabel ?? null,
       record.finishedAt ?? null,
+      record.icon ?? null,
       record.id,
     ],
   );

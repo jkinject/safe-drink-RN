@@ -59,6 +59,7 @@ const en = {
   addDrinkManual: 'Manual Entry',
   addDrinkCollapse: 'Collapse',
   addDrinkExpand: 'Expand',
+  addDrinkIconLabel: 'Drink type',
   addDrinkAbvLabel: 'ABV (%)',
   addDrinkAbvError: 'Enter ABV between 0 and 100',
   addDrinkVolumeLabel: 'Volume (ml)',

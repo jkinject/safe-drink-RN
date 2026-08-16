@@ -5,7 +5,12 @@ import { useRouter } from 'expo-router';
 import { AppColors, cardShadowSm } from '@/constants/colors';
 import { CharacterImage } from '@/components/character-image';
 import { confirm } from '@/components/dialog';
-import { DrinkIcon, DrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
+import {
+  DrinkIcon,
+  DrinkIconName,
+  isDrinkIconName,
+  resolveDrinkIcon,
+} from '@/components/drink-icon';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
@@ -142,7 +147,7 @@ const metricStyles = StyleSheet.create({
 interface SessionCardProps {
   session: DrinkSession;
   locale: string;
-  iconFor: (label?: string) => DrinkIconName;
+  iconFor: (record: DrinkRecord) => DrinkIconName;
   onDelete: () => void;
 }
 
@@ -227,7 +232,7 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
             <DrinkRow
               key={record.id ?? index}
               record={record}
-              icon={iconFor(record.presetLabel)}
+              icon={iconFor(record)}
             />
           ))}
         </View>
@@ -337,11 +342,12 @@ export default function HistoryScreen() {
   const deleteSession = sessionStore(s => s.deleteSession);
   const presets = presetsStore(s => s.presets);
 
-  // 기록에는 라벨만 남아 있어 프리셋을 되짚어 아이콘을 찾는다.
-  // 홈 화면(index.tsx)의 iconFor 와 같은 경로 — 직접 입력 기록은 기본 컵
+  // 기록에 저장된 아이콘이 우선. v4 이전 기록은 icon 이 없으므로
+  // 예전처럼 프리셋 라벨로 되짚는다. 홈 화면(index.tsx)의 iconFor 와 같은 경로.
   const iconFor = useCallback(
-    (label?: string): DrinkIconName => {
-      const preset = presets.find(p => p.label === label);
+    (record: DrinkRecord): DrinkIconName => {
+      if (record.icon && isDrinkIconName(record.icon)) return record.icon;
+      const preset = presets.find(p => p.label === record.presetLabel);
       return preset ? resolveDrinkIcon(preset) : 'cup';
     },
     [presets],

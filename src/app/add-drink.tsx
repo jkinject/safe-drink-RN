@@ -19,11 +19,12 @@ import { FloatingLabelInput } from '@/components/floating-label-input';
 import { Icon } from '@/components/icon';
 import { actionSheet, confirm } from '@/components/dialog';
 import {
-  DRINK_ICON_NAMES,
   DrinkIcon,
   DrinkIconName,
+  isDrinkIconName,
   resolveDrinkIcon,
 } from '@/components/drink-icon';
+import { DrinkIconPicker } from '@/components/drink-icon-picker';
 import { Text } from '@/components/typography';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
@@ -172,19 +173,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
           >
             {/* Icon picker */}
             <View style={dlgStyles.iconGrid}>
-              {DRINK_ICON_NAMES.map(n => {
-                const selected = icon === n;
-                return (
-                  <TouchableOpacity
-                    key={n}
-                    style={[dlgStyles.iconBtn, selected && dlgStyles.iconBtnSelected]}
-                    onPress={() => setIcon(n)}
-                  >
-                    {/* 아이콘 자체가 컬러라 선택 상태는 테두리로만 표시한다 */}
-                    <DrinkIcon name={n} size={IconSize.drink} />
-                  </TouchableOpacity>
-                );
-              })}
+              <DrinkIconPicker value={icon} onChange={setIcon} />
             </View>
             {/* Name */}
             <FloatingLabelInput
@@ -396,6 +385,21 @@ export default function AddDrinkScreen() {
   const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(null);
   const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(null);
 
+  /**
+   * 이 기록에 저장할 아이콘.
+   *
+   * 수정 모드에서는 저장된 값을 쓰되, v4 이전 기록은 icon 이 없으므로
+   * 예전처럼 프리셋 라벨로 되짚어 초기값을 잡는다.
+   */
+  const [icon, setIcon] = useState<DrinkIconName>(() => {
+    if (editRecord?.icon && isDrinkIconName(editRecord.icon)) return editRecord.icon;
+    if (editRecord?.presetLabel) {
+      const p = presets.find(x => x.label === editRecord.presetLabel);
+      if (p) return resolveDrinkIcon(p);
+    }
+    return 'cup';
+  });
+
   // Preset dialogs
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -419,6 +423,8 @@ export default function AddDrinkScreen() {
     setSelectedPresetAbv(preset.abvPercent);
     setSelectedPresetVol(preset.volumeMl);
     setSelectedPresetLabel(preset.label);
+    // 프리셋을 고르면 아래 아이콘 선택도 그 술로 따라간다
+    setIcon(resolveDrinkIcon(preset));
     setAbvText(
       preset.abvPercent % 1 === 0
         ? String(preset.abvPercent)
@@ -498,6 +504,7 @@ export default function AddDrinkScreen() {
           finishedAt: finishedAt ?? undefined,
           abvPercent: abv,
           volumeMl: vol,
+          icon,
         });
       } else {
         // New record: 10+ min in past → immediately finished
@@ -510,6 +517,7 @@ export default function AddDrinkScreen() {
           abvPercent: abv,
           volumeMl: vol,
           presetLabel: effectivePresetLabel(),
+          icon,
           finishedAt: isPast ? consumedAt : undefined,
         });
 
@@ -611,6 +619,12 @@ export default function AddDrinkScreen() {
 
         {/* Manual form */}
         <View style={styles.formCard}>
+          {/* Icon — 빠른 선택을 누르면 여기가 그 술로 바뀐다 */}
+          <View style={styles.iconField}>
+            <Text style={styles.iconFieldLabel}>{i18n.t('addDrinkIconLabel')}</Text>
+            <DrinkIconPicker value={icon} onChange={setIcon} />
+          </View>
+
           {/* ABV */}
           <FloatingLabelInput
             label={i18n.t('addDrinkAbvLabel')}
@@ -760,6 +774,12 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     padding: Space.lg,
     ...cardShadowSm,
+  },
+  iconField: { marginBottom: Space.lg },
+  iconFieldLabel: {
+    fontSize: Font.caption,
+    color: AppColors.sub,
+    marginBottom: Space.sm,
   },
   input: {
     borderWidth: 1,

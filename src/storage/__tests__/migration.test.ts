@@ -1,5 +1,5 @@
 /**
- * v2 → v3 마이그레이션 흐름 테스트
+ * 스키마 마이그레이션 흐름 테스트 (v2 → v4)
  *
  * 커버 범위: 마이그레이션 FLOW (버전 게이트, 컬럼 존재 확인, 멱등성)
  *
@@ -141,8 +141,12 @@ import { closeDb, getAllSessions, getOpenSessionRecords } from '../db';
 const V2_COLUMNS = ['id', 'consumed_at', 'abv_percent', 'volume_ml', 'preset_label', 'finished_at'];
 // v3 가 됐을 때 기대하는 컬럼 목록
 const V3_COLUMNS = [...V2_COLUMNS, 'session_id'];
+// v4 가 됐을 때 기대하는 컬럼 목록
+const V4_COLUMNS = [...V3_COLUMNS, 'icon'];
+// db.ts 의 SCHEMA_VERSION 과 맞춰야 한다
+const TARGET_VERSION = 4;
 
-describe('DB v2 → v3 마이그레이션 흐름', () => {
+describe('DB 스키마 마이그레이션 흐름', () => {
   beforeEach(() => {
     mockUserVersion = 0;
     mockTables = new Map();
@@ -158,32 +162,32 @@ describe('DB v2 → v3 마이그레이션 흐름', () => {
 
   // ── 신규 설치 ──────────────────────────────────────────────────────────────
 
-  test('신규 설치 → 두 테이블 생성, session_id 포함, user_version = 3', async () => {
+  test('신규 설치 → 두 테이블 생성, session_id·icon 포함, 최신 version', async () => {
     // 사전 상태: 테이블 없음, version 0
     await getOpenSessionRecords();
 
     expect(mockTables.has('drink_records')).toBe(true);
     expect(mockTables.has('drink_sessions')).toBe(true);
-    expect(mockTables.get('drink_records')).toContain('session_id');
-    expect(mockUserVersion).toBe(3);
-    // 신규 설치 시 CREATE TABLE 에 session_id 가 포함되므로 ALTER 는 불필요
+    expect(mockTables.get('drink_records')).toEqual(V4_COLUMNS);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
+    // 신규 설치 시 CREATE TABLE 이 이미 최신 스키마라 ALTER 는 불필요
     expect(mockAlterCount).toBe(0);
   });
 
-  // ── v2 → v3 업그레이드 ────────────────────────────────────────────────────
+  // ── v2 → v4 업그레이드 ────────────────────────────────────────────────────
 
-  test('v2 DB (session_id 없음, version 0) → ALTER 실행, drink_sessions 생성, version = 3', async () => {
+  test('v2 DB (session_id·icon 없음, version 0) → ALTER 2회, drink_sessions 생성, 최신 version', async () => {
     // 사전 상태: v2 배포 기기 — session_id 컬럼 없음, version 0
     mockTables.set('drink_records', [...V2_COLUMNS]);
     mockRows.set('drink_records', []);
 
     await getOpenSessionRecords();
 
-    // session_id 가 추가됐는지 확인
-    expect(mockTables.get('drink_records')).toEqual(V3_COLUMNS);
-    expect(mockAlterCount).toBe(1);
+    // session_id 와 icon 이 모두 추가됐는지 확인
+    expect(mockTables.get('drink_records')).toEqual(V4_COLUMNS);
+    expect(mockAlterCount).toBe(2);
     expect(mockTables.has('drink_sessions')).toBe(true);
-    expect(mockUserVersion).toBe(3);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
   });
 
   test('v2 DB 의 기존 기록이 session_id IS NULL (열린 세션) 으로 유지됨', async () => {
@@ -207,29 +211,54 @@ describe('DB v2 → v3 마이그레이션 흐름', () => {
     expect(records).toHaveLength(1);
     expect(records[0].id).toBe(1);
     expect(records[0].sessionId).toBeUndefined(); // null → undefined (rowToRecord 변환)
-    expect(mockUserVersion).toBe(3);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
   });
 
-  // ── 이미 v3 — 마이그레이션 건너뜀 ────────────────────────────────────────
-
-  test('user_version = 3 → 마이그레이션 블록 완전 생략, ALTER 없음', async () => {
-    // 사전 상태: 이미 마이그레이션된 기기
+  test('v3 DB (session_id 있음, icon 없음) → icon 만 추가, 기존 기록 유지', async () => {
+    // 이미 v3 로 올라간 기기가 v4 를 받는 실제 경로
+    const t0 = new Date(2026, 0, 1, 18, 0, 0).getTime();
     mockUserVersion = 3;
     mockTables.set('drink_records', [...V3_COLUMNS]);
+    mockRows.set('drink_records', [
+      {
+        id: 1, consumed_at: t0, abv_percent: 4.5, volume_ml: 500,
+        preset_label: '맥주', finished_at: t0, session_id: null, icon: null,
+      },
+    ]);
+
+    const records = await getOpenSessionRecords();
+
+    // icon 컬럼만 추가된다
+    expect(mockAlterCount).toBe(1);
+    expect(mockTables.get('drink_records')).toEqual(V4_COLUMNS);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
+    // 기존 기록은 그대로 살아 있고 icon 은 비어 있다 —
+    // 과거 데이터를 소급해 채우지 않기로 했으므로 undefined 가 정상이다
+    expect(records).toHaveLength(1);
+    expect(records[0].presetLabel).toBe('맥주');
+    expect(records[0].icon).toBeUndefined();
+  });
+
+  // ── 이미 최신 — 마이그레이션 건너뜀 ──────────────────────────────────────
+
+  test('user_version 이 최신 → 마이그레이션 블록 완전 생략, ALTER 없음', async () => {
+    // 사전 상태: 이미 마이그레이션된 기기
+    mockUserVersion = TARGET_VERSION;
+    mockTables.set('drink_records', [...V4_COLUMNS]);
     mockTables.set('drink_sessions', ['id', 'started_at', 'last_finished_at', 'sober_at', 'total_alcohol_g', 'peak_bac', 'drink_count']);
 
     await getOpenSessionRecords();
 
     expect(mockAlterCount).toBe(0);
-    expect(mockUserVersion).toBe(3); // 변화 없음
+    expect(mockUserVersion).toBe(TARGET_VERSION); // 변화 없음
   });
 
   // ── 중단된 마이그레이션 (인터럽트 시나리오) ──────────────────────────────
 
-  test('중단 시나리오: session_id 컬럼 있음 + version 0 → ALTER 생략, 재실행 안전', async () => {
+  test('중단 시나리오: 컬럼은 이미 있음 + version 0 → ALTER 생략, 재실행 안전', async () => {
     // ALTER 이후 PRAGMA 전에 앱이 죽은 상황
-    // session_id 컬럼은 이미 있지만 version 은 아직 0
-    mockTables.set('drink_records', [...V3_COLUMNS]); // session_id 이미 있음
+    // 컬럼은 이미 있지만 version 은 아직 0
+    mockTables.set('drink_records', [...V4_COLUMNS]); // 두 컬럼 다 이미 있음
     // drink_sessions 없음 (CREATE TABLE 전에 죽음)
     mockUserVersion = 0;
 
@@ -240,8 +269,8 @@ describe('DB v2 → v3 마이그레이션 흐름', () => {
     expect(mockAlterCount).toBe(0);
     // drink_sessions 는 생성됨 (CREATE TABLE IF NOT EXISTS — 멱등)
     expect(mockTables.has('drink_sessions')).toBe(true);
-    // version 은 3 으로 설정됨
-    expect(mockUserVersion).toBe(3);
+    // version 이 최신으로 설정됨
+    expect(mockUserVersion).toBe(TARGET_VERSION);
   });
 
   // ── 마시는중 기록 포함 세션 유지 ──────────────────────────────────────────
@@ -266,7 +295,7 @@ describe('DB v2 → v3 마이그레이션 흐름', () => {
 
     // 두 기록 모두 session_id IS NULL → 열린 세션으로 반환
     expect(records).toHaveLength(2);
-    expect(mockUserVersion).toBe(3);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
   });
 
   // ── 동시 진입 (C1 회귀 방지) ───────────────────────────────────────────────
@@ -302,10 +331,12 @@ describe('DB v2 → v3 마이그레이션 흐름', () => {
     // 주 단언: 어느 쪽도 "duplicate column name" 으로 죽지 않는다
     expect(results.map(r => r.status)).toEqual(['fulfilled', 'fulfilled']);
 
-    // 마이그레이션은 정확히 한 번만
-    expect(mockAlterCount).toBe(1);
-    expect(mockTables.get('drink_records')).toEqual(V3_COLUMNS);
-    expect(mockUserVersion).toBe(3);
+    // 마이그레이션은 정확히 한 번만 — 컬럼당 ALTER 1회씩, 총 2회.
+    // 가드가 없으면 마이그레이션이 통째로 두 번 돌아 4회가 되거나
+    // duplicate column 으로 던진다
+    expect(mockAlterCount).toBe(V4_COLUMNS.length - V2_COLUMNS.length);
+    expect(mockTables.get('drink_records')).toEqual(V4_COLUMNS);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
 
     // DB 는 한 번만 열린다 — 가드가 프라미스를 공유하고 있다는 증거
     expect(SQLite.openDatabaseAsync).toHaveBeenCalledTimes(1);

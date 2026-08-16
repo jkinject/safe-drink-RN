@@ -15,6 +15,15 @@ export interface DrinkRecord {
   abvPercent: number;    // 0 < abvPercent <= 100
   volumeMl: number;      // > 0
   presetLabel?: string;
+  /**
+   * 이 기록의 술 아이콘 키 (components/drink-icon 의 이름).
+   *
+   * 기록 시점에 고정한다 — 프리셋 라벨로 역추적하면 나중에 프리셋을
+   * 수정·삭제했을 때 과거 기록 아이콘이 따라 바뀐다.
+   * v4 이전 기록에는 없다. finishedAt 과 같은 null/undefined 이중성이
+   * 있으므로 판정은 `== null` / `!= null` 로 한다.
+   */
+  icon?: string;
   finishedAt?: number;   // epoch ms; undefined = 마시는중
   /**
    * 종료된 세션의 ID. null/undefined = 현재 열린 세션.

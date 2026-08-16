@@ -59,6 +59,7 @@ const ko = {
   addDrinkManual: '직접 입력',
   addDrinkCollapse: '접기',
   addDrinkExpand: '펼치기',
+  addDrinkIconLabel: '술 종류',
   addDrinkAbvLabel: '도수 (%)',
   addDrinkAbvError: '0~100 사이의 도수를 입력해주세요',
   addDrinkVolumeLabel: '용량 (ml)',
