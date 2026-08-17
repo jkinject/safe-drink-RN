@@ -356,6 +356,20 @@ export default function AddDrinkScreen() {
 
   const records = sessionStore(s => s.records);
   const profile = profileStore(s => s.profile);
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+
+  /**
+   * 입력란에 포커스가 가면 폼 끝으로 스크롤한다.
+   *
+   * KeyboardAvoidingView 는 뷰포트를 줄여줄 뿐 스크롤 위치를 옮기지 않아서,
+   * 폼이 길어진 뒤로는 용량 칸이 키보드 뒤에 남았다. 도수·용량·시뮬레이션·
+   * 버튼이 폼의 마지막 덩어리라 끝으로 보내면 넷 다 키보드 위로 올라온다.
+   * 키보드가 올라오는 애니메이션이 끝난 뒤라야 늘어난 높이가 반영된다.
+   */
+  function scrollToForm() {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 250);
+  }
   const addRecord = sessionStore(s => s.addRecord);
   const updateRecord = sessionStore(s => s.updateRecord);
   const presets = presetsStore(s => s.presets);
@@ -637,11 +651,21 @@ export default function AddDrinkScreen() {
         <View style={styles.appBarSide} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      {/* Android edge-to-edge 에선 adjustResize 로 창이 줄지 않으므로
+          두 플랫폼 모두 behavior="padding" 이 필요하다.
+          SafeAreaView 가 bottom 인셋을 이미 먹었으니 그만큼 빼야 여백이 두 번 붙지 않는다 */}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior="padding"
+        keyboardVerticalOffset={-insets.bottom}
       >
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
         {/* Preset grid (add mode only) */}
         {!isEdit && (
           <>
@@ -683,6 +707,7 @@ export default function AddDrinkScreen() {
             label={i18n.t('addDrinkAbvLabel')}
             value={abvText}
             onChangeText={v => { setAbvText(v); setAbvErr(''); }}
+            onFocus={scrollToForm}
             keyboardType="numeric"
             error={abvErr || null}
           />
@@ -692,6 +717,7 @@ export default function AddDrinkScreen() {
             label={i18n.t('addDrinkVolumeLabel')}
             value={volText}
             onChangeText={v => { setVolText(v); setVolErr(''); }}
+            onFocus={scrollToForm}
             keyboardType="numeric"
             error={volErr || null}
           />
@@ -789,7 +815,8 @@ export default function AddDrinkScreen() {
         </View>
 
         <View style={{ height: 40 }} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Dialogs */}
       <PresetDialog
@@ -832,6 +859,7 @@ const styles = StyleSheet.create({
   },
   appBarSide: { width: Space.xxxl, alignItems: 'flex-start' },
   appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
+  flex: { flex: 1 },
   scrollContent: { padding: Space.lg, gap: Space.md },
   sectionTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
   presetGrid: {
