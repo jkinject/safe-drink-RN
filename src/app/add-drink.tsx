@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -29,7 +29,9 @@ import { Text } from '@/components/typography';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
-import { DrinkPreset } from '@/core/types';
+import { DrinkPreset, DrinkRecord } from '@/core/types';
+import { estimatedSoberAt } from '@/core/bacCalculator';
+import { profileStore } from '@/state/profileStore';
 import * as notificationService from '@/services/notifications';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
@@ -38,6 +40,22 @@ const PRESET_COLUMNS = 3;
 
 function formatHm(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatClock(epochMs: number): string {
+  return formatHm(new Date(epochMs));
+}
+
+/**
+ * 시뮬레이션에서 늘어나는 시간.
+ * 한 잔은 보통 1시간 미만이라 "0시간 40분" 이 되지 않게 분 단위를 따로 둔다.
+ */
+function formatSimDelta(ms: number): string {
+  const totalMinutes = Math.round(ms / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return i18n.t('addDrinkSimDeltaMinutes', { minutes });
+  return i18n.t('addDrinkSimDeltaHours', { hours, minutes });
 }
 
 // ── Time picker modal ─────────────────────────────────────────────────────────
@@ -337,6 +355,7 @@ export default function AddDrinkScreen() {
   void locale;
 
   const records = sessionStore(s => s.records);
+  const profile = profileStore(s => s.profile);
   const addRecord = sessionStore(s => s.addRecord);
   const updateRecord = sessionStore(s => s.updateRecord);
   const presets = presetsStore(s => s.presets);
@@ -476,6 +495,40 @@ export default function AddDrinkScreen() {
     setShowEditDialog(false);
     setEditPresetIdx(null);
   }
+
+  /**
+   * "이 술을 지금 마시면" 시뮬레이션 — 추가 전에 용량을 바꿔가며 계획할 수 있게.
+   *
+   * 직접 β 로 계산하지 않고 estimatedSoberAt 을 두 번 불러 차이를 낸다.
+   * 타이머가 쓰는 함수와 같은 걸 써야 여기서 예고한 시간과 실제 타이머가
+   * 어긋나지 않는다.
+   *
+   * 후보 기록은 finishedAt 을 채워 넣는다 — 계산기는 마시는중 기록을
+   * 제외하므로(finishedOnly) 비워두면 시뮬레이션이 항상 0 이 된다.
+   */
+  const simulation = useMemo(() => {
+    if (isEdit || !profile) return null;
+    const a = parseFloat(abvText);
+    const v = parseFloat(volText);
+    if (isNaN(a) || a <= 0 || a > 100 || isNaN(v) || v <= 0) return null;
+
+    const now = Date.now();
+    const candidate: DrinkRecord = {
+      consumedAt: now,
+      finishedAt: now,
+      abvPercent: a,
+      volumeMl: v,
+    };
+    const after = estimatedSoberAt([...records, candidate], profile);
+    if (after == null) return null;
+
+    const before = estimatedSoberAt(records, profile);
+    // 진행 중인 세션이 없거나 이미 다 깬 상태면 지금부터 새로 시작하는 셈이다
+    const ongoing = before != null && before > now;
+    const addedMs = Math.max(0, after - (ongoing ? before : now));
+
+    return { addedMs, soberAt: ongoing ? after : now + addedMs };
+  }, [isEdit, profile, abvText, volText, records]);
 
   function validate(): boolean {
     let ok = true;
@@ -701,6 +754,25 @@ export default function AddDrinkScreen() {
 
           <View style={{ height: 12 }} />
 
+          {/* 추가 전 시뮬레이션 — 도수·용량을 바꾸면 즉시 다시 계산된다 */}
+          {simulation && (
+            <View style={styles.simCard}>
+              <View style={styles.simHeader}>
+                <Icon
+                  name="clock"
+                  size={IconSize.sm}
+                  color={AppColors.accent}
+                  strokeWidth={2.1}
+                />
+                <Text style={styles.simLabel}>{i18n.t('addDrinkSimLabel')}</Text>
+              </View>
+              <Text style={styles.simDelta}>{formatSimDelta(simulation.addedMs)}</Text>
+              <Text style={styles.simSoberAt}>
+                {i18n.t('addDrinkSimSoberAt', { time: formatClock(simulation.soberAt) })}
+              </Text>
+            </View>
+          )}
+
           {/* Submit */}
           <TouchableOpacity
             style={[styles.submitBtn, saving && styles.submitBtnDisabled]}
@@ -836,6 +908,22 @@ const styles = StyleSheet.create({
     paddingVertical: Space.lg,
     alignItems: 'center',
   },
+  // 흰 카드 안이라 그림자 대신 연보라 채움으로 구분한다
+  simCard: {
+    backgroundColor: AppColors.bg,
+    borderRadius: Radius.md,
+    padding: Space.lg,
+    marginBottom: Space.md,
+    gap: Space.xxs,
+  },
+  simHeader: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
+  simLabel: { fontSize: Font.caption, color: AppColors.sub },
+  simDelta: {
+    fontSize: Font.h3,
+    fontWeight: Weight.bold,
+    color: AppColors.accent,
+  },
+  simSoberAt: { fontSize: Font.bodySm, color: AppColors.navy },
   submitBtnDisabled: { opacity: 0.6 },
   submitBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
 });
