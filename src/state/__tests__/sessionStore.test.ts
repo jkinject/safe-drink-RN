@@ -28,6 +28,14 @@ jest.mock('../../storage/db', () => ({
   getSessionRecords: jest.fn(async () => []),
 }));
 
+// settingsStore 가 AsyncStorage 를 끌어온다 — 네이티브 모듈이라 목이 필요하다.
+// 기본값(ON)을 그대로 쓰므로 스토어 자체는 목하지 않는다.
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(async () => null),
+  setItem: jest.fn(async () => {}),
+  removeItem: jest.fn(async () => {}),
+}));
+
 jest.mock('../../services/notifications', () => ({
   cancelAll: jest.fn(async () => {}),
   scheduleSoberNotification: jest.fn(async () => {}),
@@ -51,6 +59,8 @@ jest.mock('../localeStore', () => ({
 // ── import (mock 설정 이후) ───────────────────────────────────────────────
 
 import { sessionStore } from '../sessionStore';
+import { settingsStore } from '../settingsStore';
+import * as notificationService from '../../services/notifications';
 import * as db from '../../storage/db';
 
 const mockDb = db as jest.Mocked<typeof db>;
@@ -200,6 +210,46 @@ describe('checkAutoClose', () => {
 });
 
 // ── BAC 격리 (핵심 회귀 방지) ──────────────────────────────────────────────
+
+describe('알림 카운트다운 설정', () => {
+  test('설정이 ON 이면 카운트다운을 띄운다 (기본값)', async () => {
+    settingsStore.setState({ timerNotificationEnabled: true });
+    const now = Date.now();
+    const record = {
+      id: 1, consumedAt: now, finishedAt: now, abvPercent: 4.5, volumeMl: 500,
+    };
+    // 재로드 결과에 완료 기록이 있어야 soberAt 이 미래로 잡혀 알림이 예약된다
+    mockDb.getOpenSessionRecords.mockResolvedValue([record]);
+
+    await sessionStore.getState().addRecord({
+      consumedAt: now,
+      finishedAt: now,
+      abvPercent: 4.5,
+      volumeMl: 500,
+    });
+
+    expect(notificationService.showTimerNotification).toHaveBeenCalled();
+  });
+
+  test('설정이 OFF 면 띄우지 않고 이미 뜬 것도 내린다', async () => {
+    settingsStore.setState({ timerNotificationEnabled: false });
+    const now = Date.now();
+    // ON 케이스와 같은 조건 — 설정만 다르다
+    mockDb.getOpenSessionRecords.mockResolvedValue([
+      { id: 1, consumedAt: now, finishedAt: now, abvPercent: 4.5, volumeMl: 500 },
+    ]);
+
+    await sessionStore.getState().addRecord({
+      consumedAt: now,
+      finishedAt: now,
+      abvPercent: 4.5,
+      volumeMl: 500,
+    });
+
+    expect(notificationService.showTimerNotification).not.toHaveBeenCalled();
+    expect(notificationService.dismissTimerNotification).toHaveBeenCalled();
+  });
+});
 
 describe('BAC 격리 — ghost BAC 회귀 방지', () => {
   test('3개 닫힌 세션 + 열린 기록 1개 → records.length === 1', async () => {

@@ -15,6 +15,8 @@ import * as db from '../storage/db';
 import * as notificationService from '../services/notifications';
 import { profileStore } from './profileStore';
 import { localeStore } from './localeStore';
+import { i18n } from '../i18n';
+import { settingsStore } from './settingsStore';
 
 interface SessionState {
   records: DrinkRecord[];      // 열린 세션의 기록만 (session_id IS NULL)
@@ -43,6 +45,8 @@ interface SessionState {
   deleteSession: (sessionId: number) => Promise<void>;
   /** 세션 1건의 기록 조회 */
   getSessionRecords: (sessionId: number) => Promise<DrinkRecord[]>;
+  /** 알림 재계산 — 설정 변경처럼 기록이 안 바뀐 경우에 쓴다 */
+  refreshNotifications: () => Promise<void>;
 }
 
 // ── 직렬화 뮤텍스 ──────────────────────────────────────────────────────────────
@@ -79,9 +83,19 @@ async function rescheduleNotification(records: DrinkRecord[]): Promise<void> {
           : 'All alcohol has been metabolized. Still, check how you feel first 😊',
       });
       // 알림창에서 앱을 켜지 않고도 남은 시간을 볼 수 있게 카운트다운을 띄운다
-      await notificationService.showTimerNotification(soberAtMs, {
-        title: isKo ? '술 깨기까지' : 'Time until sober',
-      });
+      const soberAt = new Date(soberAtMs);
+      const hhmm = `${String(soberAt.getHours()).padStart(2, '0')}:${String(
+        soberAt.getMinutes(),
+      ).padStart(2, '0')}`;
+      // 설정에서 끄면 카운트다운은 띄우지 않는다 (분해 완료 알림은 그대로)
+      if (settingsStore.getState().timerNotificationEnabled) {
+        await notificationService.showTimerNotification(soberAtMs, {
+          title: isKo ? '술 깨기까지' : 'Time until sober',
+          subtitle: i18n.t('timerNotificationSoberAt', { time: hhmm }),
+        });
+      } else {
+        await notificationService.dismissTimerNotification();
+      }
     } else {
       // 완료 기록이 없거나(마시는중만) 이미 지난 시각이면 카운트다운은 두지 않는다
       await notificationService.dismissTimerNotification();
@@ -198,6 +212,10 @@ export const sessionStore = create<SessionState>((set, get) => ({
         set({ sessions });
       }
     });
+  },
+
+  refreshNotifications: async () => {
+    await rescheduleNotification(get().records);
   },
 
   loadSessions: async () => {

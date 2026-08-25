@@ -59,7 +59,7 @@ export async function initialize(): Promise<void> {
  */
 export async function showTimerNotification(
   soberAtMs: number,
-  { title }: { title: string },
+  { title, subtitle }: { title: string; subtitle: string },
 ): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.scheduleNotificationAsync({
@@ -70,7 +70,9 @@ export async function showTimerNotification(
       autoDismiss: false,
       sound: false,
       priority: Notifications.AndroidNotificationPriority.LOW,
-      data: { chronometerAtMs: soberAtMs },
+      // 보조 문구도 data 로 넘긴다 — content.body(=JS body) 는 네이티브
+      // 커스텀 뷰까지 오지 않는 경우가 있어 확실한 경로로 통일한다
+      data: { chronometerAtMs: soberAtMs, subtitle },
     },
     // channelId 를 실어야 한다 — trigger: null 로 두면 expo 가 fallback 채널로 보내
     // LOW 중요도(무음) 설정이 통째로 무시된다

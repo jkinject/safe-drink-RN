@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   TextInput,
   TouchableOpacity,
   View,
@@ -12,6 +14,7 @@ import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { alert, confirm } from '@/components/dialog';
 import { Text } from '@/components/typography';
+import { settingsStore } from '@/state/settingsStore';
 import { i18n } from '@/i18n';
 import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
@@ -119,6 +122,19 @@ interface ProfileErrors {
 
 export default function SettingsScreen() {
   const locale = localeStore(s => s.locale);
+  const timerNotificationEnabled = settingsStore(s => s.timerNotificationEnabled);
+  const setTimerNotificationEnabled = settingsStore(s => s.setTimerNotificationEnabled);
+  const refreshNotifications = sessionStore(s => s.refreshNotifications);
+
+  /**
+   * 토글 후 알림을 즉시 반영한다.
+   * 끄면 떠 있던 카운트다운이 내려가고, 켜면 진행 중인 세션이 있을 때 바로 뜬다.
+   * 계산은 sessionStore 가 이미 하므로 여기서 중복하지 않는다.
+   */
+  async function handleTimerNotificationToggle(next: boolean) {
+    await setTimerNotificationEnabled(next);
+    await refreshNotifications();
+  }
   const setLocale = localeStore(s => s.setLocale);
   void locale;
 
@@ -318,6 +334,23 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </SectionCard>
 
+        {/* 알림창 카운트다운 토글 — Android 전용 기능이라 iOS 에서는 숨긴다 */}
+        {Platform.OS === 'android' && (
+          <SectionCard icon="clock" title={i18n.t('settingsTimerNotification')}>
+            <View style={styles.toggleRow}>
+              <Text style={styles.toggleDesc}>
+                {i18n.t('settingsTimerNotificationDesc')}
+              </Text>
+              <Switch
+                value={timerNotificationEnabled}
+                onValueChange={handleTimerNotificationToggle}
+                trackColor={{ false: AppColors.border, true: AppColors.accent }}
+                thumbColor="#fff"
+              />
+            </View>
+          </SectionCard>
+        )}
+
         {/* Language card */}
         <SectionCard icon="language" title={i18n.t('languageTitle')}>
           <LangOption
@@ -387,6 +420,13 @@ const styles = StyleSheet.create({
   greetingText: { flex: 1 },
   greetingTitle: { color: '#fff', fontSize: Font.h2, fontWeight: Weight.bold },
   greetingSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: Font.bodySm, marginTop: Space.xxs },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Space.md,
+  },
+  // 설명이 스위치를 밀어내지 않도록 남는 폭만 차지한다
+  toggleDesc: { flex: 1, fontSize: Font.bodySm, color: AppColors.sub },
   outlineBtn: {
     borderWidth: 1,
     borderColor: AppColors.accent,
