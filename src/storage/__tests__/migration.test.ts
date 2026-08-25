@@ -298,6 +298,29 @@ describe('DB 스키마 마이그레이션 흐름', () => {
     expect(mockUserVersion).toBe(TARGET_VERSION);
   });
 
+  // ── 버전만 올라간 불일치 DB 자가 복구 ─────────────────────────────────────
+
+  /**
+   * user_version 은 최신인데 컬럼이 빠진 DB 는 스스로 복구되어야 한다.
+   *
+   * 실제로 iOS 시뮬레이터에서 이 상태가 나왔다 — 개발 중 SCHEMA_VERSION 만
+   * 올라간 중간 코드가 Fast Refresh 로 실행되면서 버전만 기록됐다.
+   * 컬럼 검사가 버전 게이트 뒤에 있으면 여기서 조기 반환해 영영 복구되지 않고,
+   * 이후 모든 INSERT 가 "no such column: icon" 으로 죽는다.
+   */
+  test('user_version 은 최신인데 컬럼이 빠진 DB → 컬럼을 다시 채운다', async () => {
+    mockUserVersion = TARGET_VERSION;            // 버전은 이미 최신
+    mockTables.set('drink_records', [...V3_COLUMNS]); // icon 만 없음
+    mockRows.set('drink_records', []);
+
+    await getOpenSessionRecords();
+
+    // 버전이 최신이어도 빠진 컬럼은 채워져야 한다
+    expect(mockTables.get('drink_records')).toEqual(V4_COLUMNS);
+    expect(mockAlterCount).toBe(1);
+    expect(mockUserVersion).toBe(TARGET_VERSION);
+  });
+
   // ── 동시 진입 (C1 회귀 방지) ───────────────────────────────────────────────
 
   /**

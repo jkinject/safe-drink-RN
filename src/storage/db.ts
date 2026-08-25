@@ -46,12 +46,12 @@ let _dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
   // CREATE 이전 컬럼 구성 — 테이블이 없으면 빈 배열(= 신규 설치)
-  const existingColumns = await db.getAllAsync<{ name: string }>(
+  const columnsBefore = await db.getAllAsync<{ name: string }>(
     'PRAGMA table_info(drink_records)',
   );
-  const isFreshInstall = existingColumns.length === 0;
+  const isFreshInstall = columnsBefore.length === 0;
 
-  // 신규 설치: 전체 스키마로 생성
+  // 신규 설치: 최신 스키마로 한 번에 생성
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS drink_records (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,38 +64,6 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
       icon TEXT
     )
   `);
-
-  // 버전 게이트 마이그레이션.
-  // user_version 은 지금까지 쓰인 적이 없어 기존 기기는 전부 0 (= 배포된 v2 스키마).
-  const versionResult = await db.getFirstAsync<{ user_version: number }>(
-    'PRAGMA user_version',
-  );
-  const currentVersion = versionResult?.user_version ?? 0;
-  if (currentVersion >= SCHEMA_VERSION) return;
-
-  // v2 → v3: session_id 컬럼 추가.
-  // ALTER 후 PRAGMA 전에 앱이 죽어도 재실행이 안전하도록 컬럼 존재 여부를 먼저 확인한다
-  // (없으면 "duplicate column name" 으로 매 실행마다 터진다).
-  // 로그는 실제로 컬럼을 추가할 때만 — 신규 설치에서 "Migrating" 이 찍히면
-  // 사전-OTA 기기 체크리스트에서 마이그레이션 실행 여부를 오판하게 된다.
-  if (!isFreshInstall && !existingColumns.some(c => c.name === 'session_id')) {
-    console.warn(
-      `[DB] Migrating v${currentVersion} → v${SCHEMA_VERSION}: drink_records.session_id 추가`,
-    );
-    await db.execAsync(
-      'ALTER TABLE drink_records ADD COLUMN session_id INTEGER',
-    );
-  }
-
-  // v3 → v4: icon 컬럼 추가.
-  // 기존 기록은 NULL 로 남는다 — 과거 데이터 소급 채우기는 하지 않기로 했다.
-  // 렌더 쪽이 icon 이 없으면 예전처럼 프리셋 라벨로 되짚으므로 보이는 건 그대로다.
-  if (!isFreshInstall && !existingColumns.some(c => c.name === 'icon')) {
-    console.warn(
-      `[DB] Migrating v${currentVersion} → ${SCHEMA_VERSION}: drink_records.icon 추가`,
-    );
-    await db.execAsync('ALTER TABLE drink_records ADD COLUMN icon TEXT');
-  }
 
   // 세션 요약 테이블 (IF NOT EXISTS 라 그 자체로 멱등)
   await db.execAsync(`
@@ -110,7 +78,41 @@ async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
     )
   `);
 
-  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  // ── 컬럼 보강 ────────────────────────────────────────────────────────────
+  //
+  // user_version 게이트 뒤에 두지 않는다. 버전만 올라가고 컬럼이 빠진 DB 가
+  // 한 번 생기면(개발 중 중간 코드가 실행되는 등) 게이트에 걸려 영영 복구되지
+  // 않고, 이후 모든 INSERT 가 "no such column" 으로 죽는다. 실제로 iOS
+  // 시뮬레이터에서 그 상태가 나왔다.
+  //
+  // 검사 자체가 멱등하고 PRAGMA 한 번이라 매 실행 비용은 무시할 수 있다.
+  // CREATE 직후의 실제 컬럼을 다시 읽으므로 신규 설치에서도 중복 ALTER 가 없다.
+  const columns = await db.getAllAsync<{ name: string }>(
+    'PRAGMA table_info(drink_records)',
+  );
+  const has = (name: string) => columns.some(c => c.name === name);
+
+  // 로그는 실제로 컬럼을 추가할 때만 — 신규 설치에서 "Migrating" 이 찍히면
+  // 사전-OTA 기기 체크리스트에서 마이그레이션 실행 여부를 오판하게 된다.
+  if (!has('session_id')) {
+    console.warn('[DB] drink_records.session_id 추가');
+    await db.execAsync('ALTER TABLE drink_records ADD COLUMN session_id INTEGER');
+  }
+  if (!has('icon')) {
+    console.warn('[DB] drink_records.icon 추가');
+    await db.execAsync('ALTER TABLE drink_records ADD COLUMN icon TEXT');
+  }
+
+  const versionResult = await db.getFirstAsync<{ user_version: number }>(
+    'PRAGMA user_version',
+  );
+  const currentVersion = versionResult?.user_version ?? 0;
+  if (currentVersion < SCHEMA_VERSION) {
+    if (!isFreshInstall) {
+      console.warn(`[DB] Migrated v${currentVersion} → v${SCHEMA_VERSION}`);
+    }
+    await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  }
 }
 
 async function openDb(): Promise<SQLite.SQLiteDatabase> {
