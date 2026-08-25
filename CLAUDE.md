@@ -69,6 +69,9 @@ src/
 - **react-native-svg는 height 필수** — 없으면 높이 0으로 보이지 않음. BacGraph는 onLayout 실측 폭 기반 픽셀 렌더링 사용 (viewBox 스케일링 금지).
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).
 - **jest 타입**: `jest-types.d.ts`로 고정 (expo가 expo-env.d.ts를 재생성하며 참조를 지움).
+- **expo 모듈은 기본적으로 프리빌트 AAR 로 링크된다** — `node_modules/<모듈>/local-maven-repo/` 에 .aar 가 있으면 Gradle 이 소스를 컴파일하지 않는다. patch-package 로 네이티브 소스를 고쳐도 **빌드에 반영되지 않는다**. 반영하려면 `package.json` 의 `expo.autolinking.android.buildFromSource` 에 모듈명을 넣어야 한다 (현재 expo-notifications 가 여기 등록돼 있다). 반영 여부는 `unzip -o APK 'classes*.dex'` 후 `strings -a` 로 패치 문자열을 찾아 확인할 것.
+- **`npx expo prebuild` 는 `android/local.properties` 와 `gradle.properties` 의 JDK 고정을 지운다.** prebuild 후에는 `sdk.dir` 과 `org.gradle.java.home`(JDK 17) 을 반드시 다시 넣을 것 — 안 그러면 SDK 미탐지 또는 CMake 오류로 빌드가 깨진다.
+- 알림 카운트다운은 `patches/expo-notifications+*.patch` 로 `setChronometerCountDown` 을 붙여 구현했다. JS 에서 `data.chronometerAtMs` 로 목표 시각만 넘기면 시스템이 직접 1초씩 깎으므로 앱이 죽어도 정확하다. 남은 시간을 문자열로 구워 보내지 말 것.
 - 캐릭터 에셋(assets/images/character/, 10장)은 배경이 앱 배경색(#EEEDF8)으로 보정된 AI 생성 이미지. 재생성 파이프라인·레퍼런스는 Flutter 폴더(`design_refs/`, Replicate openai/gpt-image-2, 토큰 `~/.replicate_api_token`) 참조. 배경 보정은 flood fill 금지, 색 거리 기반 스무스 시프트만.
 
 ## 디자인 토큰

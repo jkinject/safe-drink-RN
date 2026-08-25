@@ -31,6 +31,8 @@ jest.mock('../../storage/db', () => ({
 jest.mock('../../services/notifications', () => ({
   cancelAll: jest.fn(async () => {}),
   scheduleSoberNotification: jest.fn(async () => {}),
+  showTimerNotification: jest.fn(async () => {}),
+  dismissTimerNotification: jest.fn(async () => {}),
   initialize: jest.fn(async () => {}),
 }));
 

@@ -63,7 +63,10 @@ async function rescheduleNotification(records: DrinkRecord[]): Promise<void> {
   try {
     await notificationService.cancelAll();
     const profile = profileStore.getState().profile;
-    if (records.length === 0 || !profile) return;
+    if (records.length === 0 || !profile) {
+      await notificationService.dismissTimerNotification();
+      return;
+    }
 
     const soberAtMs = estimatedSoberAt(records, profile);
     if (soberAtMs !== null && soberAtMs > Date.now()) {
@@ -75,6 +78,13 @@ async function rescheduleNotification(records: DrinkRecord[]): Promise<void> {
           ? '알코올이 모두 분해되었어요. 그래도 컨디션을 한 번 확인해 주세요 😊'
           : 'All alcohol has been metabolized. Still, check how you feel first 😊',
       });
+      // 알림창에서 앱을 켜지 않고도 남은 시간을 볼 수 있게 카운트다운을 띄운다
+      await notificationService.showTimerNotification(soberAtMs, {
+        title: isKo ? '술 깨기까지' : 'Time until sober',
+      });
+    } else {
+      // 완료 기록이 없거나(마시는중만) 이미 지난 시각이면 카운트다운은 두지 않는다
+      await notificationService.dismissTimerNotification();
     }
   } catch (e) {
     console.warn('[Notification] 알림 예약 실패:', e);
@@ -141,6 +151,8 @@ export const sessionStore = create<SessionState>((set, get) => ({
     serialize(async () => {
       await db.deleteAllData();
       await notificationService.cancelAll();
+      // 기록을 다 지웠으니 카운트다운도 함께 내린다
+      await notificationService.dismissTimerNotification();
       set({ records: [], sessions: [] });
     }),
 
@@ -178,7 +190,9 @@ export const sessionStore = create<SessionState>((set, get) => ({
           `[Session] Closed session #${sessionId}, ${summary.drinkCount} records, peak BAC ${summary.peakBac.toFixed(5)}`,
         );
 
-        // 알림은 취소하지 않음 — "분해 완료" 알림이 알림 센터에 남아야 함
+        // 예약 알림은 취소하지 않음 — "분해 완료" 알림이 알림 센터에 남아야 함.
+        // 다만 카운트다운은 0 이 됐으므로 내린다
+        await notificationService.dismissTimerNotification();
         set({ records: [] });
         const sessions = await db.getAllSessions();
         set({ sessions });
