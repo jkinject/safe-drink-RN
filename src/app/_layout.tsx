@@ -29,6 +29,7 @@ export default function RootLayout() {
   const loadSession = sessionStore(s => s.load);
   const loadSessions = sessionStore(s => s.loadSessions);
   const loadSettings = settingsStore(s => s.load);
+  const refreshNotifications = sessionStore(s => s.refreshNotifications);
   const router = useRouter();
   const segments = useSegments();
 
@@ -46,6 +47,11 @@ export default function RootLayout() {
           notificationService.initialize(),
         ]),
       )
+      // 진행 중인 세션이 있으면 카운트다운을 다시 띄운다.
+      // 앱 업데이트·재부팅·사용자가 알림을 밀어서 지운 경우 알림이 사라진 채로
+      // 남는데, load() 는 알림을 건드리지 않아 다음 기록 변경까지 복구되지 않는다.
+      // Promise.all 뒤에 두는 이유: 프로필·로케일·설정이 모두 채워져야 한다.
+      .then(() => refreshNotifications())
       .catch(() => {})
       .finally(() => setInitialized(true));
   // eslint-disable-next-line react-hooks/exhaustive-deps
