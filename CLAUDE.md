@@ -34,12 +34,25 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 ## OTA (EAS Update)
 
+- **OTA 채널은 `eas.json` 프로필이 정한다. `app.json` 에 `updates.requestHeaders` 를 넣지 말 것** — 프로덕션 빌드가 preview 채널을 물어 실사용자에게 테스트 번들이 나간다.
+- 로컬(비-EAS) 릴리스 빌드가 preview OTA 를 받게 하려면 `android/app/src/main/AndroidManifest.xml` 에 직접 넣는다 (이 파일은 `/android` 가 gitignore 라 로컬에만 남고 EAS 빌드에는 영향이 없다):
+  ```xml
+  <meta-data android:name="expo.modules.updates.UPDATES_CONFIGURATION_REQUEST_HEADERS_KEY"
+             android:value="{&quot;expo-channel-name&quot;:&quot;preview&quot;}"/>
+  ```
+
 - EAS 프로젝트: `@jkinject/safe-drink-rn` (projectId `d4523f48-fc64-42d2-a324-64a6e6b6cee0`)
 - runtimeVersion 정책: `appVersion` (app.json `version`) — **네이티브 모듈 추가/변경 시 version 올리고 새 바이너리 배포 필수** (OTA는 JS/에셋만 전달)
 - 채널: development / preview / production (eas.json)
-- 로컬(비-EAS) 빌드도 OTA를 받도록 app.json `updates.requestHeaders: { "expo-channel-name": "preview" }` 설정됨
 - 시작 시 자동 확인·즉시 적용: `src/hooks/useOtaUpdates.ts` (루트 레이아웃에서 호출)
 - 상세: `docs/OTA-UPDATE.md`
+
+## Android 권한 (Play 정책)
+
+- **`USE_EXACT_ALARM` 금지.** Play 는 알람시계·캘린더가 핵심 기능인 앱에만 허용한다. 음주 타이머는 해당하지 않아 심사에서 막힌다. `app.json` 의 `blockedPermissions` 로 차단해 둔다.
+- **`SYSTEM_ALERT_WINDOW` 금지.** 코드에서 쓰지 않는데 prebuild 가 매니페스트에 넣는다. 마찬가지로 `blockedPermissions` 로 차단 (`tools:node="remove"` 로 병합 단계에서 제거됨).
+- `SCHEDULE_EXACT_ALARM` 은 유지한다. Android 14+ 는 기본 거부지만 expo-notifications 가 `canScheduleExactAlarms()` 로 가드하고 `setAndAllowWhileIdle` 로 폴백하므로 **예외가 나지 않는다** (`ExpoSchedulingDelegate.kt:105`). 거부 상태에서는 "이제 안전해요" 알림이 몇 분 늦을 수 있고, 알림창 카운트다운은 시스템 크로노미터라 영향 없다.
+- 권한을 바꾼 뒤에는 `aapt2 dump permissions <APK>` 로 실제 산출물을 확인할 것 — app.json 만 고치고 `android/` 를 재생성하지 않으면 로컬 빌드에는 반영되지 않는다.
 
 ## 구조
 
@@ -75,7 +88,7 @@ src/
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).
 - **jest 타입**: `jest-types.d.ts`로 고정 (expo가 expo-env.d.ts를 재생성하며 참조를 지움).
 - **expo 모듈은 기본적으로 프리빌트 AAR 로 링크된다** — `node_modules/<모듈>/local-maven-repo/` 에 .aar 가 있으면 Gradle 이 소스를 컴파일하지 않는다. patch-package 로 네이티브 소스를 고쳐도 **빌드에 반영되지 않는다**. 반영하려면 `package.json` 의 `expo.autolinking.android.buildFromSource` 에 모듈명을 넣어야 한다 (현재 expo-notifications 가 여기 등록돼 있다). 반영 여부는 `unzip -o APK 'classes*.dex'` 후 `strings -a` 로 패치 문자열을 찾아 확인할 것.
-- **`npx expo prebuild` 는 `android/local.properties` 와 `gradle.properties` 의 JDK 고정을 지운다.** prebuild 후에는 `sdk.dir` 과 `org.gradle.java.home`(JDK 17) 을 반드시 다시 넣을 것 — 안 그러면 SDK 미탐지 또는 CMake 오류로 빌드가 깨진다.
+- **`npx expo prebuild` 는 `android/local.properties`·`gradle.properties` 의 JDK 고정과 아래 OTA 채널 헤더를 모두 지운다.** prebuild 후에는 `sdk.dir`, `org.gradle.java.home`(JDK 17), `expo-channel-name` 을 반드시 다시 넣을 것.
 - 알림 카운트다운은 `patches/expo-notifications+*.patch` 로 `setChronometerCountDown` 을 붙여 구현했다. JS 에서 `data.chronometerAtMs` 로 목표 시각만 넘기면 시스템이 직접 1초씩 깎으므로 앱이 죽어도 정확하다. 남은 시간을 문자열로 구워 보내지 말 것.
 - **Chronometer 는 0 에서 멈추지 않는다** — 목표 시각을 지나면 `-30:28` 처럼 음수로 계속 센다. 앱 프로세스가 죽어 있으면 JS 로 내릴 방법이 없으므로 취소도 시스템에 맡겨야 한다: 같은 패치에서 `setTimeoutAfter(남은 시간)` 을 건다. `setOngoing(true)` 와 함께 써도 취소된다.
 - **patch-package 재생성 시 `node_modules/<모듈>/android/build` 를 먼저 지울 것.** 안 그러면 Gradle 산출물 수천 개가 패치에 섞여 들어간다(실제로 2.5MB 까지 불었다). 그리고 재생성 후에는 `grep '^diff --git' 패치` 로 **의도한 파일이 전부 들어갔는지** 확인할 것 — 새로 추가한 `res/values*/*.xml` 이 빠진 채 커밋돼 clean install 에서만 빌드가 깨진 적이 있다.

@@ -20,12 +20,11 @@
       "permissions": [
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.USE_EXACT_ALARM",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.USE_EXACT_ALARM",
         "android.permission.RECEIVE_BOOT_COMPLETED"
+      ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.USE_EXACT_ALARM"
       ],
       "predictiveBackGestureEnabled": false
     },
@@ -53,10 +52,7 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 3000,
-      "url": "https://u.expo.dev/d4523f48-fc64-42d2-a324-64a6e6b6cee0",
-      "requestHeaders": {
-        "expo-channel-name": "preview"
-      }
+      "url": "https://u.expo.dev/d4523f48-fc64-42d2-a324-64a6e6b6cee0"
     },
     "runtimeVersion": {
       "policy": "appVersion"
