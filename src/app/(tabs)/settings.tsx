@@ -77,13 +77,19 @@ const sectionStyles = StyleSheet.create({
  *
  * 라벨은 i18n 을 거치지 않고 해당 언어 그대로 쓴다 — 앱이 영어일 때
  * "한국어" 항목이 "Korean" 으로 보이면 그 언어를 찾는 사람이 못 알아본다.
- * (시스템 기본만 현재 언어를 따른다.)
+ * "시스템 기본"만 현재 언어를 따른다.
+ *
+ * ⚠️ 모듈 최상위 상수로 만들지 말 것. i18n.t() 가 모듈 로드 시점에 한 번만
+ * 평가되어, 언어를 바꿔도 "시스템 기본" 이 예전 언어로 얼어붙는다.
+ * 렌더마다 다시 만들어야 한다.
  */
-const LANGUAGE_OPTIONS: SelectOption<LocalePreference>[] = [
-  { label: i18n.t('languageSystem'), value: 'system' },
-  { label: '한국어', value: 'ko' },
-  { label: 'English', value: 'en' },
-];
+function languageOptions(): SelectOption<LocalePreference>[] {
+  return [
+    { label: i18n.t('languageSystem'), value: 'system' },
+    { label: '한국어', value: 'ko' },
+    { label: 'English', value: 'en' },
+  ];
+}
 
 // ── Profile form ──────────────────────────────────────────────────────────────
 
@@ -332,7 +338,7 @@ export default function SettingsScreen() {
             title={i18n.t('languageTitle')}
             // locale 이 null 이면 "시스템 기본" — 저장값이 없다는 뜻이다
             value={locale ?? 'system'}
-            options={LANGUAGE_OPTIONS}
+            options={languageOptions()}
             onChange={v => setLocale(v).catch(() => {})}
           />
         </SectionCard>
