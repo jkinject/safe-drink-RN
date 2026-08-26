@@ -72,6 +72,8 @@ src/
 - **expo 모듈은 기본적으로 프리빌트 AAR 로 링크된다** — `node_modules/<모듈>/local-maven-repo/` 에 .aar 가 있으면 Gradle 이 소스를 컴파일하지 않는다. patch-package 로 네이티브 소스를 고쳐도 **빌드에 반영되지 않는다**. 반영하려면 `package.json` 의 `expo.autolinking.android.buildFromSource` 에 모듈명을 넣어야 한다 (현재 expo-notifications 가 여기 등록돼 있다). 반영 여부는 `unzip -o APK 'classes*.dex'` 후 `strings -a` 로 패치 문자열을 찾아 확인할 것.
 - **`npx expo prebuild` 는 `android/local.properties` 와 `gradle.properties` 의 JDK 고정을 지운다.** prebuild 후에는 `sdk.dir` 과 `org.gradle.java.home`(JDK 17) 을 반드시 다시 넣을 것 — 안 그러면 SDK 미탐지 또는 CMake 오류로 빌드가 깨진다.
 - 알림 카운트다운은 `patches/expo-notifications+*.patch` 로 `setChronometerCountDown` 을 붙여 구현했다. JS 에서 `data.chronometerAtMs` 로 목표 시각만 넘기면 시스템이 직접 1초씩 깎으므로 앱이 죽어도 정확하다. 남은 시간을 문자열로 구워 보내지 말 것.
+- **Chronometer 는 0 에서 멈추지 않는다** — 목표 시각을 지나면 `-30:28` 처럼 음수로 계속 센다. 앱 프로세스가 죽어 있으면 JS 로 내릴 방법이 없으므로 취소도 시스템에 맡겨야 한다: 같은 패치에서 `setTimeoutAfter(남은 시간)` 을 건다. `setOngoing(true)` 와 함께 써도 취소된다.
+- **patch-package 재생성 시 `node_modules/<모듈>/android/build` 를 먼저 지울 것.** 안 그러면 Gradle 산출물 수천 개가 패치에 섞여 들어간다(실제로 2.5MB 까지 불었다). 그리고 재생성 후에는 `grep '^diff --git' 패치` 로 **의도한 파일이 전부 들어갔는지** 확인할 것 — 새로 추가한 `res/values*/*.xml` 이 빠진 채 커밋돼 clean install 에서만 빌드가 깨진 적이 있다.
 - 캐릭터 에셋(assets/images/character/, 10장)은 배경이 앱 배경색(#EEEDF8)으로 보정된 AI 생성 이미지. 재생성 파이프라인·레퍼런스는 Flutter 폴더(`design_refs/`, Replicate openai/gpt-image-2, 토큰 `~/.replicate_api_token`) 참조. 배경 보정은 flood fill 금지, 색 거리 기반 스무스 시프트만.
 
 ## 디자인 토큰
