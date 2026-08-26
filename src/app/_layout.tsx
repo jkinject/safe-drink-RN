@@ -115,6 +115,14 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
+        {/* 설정 → 프로필은 depth 로 들어가는 흐름이라 모달이 아니라 오른쪽 슬라이드 */}
+        <Stack.Screen
+          name="profile"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
         <Stack.Screen
           name="history"
           options={{
