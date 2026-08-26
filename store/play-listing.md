@@ -87,7 +87,7 @@ Safedrink가 보여주는 수치는 공개된 계산식에 기반한 참고용 �
 | 앱 이름 | Safedrink — 술 깨는 시간 계산 |
 | 카테고리 | 라이프스타일 (Lifestyle) |
 | 태그 | 건강, 자기관리 |
-| 이메일 | tim.jang@day1company.co.kr |
+| 이메일 | jkinject@gmail.com |
 | 개인정보처리방침 | https://jkinject.github.io/safe-drink-RN/privacy-policy.html |
 | 광고 포함 | 아니요 |
 | 인앱 구매 | 없음 |

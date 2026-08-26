@@ -24,6 +24,8 @@ import { localeStore } from '@/state/localeStore';
 import { Sex } from '@/core/types';
 import { CharacterImage } from '@/components/character-image';
 import type { LocalePreference } from '@/storage/localeStorage';
+import { SelectField, SelectOption } from '@/components/select-field';
+import { appVersionLabel, updateLabel } from '@/constants/appInfo';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 // ── Section card ──────────────────────────────────────────────────────────────
@@ -70,45 +72,18 @@ const sectionStyles = StyleSheet.create({
   body: {},
 });
 
-// ── Language selector ─────────────────────────────────────────────────────────
-
-interface LangOptionProps {
-  label: string;
-  value: LocalePreference;
-  current: string | null;
-  onSelect: (v: LocalePreference) => void;
-}
-
-function LangOption({ label, value, current, onSelect }: LangOptionProps) {
-  const selected = current === value || (current === null && value === 'system');
-  return (
-    <TouchableOpacity
-      style={[langStyles.option, selected && langStyles.optionSelected]}
-      onPress={() => onSelect(value)}
-      activeOpacity={0.8}
-    >
-      <Text style={[langStyles.label, selected && langStyles.labelSelected]}>{label}</Text>
-      {selected && <Icon name="check" size={16} color={AppColors.accent} strokeWidth={2.4} />}
-    </TouchableOpacity>
-  );
-}
-
-const langStyles = StyleSheet.create({
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Space.md,
-    paddingHorizontal: Space.md,
-    borderRadius: Radius.md,
-    marginBottom: Space.xs,
-    backgroundColor: AppColors.bg,
-  },
-  optionSelected: { backgroundColor: '#EAE8FF', borderWidth: 1, borderColor: AppColors.accent },
-  label: { fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.regular },
-  labelSelected: { color: AppColors.accent, fontWeight: Weight.bold },
-  check: { color: AppColors.accent, fontWeight: Weight.bold, fontSize: Font.h4 },
-});
+/**
+ * 언어 선택지.
+ *
+ * 라벨은 i18n 을 거치지 않고 해당 언어 그대로 쓴다 — 앱이 영어일 때
+ * "한국어" 항목이 "Korean" 으로 보이면 그 언어를 찾는 사람이 못 알아본다.
+ * (시스템 기본만 현재 언어를 따른다.)
+ */
+const LANGUAGE_OPTIONS: SelectOption<LocalePreference>[] = [
+  { label: i18n.t('languageSystem'), value: 'system' },
+  { label: '한국어', value: 'ko' },
+  { label: 'English', value: 'en' },
+];
 
 // ── Profile form ──────────────────────────────────────────────────────────────
 
@@ -353,23 +328,12 @@ export default function SettingsScreen() {
 
         {/* Language card */}
         <SectionCard icon="language" title={i18n.t('languageTitle')}>
-          <LangOption
-            label={i18n.t('languageSystem')}
-            value="system"
-            current={locale}
-            onSelect={v => setLocale(v).catch(() => {})}
-          />
-          <LangOption
-            label={i18n.t('languageKorean')}
-            value="ko"
-            current={locale}
-            onSelect={v => setLocale(v).catch(() => {})}
-          />
-          <LangOption
-            label={i18n.t('languageEnglish')}
-            value="en"
-            current={locale}
-            onSelect={v => setLocale(v).catch(() => {})}
+          <SelectField
+            title={i18n.t('languageTitle')}
+            // locale 이 null 이면 "시스템 기본" — 저장값이 없다는 뜻이다
+            value={locale ?? 'system'}
+            options={LANGUAGE_OPTIONS}
+            onChange={v => setLocale(v).catch(() => {})}
           />
         </SectionCard>
 
@@ -395,6 +359,13 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </SectionCard>
 
+        {/* 버전 정보 — 문의·버그 제보 때 어떤 빌드인지 확인할 수 있어야 한다.
+            OTA 로 JS 만 바뀌는 구조라 앱 버전만으로는 부족해서 업데이트 ID 도 함께 보여준다. */}
+        <View style={styles.versionBox}>
+          <Text style={styles.versionText}>{appVersionLabel}</Text>
+          {!!updateLabel && <Text style={styles.versionSub}>{updateLabel}</Text>}
+        </View>
+
         <View style={{ height: 90 }} />
       </ScrollView>
     </SafeAreaView>
@@ -406,6 +377,9 @@ const styles = StyleSheet.create({
   appBar: { paddingHorizontal: Space.lg, paddingVertical: Space.md },
   appTitle: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
   scrollContent: { padding: Space.lg, gap: Space.lg },
+  versionBox: { alignItems: 'center', gap: Space.xxs, marginTop: Space.xs },
+  versionText: { fontSize: Font.caption, color: AppColors.sub },
+  versionSub: { fontSize: Font.micro, color: AppColors.sub, opacity: 0.7 },
   greetingCard: {
     backgroundColor: AppColors.accent,
     borderRadius: Radius.xl,
