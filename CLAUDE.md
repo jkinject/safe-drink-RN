@@ -24,10 +24,13 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - `android/local.properties`: `sdk.dir=/Users/tim/Library/Android/sdk`
 - adb는 PATH에 없음 → `~/Library/Android/sdk/platform-tools/adb`
 - 무선 기기: `adb pair IP:페어링포트 코드` → **`adb mdns services`로 연결 포트 확인** → `adb connect IP:연결포트`. 페어링 포트와 연결 포트는 다르다(연결은 `_adb-tls-connect._tcp` 항목의 포트).
-- 알려진 기기:
-  - 레노버 태블릿 TB331FC — 192.168.200.195:5555 (TCP 모드라 페어링 없이 `adb connect`만으로 재연결)
-  - 갤럭시 폴드 SM-F966N(R3CY8031TKF) — 192.168.200.111, 무선 디버깅 포트가 매번 바뀌므로 페어링 후 mdns로 포트 확인 필요
-  - USB 연결 시 갤럭시 F766N(R3CY7057FCY)도 사용 이력 있음
+- 알려진 기기 (설치 대상은 아래 두 폰뿐):
+  - **갤럭시 Z 폴드7 — SM-F966N (R3CY8031TKF), product `q7qksx`** — 192.168.200.111
+  - **갤럭시 Z 플립7 — SM-F766N (R3CY7057FCY), product `b7sksx`** — 192.168.200.193
+    - 모델 번호 SM-F9xx = 폴드, SM-F7xx = 플립. 둘 다 접히는 폰이라 헷갈리기 쉬우니 product 코드로 구분할 것(`q7q`=폴드, `b7s`=플립).
+    - 무선 디버깅 포트는 재연결마다 바뀐다 → 페어링 후 `adb mdns services`로 확인.
+  - **레노버 태블릿 TB331FC — 192.168.200.195:5555 — 설치 절대 금지.** (TCP 모드라 `adb connect`만으로 붙어버리므로, `adb devices` 결과를 확인하지 않고 `adb install`을 쏘면 여기로 들어간다. 항상 `-s <기기>`로 대상을 지정할 것.)
+- **접히는 폰은 `exec-out screencap`이 깨진다** — 디스플레이가 2개라 PNG 앞에 "[Warning] Multiple displays..." 경고가 섞여 파일이 손상된다. `adb shell "screencap -p /sdcard/sc.png"` 후 `adb pull` 로 받을 것. 화면이 꺼져 있으면 캡처가 전부 검게 나오므로 `dumpsys display | grep mScreenState` 로 먼저 확인한다.
 
 ## OTA (EAS Update)
 
