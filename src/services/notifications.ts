@@ -62,6 +62,13 @@ export async function showTimerNotification(
   { title, subtitle }: { title: string; subtitle: string },
 ): Promise<void> {
   if (Platform.OS !== 'android') return;
+  // 이미 지난 시각이면 띄우지 않고 떠 있던 것도 내린다 —
+  // 네이티브 크로노미터는 0 을 지나면 음수로 계속 세기 때문에
+  // 지난 목표로 띄우면 처음부터 "-00:01" 로 보인다
+  if (soberAtMs <= Date.now()) {
+    await dismissTimerNotification();
+    return;
+  }
   await Notifications.scheduleNotificationAsync({
     identifier: TIMER_NOTIFICATION_ID,
     content: {

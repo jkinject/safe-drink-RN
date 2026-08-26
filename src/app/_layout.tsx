@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -30,6 +31,7 @@ export default function RootLayout() {
   const loadSessions = sessionStore(s => s.loadSessions);
   const loadSettings = settingsStore(s => s.load);
   const refreshNotifications = sessionStore(s => s.refreshNotifications);
+  const checkAutoClose = sessionStore(s => s.checkAutoClose);
   const router = useRouter();
   const segments = useSegments();
 
@@ -56,6 +58,21 @@ export default function RootLayout() {
       .finally(() => setInitialized(true));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 백그라운드에 있는 동안 술이 깼을 수 있다. 포그라운드로 돌아올 때마다
+  // 세션 종료 여부를 다시 판정하고 카운트다운을 현재 시각 기준으로 다시 건다.
+  // 네이티브 setTimeoutAfter 가 목표 시각에 알림을 내리지만, 제조사 펌웨어가
+  // 이를 무시하는 경우까지 대비한 앱 쪽 안전망이다.
+  useEffect(() => {
+    if (!initialized) return;
+    const sub = AppState.addEventListener('change', state => {
+      if (state !== 'active') return;
+      checkAutoClose()
+        .then(() => refreshNotifications())
+        .catch(() => {});
+    });
+    return () => sub.remove();
+  }, [initialized, checkAutoClose, refreshNotifications]);
 
   // 폰트가 준비되기 전에 스플래시를 내리면 시스템 폰트로 한 프레임 깜빡인다
   useEffect(() => {
