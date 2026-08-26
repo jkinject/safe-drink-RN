@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,6 +17,10 @@ import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
+import { BacGraph } from '@/components/bac-graph';
+import { profileStore } from '@/state/profileStore';
+import { bacCurve } from '@/core/bacCalculator';
+import { calendarDayDiff } from '@/core/dateUtils';
 import { getBacBadge } from '@/core/sessionUtils';
 import { DrinkRecord, DrinkSession } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
@@ -44,12 +48,23 @@ function formatDate(epochMs: number, locale: string): string {
   });
 }
 
+/** 지표 타일에 들어갈 짧은 날짜 — "8월 27일 (목)" 은 반 칸 폭에서 줄바꿈된다 */
+function formatDateShort(epochMs: number, locale: string): string {
+  return new Date(epochMs).toLocaleDateString(locale, {
+    month: 'numeric',
+    day: 'numeric',
+  });
+}
+
 const MINUTE_MS = 60000;
 const HOUR_MS = 3600000;
 const DAY_MS = 86400000;
 
 /** 술 아이콘을 감싸는 원 — 홈의 기록 타일과 같은 40 */
 const ICON_CIRCLE = Space.xxxl + Space.sm;
+
+/** 카드 안 그래프 높이 — 홈(170)보다 낮춘다. 목록이라 카드가 길어지면 훑기 나쁘다 */
+const CHART_HEIGHT = 104;
 
 /**
  * 이 화면의 유일한 기간 포맷 — 지표 타일과 잔 목록이 같은 함수를 쓴다.
@@ -80,17 +95,47 @@ function formatDuration(ms: number): string {
 }
 
 /**
- * 해독 소요 시간 표시.
+ * "몇 시에 깼는지" 표기.
  *
- * estimatedSoberAt 은 firstFinishedAt 기준이라(bacCalculator.ts:148)
- * soberAt 이 lastFinishedAt 보다 앞서거나(한 잔이면 아주 조금 뒤에) 놓인다.
+ * 자정을 넘기는 게 예외가 아니라 기본인 앱이라, 시각만 찍으면 "02:20" 이
+ * 그날 새벽인지 다음날인지 알 수 없다. 카드 헤더에 찍힌 날짜를 기준으로
+ * 며칠 뒤인지 붙인다.
+ *
+ * 24시간제를 쓰는 이유: 헤더의 시간 범위·상세 기록 행·알림이 전부 24시간제라
+ * 한 카드 안에서 "21:23 ~ 23:40" 과 "오전 2:20" 이 섞이면 오히려 읽기 나쁘다.
+ * "다음날" 이라는 말 자체가 이미 오전/오후 모호함을 없애 준다.
+ *
+ * 달력 날짜 차이로 센다 (calendarDayDiff) — 경과 시간을 24로 나누면
+ * 21:00→다음날 01:00(4시간)이 "같은 날" 로 잡힌다.
+ */
+function formatSoberClock(
+  soberMs: number,
+  anchorMs: number,
+  locale: string,
+): string {
+  const time = formatTime(soberMs);
+  const dayDiff = calendarDayDiff(anchorMs, soberMs);
+  if (dayDiff <= 0) return time;
+  if (dayDiff === 1) return i18n.t('historySoberNextDay', { time });
+  return i18n.t('historySoberOtherDay', {
+    date: formatDateShort(soberMs, locale),
+    time,
+  });
+}
+
+/**
+ * 깬 시각 아래에 붙는 보조 줄 — 마지막 잔부터 깰 때까지 걸린 시간.
+ *
  * 분 단위로 0이 되는 값은 음수든 양수든 사용자에게는 같은 사실 —
  * 마지막 잔을 비웠을 때 이미 깬 상태 — 이므로 한 문구로 묶는다.
  * `<= 0` 으로만 잡으면 1잔짜리 세션이 「0분」으로 새어 나간다.
+ *
+ * 계산 엔진을 순차 섭취로 고친 뒤로 soberAt 은 항상 마지막 잔보다 뒤에
+ * 놓이지만, 그 전에 저장된 세션에는 음수가 남아 있어 분기를 유지한다.
  */
-function formatSoberDuration(ms: number): string {
-  if (ms < MINUTE_MS) return i18n.t('historySoberImmediate');
-  return formatDuration(ms);
+function formatSoberTook(ms: number): string {
+  if (ms < MINUTE_MS) return i18n.t('historySoberTookImmediate');
+  return i18n.t('historySoberTook', { duration: formatDuration(ms) });
 }
 
 // ── 지표 타일 ─────────────────────────────────────────────────────────────────
@@ -99,10 +144,12 @@ interface MetricProps {
   icon: IconName;
   label: string;
   value: string;
+  /** 값 아래 작은 보조 줄 (예: 깬 시각 아래의 소요 시간) */
+  sub?: string;
   badge?: { label: string; color: string; bg: string } | null;
 }
 
-function Metric({ icon, label, value, badge }: MetricProps) {
+function Metric({ icon, label, value, sub, badge }: MetricProps) {
   return (
     <View style={metricStyles.item}>
       <View style={metricStyles.labelRow}>
@@ -119,6 +166,7 @@ function Metric({ icon, label, value, badge }: MetricProps) {
           </View>
         )}
       </View>
+      {!!sub && <Text style={metricStyles.sub}>{sub}</Text>}
     </View>
   );
 }
@@ -128,12 +176,15 @@ const metricStyles = StyleSheet.create({
   // 행이 stretch 라 두 타일 높이는 같으므로, 라벨은 위·값은 아래로 붙여
   // 줄 수와 무관하게 값끼리 같은 선에 놓이게 한다
   item: { flex: 1, gap: Space.xxs, justifyContent: 'space-between' },
+  // 값과 보조 줄은 한 덩어리로 붙어 있어야 한다 (item 의 space-between 에 걸려
+  // 값만 위로 뜨면 옆 타일의 값과 밑줄이 어긋난다)
   // 두 줄로 접힐 때 아이콘이 가운데 뜨지 않고 첫 줄에 맞도록
   labelRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Space.xs },
   // flex 가 없으면 행 안에서 줄바꿈되지 않고 타일 밖으로 밀린다
   label: { flex: 1, fontSize: Font.caption, color: AppColors.sub },
   valueRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, flexWrap: 'wrap' },
   value: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
+  sub: { fontSize: Font.micro, color: AppColors.sub },
   badge: {
     paddingHorizontal: Space.sm,
     paddingVertical: Space.xxs,
@@ -153,6 +204,7 @@ interface SessionCardProps {
 
 function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
   const getSessionRecords = sessionStore(s => s.getSessionRecords);
+  const profile = profileStore(s => s.profile);
   const [records, setRecords] = useState<DrinkRecord[] | null>(null);
 
   // 마운트될 때 그 카드 몫만 읽는다. FlatList 가 보이는 행만 그리므로
@@ -171,6 +223,26 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
   }, [getSessionRecords, session.id]);
 
   const badge = getBacBadge(session.peakBac);
+
+  /**
+   * 세션의 BAC 곡선.
+   *
+   * 저장된 건 요약 수치뿐이라 곡선은 잔 목록에서 다시 계산한다. 그래서 프로필
+   * (몸무게·키)을 바꾸면 곡선 높이가 저장된 peakBac 과 조금 어긋난다 —
+   * 그래서 아래 라벨(최고점·깬 시각)은 전부 저장값을 쓰고, 곡선은 모양만 쓴다.
+   * 숫자는 항상 일관되고, 눈에 안 보이는 높이 차이만 남는다.
+   */
+  const curve = useMemo(
+    () => (records && profile ? bacCurve(records, profile) : []),
+    [records, profile],
+  );
+  const markMs = useMemo(
+    () =>
+      (records ?? [])
+        .filter(r => r.finishedAt != null)
+        .map(r => r.finishedAt as number),
+    [records],
+  );
 
   return (
     <View style={cardStyles.card}>
@@ -198,8 +270,9 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
         <View style={cardStyles.metricRow}>
           <Metric
             icon="clock"
-            label={i18n.t('historySoberDuration')}
-            value={formatSoberDuration(session.soberAt - session.lastFinishedAt)}
+            label={i18n.t('historySoberAt')}
+            value={formatSoberClock(session.soberAt, session.startedAt, locale)}
+            sub={formatSoberTook(session.soberAt - session.lastFinishedAt)}
           />
           <Metric
             icon="water"
@@ -220,6 +293,24 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
             value={formatDuration(session.lastFinishedAt - session.startedAt)}
           />
         </View>
+        {/* BAC 곡선 — 잔을 비울 때마다 계단으로 올라갔다 내려온다.
+            지난 술자리라 "지금" 마커는 없다 (nowMs=null) */}
+        {curve.length > 1 && (
+          <BacGraph
+            curve={curve}
+            nowMs={null}
+            firstMs={curve[0][0]}
+            soberMs={curve[curve.length - 1][0]}
+            height={CHART_HEIGHT}
+            variant="bare"
+            markMs={markMs}
+            soberLabel={`${i18n.t('historyChartSoberPrefix')} ${formatSoberClock(
+              session.soberAt,
+              session.startedAt,
+              locale,
+            )}`}
+          />
+        )}
       </View>
 
       {/* 상세 기록 — 항상 펼쳐진 상태.

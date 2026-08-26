@@ -20,16 +20,27 @@ const PAD_LEFT = 4;
 const PAD_RIGHT = 78; // 우측 기준선 라벨 영역 (Flutter판과 동일하게 우측 배치)
 const PAD_TOP = 14;
 const PAD_BOTTOM = 6;
-const INNER_H = CHART_HEIGHT - PAD_TOP - PAD_BOTTOM;
 
 const BAC_REVOCATION = 0.08;
 const BAC_SUSPENSION = 0.03;
 
 interface Props {
   curve: Array<[number, number]>; // [epochMs, bac%]
-  nowMs: number;
+  /** 지금 마커 위치. null 이면 마커를 그리지 않는다 (지난 술자리) */
+  nowMs: number | null;
   firstMs: number;
   soberMs: number;
+  /** 차트 높이 (기본 170). 히스토리 카드처럼 좁은 자리는 낮춰 쓴다 */
+  height?: number;
+  /**
+   * 'card' = 흰 카드 + 제목 (홈).
+   * 'bare' = 배경·제목 없이 그래프만 (이미 카드 안에 들어가는 히스토리).
+   */
+  variant?: 'card' | 'bare';
+  /** 우측 하단 시각 라벨 문구 전체를 대체 (자정 넘김 표기 등) */
+  soberLabel?: string;
+  /** 잔을 비운 시각들 — 계단 꼭대기에 점을 찍는다 */
+  markMs?: number[];
 }
 
 function formatTime(epochMs: number): string {
@@ -37,12 +48,22 @@ function formatTime(epochMs: number): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
+export function BacGraph({
+  curve,
+  nowMs,
+  firstMs,
+  soberMs,
+  height = CHART_HEIGHT,
+  variant = 'card',
+  soberLabel,
+  markMs,
+}: Props) {
   // 실제 렌더 폭을 측정해 픽셀 좌표로 그린다 (viewBox 스케일링 왜곡 방지)
   const [width, setWidth] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
   const innerW = Math.max(0, width - PAD_LEFT - PAD_RIGHT);
+  const INNER_H = height - PAD_TOP - PAD_BOTTOM;
 
   const maxBac = useMemo(() => {
     if (curve.length === 0) return 0.09;
@@ -67,7 +88,7 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
     }
     return d;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [curve, width, maxBac, firstMs, soberMs]);
+  }, [curve, width, maxBac, firstMs, soberMs, height]);
 
   const yBase = PAD_TOP + INNER_H;
   const fillD = pathD
@@ -77,9 +98,12 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
   const yRev = toY(BAC_REVOCATION);
   const ySus = toY(BAC_SUSPENSION);
 
-  const clampedNowX = Math.max(PAD_LEFT, Math.min(PAD_LEFT + innerW, toX(nowMs)));
+  const clampedNowX =
+    nowMs == null
+      ? PAD_LEFT
+      : Math.max(PAD_LEFT, Math.min(PAD_LEFT + innerW, toX(nowMs)));
   const nowBac = useMemo(() => {
-    if (curve.length === 0) return 0;
+    if (curve.length === 0 || nowMs == null) return 0;
     let closest = curve[0];
     for (const p of curve) {
       if (Math.abs(p[0] - nowMs) < Math.abs(closest[0] - nowMs)) closest = p;
@@ -87,9 +111,25 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
     return closest[1];
   }, [curve, nowMs]);
 
+  // 계단 꼭대기 — 그 시각의 곡선 값 중 가장 높은 표본(= 잔이 들어간 직후)
+  const marks = useMemo(() => {
+    if (!markMs || curve.length === 0) return [];
+    return markMs
+      .filter(t => t > firstMs && t < soberMs)
+      .map(t => {
+        let best = curve[0];
+        for (const p of curve) {
+          if (p[0] === t) best = p;
+        }
+        return [t, best[1]] as [number, number];
+      });
+  }, [markMs, curve, firstMs, soberMs]);
+
   return (
-    <View style={styles.wrapper}>
-      <Text style={styles.title}>{i18n.t('bacChartTitle')}</Text>
+    <View style={variant === 'card' ? styles.wrapper : undefined}>
+      {variant === 'card' && (
+        <Text style={styles.title}>{i18n.t('bacChartTitle')}</Text>
+      )}
       <View onLayout={onLayout}>
         {width > 0 && (
           <Svg width={width} height={CHART_HEIGHT}>
@@ -153,8 +193,19 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
               />
             ) : null}
 
+            {/* 잔을 비운 지점 */}
+            {marks.map(([t, bac]) => (
+              <Circle
+                key={t}
+                cx={toX(t)}
+                cy={toY(bac)}
+                r="3"
+                fill={AppColors.accent}
+              />
+            ))}
+
             {/* 지금 마커 */}
-            {nowMs >= firstMs && nowMs <= soberMs && (
+            {nowMs != null && nowMs >= firstMs && nowMs <= soberMs && (
               <>
                 <Line
                   x1={clampedNowX}
@@ -193,8 +244,8 @@ export function BacGraph({ curve, nowMs, firstMs, soberMs }: Props) {
         <Text style={styles.bottomLabel}>
           {i18n.t('bacChartFirstDrinkLabel')} {formatTime(firstMs)}
         </Text>
-        <Text style={styles.bottomLabel}>
-          {i18n.t('bacChartSoberLabel')} {formatTime(soberMs)}
+        <Text style={[styles.bottomLabel, !!soberLabel && styles.bottomLabelStrong]}>
+          {soberLabel ?? `${i18n.t('bacChartSoberLabel')} ${formatTime(soberMs)}`}
         </Text>
       </View>
     </View>
@@ -224,4 +275,6 @@ const styles = StyleSheet.create({
     marginTop: Space.xs,
   },
   bottomLabel: { fontSize: Font.micro, color: AppColors.sub },
+  // 히스토리에서는 "몇 시에 깼는지" 가 카드에서 가장 중요한 값이라 눌러쓰지 않는다
+  bottomLabelStrong: { color: AppColors.navy, fontWeight: Weight.semibold },
 });
