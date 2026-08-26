@@ -124,6 +124,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="licenses"
+          options={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
           name="history"
           options={{
             headerShown: false,

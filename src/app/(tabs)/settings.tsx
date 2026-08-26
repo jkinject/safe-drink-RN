@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { AppColors, cardShadowSm } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { alert, confirm } from '@/components/dialog';
@@ -15,7 +16,7 @@ import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
 import type { LocalePreference } from '@/storage/localeStorage';
-import { appVersionLabel, updateLabel } from '@/constants/appInfo';
+import { appVersionLabel, PRIVACY_POLICY_URL, updateLabel } from '@/constants/appInfo';
 import { i18n } from '@/i18n';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
@@ -177,6 +178,28 @@ export default function SettingsScreen() {
             onPress={handleDeleteAll}
             chevron
             danger
+            last
+          />
+        </SettingsSection>
+
+        <SettingsSection title={i18n.t('settingsInfoSection')}>
+          <SettingsRow
+            label={i18n.t('infoScreenTitle')}
+            onPress={() => router.push('/info')}
+            chevron
+          />
+          <SettingsRow
+            label={i18n.t('settingsPrivacyPolicy')}
+            // 앱 안 브라우저로 연다 — 외부 브라우저로 튕기면 돌아오기 번거롭다
+            onPress={() => {
+              WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL).catch(() => {});
+            }}
+            chevron
+          />
+          <SettingsRow
+            label={i18n.t('settingsOpenSource')}
+            onPress={() => router.push('/licenses')}
+            chevron
             last
           />
         </SettingsSection>

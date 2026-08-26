@@ -8,6 +8,10 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
+/** 개인정보처리방침 — Play Console 에 등록한 URL 과 반드시 같아야 한다 */
+export const PRIVACY_POLICY_URL =
+  'https://jkinject.github.io/safe-drink-RN/privacy-policy.html';
+
 /** 예: "Safedrink 1.1.1" */
 export const appVersionLabel = `${
   Constants.expoConfig?.name ?? 'Safedrink'
