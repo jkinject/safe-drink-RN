@@ -11,12 +11,76 @@ export interface SelectOption<T extends string> {
   value: T;
 }
 
-interface Props<T extends string> {
+interface SheetProps<T extends string> {
   /** 시트 상단에 뜨는 제목 */
+  title: string;
+  visible: boolean;
+  onClose: () => void;
+  value: T;
+  options: SelectOption<T>[];
+  onChange: (value: T) => void;
+}
+
+interface Props<T extends string> {
   title: string;
   value: T;
   options: SelectOption<T>[];
   onChange: (value: T) => void;
+}
+
+/**
+ * 선택지 시트만 따로 쓰고 싶을 때 (설정 목록의 행처럼 트리거를 직접 그리는 경우).
+ */
+export function SelectSheet<T extends string>({
+  title,
+  visible,
+  onClose,
+  value,
+  options,
+  onChange,
+}: SheetProps<T>) {
+  const insets = useSafeAreaInsets();
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      {/* 바깥을 누르면 닫힌다 — 시트 안쪽 탭은 여기까지 올라오지 않는다 */}
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Pressable
+          style={[styles.sheet, { paddingBottom: Space.xl + insets.bottom }]}
+          // 시트를 눌렀을 때 오버레이의 닫기가 실행되지 않도록 흡수만 한다
+          onPress={() => {}}
+        >
+          <View style={styles.handle} />
+          <Text style={styles.sheetTitle}>{title}</Text>
+          {options.map(option => {
+            const selected = option.value === value;
+            return (
+              <Pressable
+                key={option.value}
+                style={[styles.option, selected && styles.optionSelected]}
+                onPress={() => {
+                  onChange(option.value);
+                  onClose();
+                }}
+              >
+                <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>
+                  {option.label}
+                </Text>
+                {selected && (
+                  <Icon name="check" size={16} color={AppColors.accent} strokeWidth={2.4} />
+                )}
+              </Pressable>
+            );
+          })}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
 }
 
 /**
@@ -35,7 +99,6 @@ export function SelectField<T extends string>({
   onChange,
 }: Props<T>) {
   const [open, setOpen] = useState(false);
-  const insets = useSafeAreaInsets();
   const current = options.find(o => o.value === value);
 
   return (
@@ -55,45 +118,14 @@ export function SelectField<T extends string>({
         />
       </Pressable>
 
-      <Modal
+      <SelectSheet
+        title={title}
         visible={open}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setOpen(false)}
-        statusBarTranslucent
-      >
-        {/* 바깥을 누르면 닫힌다 — 시트 안쪽 탭은 여기까지 올라오지 않는다 */}
-        <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <Pressable
-            style={[styles.sheet, { paddingBottom: Space.xl + insets.bottom }]}
-            // 시트를 눌렀을 때 오버레이의 닫기가 실행되지 않도록 흡수만 한다
-            onPress={() => {}}
-          >
-            <View style={styles.handle} />
-            <Text style={styles.sheetTitle}>{title}</Text>
-            {options.map(option => {
-              const selected = option.value === value;
-              return (
-                <Pressable
-                  key={option.value}
-                  style={[styles.option, selected && styles.optionSelected]}
-                  onPress={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>
-                    {option.label}
-                  </Text>
-                  {selected && (
-                    <Icon name="check" size={16} color={AppColors.accent} strokeWidth={2.4} />
-                  )}
-                </Pressable>
-              );
-            })}
-          </Pressable>
-        </Pressable>
-      </Modal>
+        onClose={() => setOpen(false)}
+        value={value}
+        options={options}
+        onChange={onChange}
+      />
     </>
   );
 }

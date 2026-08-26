@@ -18,6 +18,8 @@ const en = {
   settingsTitle: 'Settings',
   settingsProfileEdit: 'Edit Profile',
   settingsMyInfo: 'My info',
+  settingsHeightShort: 'Height',
+  settingsWeightShort: 'Weight',
   settingsNotificationSection: 'Notifications',
   settingsGeneralSection: 'General',
   settingsDataSection: 'Data',

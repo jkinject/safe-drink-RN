@@ -18,6 +18,8 @@ const ko = {
   settingsTitle: '설정',
   settingsProfileEdit: '프로필 수정',
   settingsMyInfo: '내 정보',
+  settingsHeightShort: '키',
+  settingsWeightShort: '몸무게',
   settingsNotificationSection: '알림',
   settingsGeneralSection: '일반',
   settingsDataSection: '기록 관리',

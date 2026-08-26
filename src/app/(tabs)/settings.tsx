@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -6,7 +7,7 @@ import { Icon } from '@/components/icon';
 import { alert, confirm } from '@/components/dialog';
 import { Text } from '@/components/typography';
 import { SettingsRow, SettingsSection } from '@/components/settings-list';
-import { SelectField, SelectOption } from '@/components/select-field';
+import { SelectOption, SelectSheet } from '@/components/select-field';
 import { CharacterImage } from '@/components/character-image';
 import { settingsStore } from '@/state/settingsStore';
 import { profileStore } from '@/state/profileStore';
@@ -83,6 +84,12 @@ export default function SettingsScreen() {
     await alert({ message: i18n.t('settingsDeletedAll'), confirmLabel: i18n.t('dialogOk') });
   }
 
+  const [languageSheetOpen, setLanguageSheetOpen] = useState(false);
+  // locale 이 null 이면 "시스템 기본" — 저장값이 없다는 뜻이다
+  const localeValue: LocalePreference = locale ?? 'system';
+  const currentLanguageLabel =
+    languageOptions().find(o => o.value === localeValue)?.label ?? '';
+
   const sexLabel = profile
     ? i18n.t(profile.sex === 'male' ? 'settingsMale' : 'settingsFemale')
     : '-';
@@ -116,11 +123,11 @@ export default function SettingsScreen() {
         {/* 내 정보 — 읽기 전용. 값만 확인하고, 고치려면 위 카드로 들어간다 */}
         <SettingsSection title={i18n.t('settingsMyInfo')}>
           <SettingsRow
-            label={i18n.t('settingsHeightLabel')}
+            label={i18n.t('settingsHeightShort')}
             value={profile ? `${profile.heightCm} cm` : '-'}
           />
           <SettingsRow
-            label={i18n.t('settingsWeightLabel')}
+            label={i18n.t('settingsWeightShort')}
             value={profile ? `${profile.weightKg} kg` : '-'}
           />
           <SettingsRow label={i18n.t('settingsSex')} value={sexLabel} />
@@ -147,18 +154,16 @@ export default function SettingsScreen() {
         )}
 
         <SettingsSection title={i18n.t('settingsGeneralSection')}>
-          <View style={styles.selectRow}>
-            <Text style={styles.selectLabel}>{i18n.t('languageTitle')}</Text>
-            <View style={styles.selectField}>
-              <SelectField
-                title={i18n.t('languageTitle')}
-                // locale 이 null 이면 "시스템 기본" — 저장값이 없다는 뜻이다
-                value={locale ?? 'system'}
-                options={languageOptions()}
-                onChange={v => setLocale(v).catch(() => {})}
-              />
-            </View>
-          </View>
+          {/* 다른 행과 같은 "라벨 좌 / 값 우 + chevron" 모양을 쓰고,
+              시트만 SelectSheet 로 띄운다. 행 안에 또 네모 필드를 넣으면
+              목록의 리듬이 그 줄에서만 끊긴다. */}
+          <SettingsRow
+            label={i18n.t('languageTitle')}
+            value={currentLanguageLabel}
+            onPress={() => setLanguageSheetOpen(true)}
+            chevron
+            last
+          />
         </SettingsSection>
 
         <SettingsSection title={i18n.t('settingsDataSection')}>
@@ -185,6 +190,15 @@ export default function SettingsScreen() {
 
         <View style={{ height: 90 }} />
       </ScrollView>
+
+      <SelectSheet
+        title={i18n.t('languageTitle')}
+        visible={languageSheetOpen}
+        onClose={() => setLanguageSheetOpen(false)}
+        value={localeValue}
+        options={languageOptions()}
+        onChange={v => setLocale(v).catch(() => {})}
+      />
     </SafeAreaView>
   );
 }
@@ -210,16 +224,6 @@ const styles = StyleSheet.create({
   greetingText: { flex: 1 },
   greetingTitle: { color: '#fff', fontSize: Font.h2, fontWeight: Weight.bold },
   greetingSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: Font.bodySm, marginTop: Space.xxs },
-  // 언어 행은 값 대신 select 를 오른쪽에 둔다 — 라벨/값 배치는 다른 행과 같게
-  selectRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Space.md,
-    paddingVertical: Space.md,
-    minHeight: 56,
-  },
-  selectLabel: { flex: 1, fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.semibold },
-  selectField: { width: 160 },
   versionBox: { alignItems: 'center', gap: Space.xxs, marginTop: Space.sm },
   versionText: { fontSize: Font.caption, color: AppColors.sub },
   versionSub: { fontSize: Font.micro, color: AppColors.sub, opacity: 0.7 },
