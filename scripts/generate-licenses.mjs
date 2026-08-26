@@ -43,6 +43,33 @@ function extractCopyright(text, pkg) {
   return author ? `Copyright (c) ${author}` : '';
 }
 
+/**
+ * 파일 앞머리의 저작권 표시만 제거한다.
+ * 제목(예: "MIT License")과 본문은 그대로 둔다.
+ */
+function stripLeadingCopyright(text) {
+  const lines = text.split('\n');
+  const out = [];
+  let inHeader = true;
+  for (const line of lines) {
+    if (inHeader) {
+      const t = line.trim();
+      if (t === '') {
+        // 본문이 시작되기 전의 빈 줄은 흘려보낸다
+        if (out.length > 0) out.push(line);
+        continue;
+      }
+      // 앞머리의 저작권 줄과 그 짝인 "All rights reserved." 만 제거
+      if (/^copyright\b/i.test(t)) continue;
+      if (/^all rights reserved\.?$/i.test(t)) continue;
+      // 저작권도 빈 줄도 아니면 본문이 시작된 것
+      if (!/^(the\s+)?[\w.\-+ ()]{0,40}licen[cs]e/i.test(t)) inHeader = false;
+    }
+    out.push(line);
+  }
+  return out.join('\n').trim();
+}
+
 function licenseId(pkg) {
   if (typeof pkg.license === 'string') return pkg.license;
   if (pkg.license?.type) return pkg.license.type;
@@ -85,11 +112,13 @@ for (const dir of paths) {
   const id = licenseId(pkg);
 
   // 종류별 전문은 처음 만난 것 하나만 보관한다.
-  // 저작권 줄은 패키지마다 다르므로 전문에서 지우고 공통부만 남긴다.
+  //
+  // 앞머리의 저작권 줄만 걷어낸다 (그 자리는 패키지마다 다르고, 각 항목에서
+  // 따로 보여주므로). "Copyright 가 들어간 모든 줄"을 지우면 안 된다 —
+  // MIT 본문의 "The above copyright notice ... shall be included in all"
+  // 과 "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE" 까지 잘려 라이선스가 훼손된다.
   if (text && !licenseTexts[id] && id !== 'UNKNOWN') {
-    licenseTexts[id] = text
-      .replace(/Copyright\s+(\(c\)|©)?\s*[^\n]*\n/gi, '')
-      .trim();
+    licenseTexts[id] = stripLeadingCopyright(text);
   }
 
   packages.push({
