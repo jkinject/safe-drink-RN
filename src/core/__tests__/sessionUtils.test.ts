@@ -4,7 +4,7 @@
  * src/core/__tests__/bacCalculator.test.ts 스타일을 따른다.
  */
 import { computePeakBac, computeSessionSummary, getBacBadge } from '../sessionUtils';
-import { currentBac, estimatedSoberAt, totalAlcoholGrams } from '../bacCalculator';
+import { bacAt, currentBac, estimatedSoberAt, totalAlcoholGrams } from '../bacCalculator';
 import { DrinkRecord, UserProfile } from '../types';
 
 /** Flutter의 closeTo(expected, delta) 와 동일한 허용 범위 검사 */
@@ -54,20 +54,38 @@ describe('sessionUtils', () => {
       expectCloseTo(peak, 0.03388, 0.001);
     });
 
-    test('2 기록 spread → 최고 BAC = firstFinishedAt 기준 Σbac_i (F1 회귀 방지)', () => {
+    test('2 기록 spread → 최고 BAC 은 앞쪽 잔 시점 (F1 회귀 방지)', () => {
       // 이 테스트가 실패하면 computePeakBac 이 lastFinishedAt 한 번만 평가하는
       // 잘못된 "최적화"로 변경된 것이다 — 그래프 최고점과 불일치가 발생한다.
+      //
+      // 맥주(t0) 뒤 1시간 지나 작은 소주(t1) 를 마시면, 그 사이 분해량이
+      // 소주 기여분보다 커서 곡선의 최고점은 t0 에 남는다.
       const records = [beerRecord, sojuRecord];
       const peak = computePeakBac(records, maleProfile);
 
-      // t=firstFinishedAt(t0): 분해 시간 0 → Σbac_i (최댓값)
-      const atFirst = currentBac(records, maleProfile, t0);
-      // t=lastFinishedAt(t1): Σbac_i − β×1h (더 낮음)
-      const atLast = currentBac(records, maleProfile, t1);
+      // bacAt 으로 물어야 한다 — currentBac 은 시계 역행 대비 보정 때문에
+      // 과거 시점을 물으면 전부 마지막 잔 값으로 뭉개진다
+      const atFirst = bacAt(records, maleProfile, t0);
+      const atLast = bacAt(records, maleProfile, t1);
 
       expectCloseTo(peak, atFirst, 1e-10);
       // "lastFinishedAt 만 평가" 최적화 시 peak ≈ atLast < atFirst → 이 단언이 실패한다
       expect(peak).toBeGreaterThan(atLast);
+    });
+
+    test('촘촘히 마시면 최고점은 마지막 잔 시점 (앞쪽 고정 금지)', () => {
+      // 위 테스트만 있으면 "첫 잔 시점만 평가" 로 잘못 단순화해도 통과한다.
+      const sojuSoon: DrinkRecord = {
+        consumedAt: t0 + 60_000,
+        abvPercent: 16.5,
+        volumeMl: 50,
+        finishedAt: t0 + 60_000, // 1분 뒤 — 분해량이 기여분보다 작다
+      };
+      const records = [beerRecord, sojuSoon];
+      const peak = computePeakBac(records, maleProfile);
+
+      expectCloseTo(peak, bacAt(records, maleProfile, t0 + 60_000), 1e-10);
+      expect(peak).toBeGreaterThan(bacAt(records, maleProfile, t0));
     });
 
     test('마시는중 + 완료 혼합 → 완료 기록만으로 계산', () => {

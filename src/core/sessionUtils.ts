@@ -4,7 +4,7 @@
  * bacCalculator.ts 는 변경 금지 영역이므로 세션 전용 로직은 여기에 둔다.
  */
 import { DrinkRecord, DrinkSession, UserProfile } from './types';
-import { currentBac, estimatedSoberAt, totalAlcoholGrams } from './bacCalculator';
+import { bacAt, estimatedSoberAt, totalAlcoholGrams } from './bacCalculator';
 // i18n 을 import 하지 말 것 — getBacBadge 는 문자열이 아니라 labelKey 를 반환한다.
 // src/core 는 UI 의존 금지 영역이므로 src/i18n 으로의 의존이 생기면 안 된다.
 
@@ -13,18 +13,17 @@ type FinishedRecord = DrinkRecord & { finishedAt: number };
 /**
  * 세션의 최고 BAC (%) 계산.
  *
- * 이 앱의 단순(총량) 분해 모델에서 currentBac(records, profile, t) 는
- * Σbac_i − β × max(0, t − firstFinishedAt) 이므로,
- * t = firstFinishedAt 일 때 값이 Σbac_i 로 최대다 (경과 시간 0, 분해 없음).
+ * BAC 곡선은 잔을 비울 때마다 수직으로 올라갔다가 β 로 내려오는 톱니 모양이라,
+ * 최댓값은 반드시 어느 한 잔의 finishedAt 직후에 나온다. 그래서 그 시점들만
+ * 훑으면 충분하다 — 어느 시점이 최대인지는 잔 간격에 따라 달라진다
+ * (촘촘히 마시면 마지막 잔, 띄엄띄엄 마시면 앞쪽 잔).
  *
- * 이 값은 bacCurve() 의 첫 번째 샘플과 동일하며,
- * 사용자가 그래프에서 보는 최고점과 일치한다.
+ * ⚠️ currentBac 이 아니라 bacAt 을 쓴다. currentBac 은 기기 시계 역행 대비로
+ * 조회 시각을 마지막 잔까지 앞당기므로, 과거 시점을 물으면 전부 같은 값이
+ * 나와 최고점이 마지막 잔 값으로 뭉개진다.
  *
- * 스펙의 정의("각 잔의 finishedAt 시점에서 평가한 currentBac() 중 최댓값")를
- * 그대로 구현하되, 위 동치성을 주석으로 남긴다.
- *
- * ⚠️ 이 함수를 "lastFinishedAt 한 번만 평가"로 "최적화"하면
- * 그래프 최고점보다 낮은 값이 저장되어 UI 불일치가 발생한다. 변경 금지.
+ * ⚠️ "lastFinishedAt 한 번만 평가"로 "최적화" 하지 말 것 —
+ * 그래프 최고점보다 낮은 값이 저장되어 UI 불일치가 발생한다.
  */
 export function computePeakBac(
   records: DrinkRecord[],
@@ -34,9 +33,7 @@ export function computePeakBac(
     (r): r is FinishedRecord => r.finishedAt != null,
   );
   if (finished.length === 0) return 0;
-  return Math.max(
-    ...finished.map(r => currentBac(records, profile, r.finishedAt)),
-  );
+  return Math.max(...finished.map(r => bacAt(records, profile, r.finishedAt)));
 }
 
 /**

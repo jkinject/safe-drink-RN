@@ -17,6 +17,7 @@ import {
   currentBacWithConstantR,
   estimatedSoberAtWithConstantR,
   bacCurve,
+  bacAt,
 } from '../bacCalculator';
 import { DrinkRecord, UserProfile } from '../types';
 
@@ -514,6 +515,140 @@ describe('BacCalculator', () => {
         volumeMl: 500,
       };
       expect(estimatedSoberAtWithConstantR([drinking], maleProfile)).toBeNull();
+    });
+  });
+
+  // ── 순차 섭취 (계단 곡선) ─────────────────────────────────────────────────────
+  //
+  // 총량 일괄 모델(Σbac_i − β(t − 첫잔))은 t 가 두 번째 잔보다 앞이어도 그 잔을
+  // 이미 마신 것으로 쳐서, 그래프가 첫 잔 시점부터 전체 합에서 시작하는 직선이
+  // 된다. 실제로는 잔을 비울 때마다 수직으로 올라갔다 내려와야 한다.
+
+  describe('순차 섭취 — 아직 안 마신 잔은 반영되지 않는다', () => {
+    const t1 = t0 + 3_600_000;
+    const sojuRecord: DrinkRecord = {
+      consumedAt: t1,
+      abvPercent: 16.5,
+      volumeMl: 50,
+      finishedAt: t1,
+    };
+    const twoRecords = [beerRecord, sojuRecord];
+    const beerOnly = calcBacContribution(beerRecord, maleProfile, 2026);
+    const sojuOnly = calcBacContribution(sojuRecord, maleProfile, 2026);
+
+    test('첫 잔 시점 BAC = 첫 잔 기여분 (둘째 잔은 아직 안 들어감)', () => {
+      expectCloseTo(bacAt(twoRecords, maleProfile, t0), beerOnly, 1e-10);
+      // 총량 일괄이면 여기서 beerOnly + sojuOnly 가 나온다
+      expect(bacAt(twoRecords, maleProfile, t0)).toBeLessThan(
+        beerOnly + sojuOnly - 1e-6,
+      );
+    });
+
+    test('둘째 잔 직전 → 직후로 기여분만큼 수직 상승', () => {
+      const before = bacAt(twoRecords, maleProfile, t1 - 1);
+      const after = bacAt(twoRecords, maleProfile, t1);
+      expectCloseTo(after - before, sojuOnly, 1e-6);
+    });
+
+    test('중간 시점은 첫 잔만 β 로 깎인 값', () => {
+      const half = t0 + 1_800_000; // 30분
+      expectCloseTo(
+        bacAt(twoRecords, maleProfile, half),
+        beerOnly - 0.015 * 0.5,
+        1e-10,
+      );
+    });
+
+    test('마지막 잔 이후 수치는 총량 모델과 동일 (기존 동작 보존)', () => {
+      // 잔 사이에 0 을 찍지 않는 보통의 술자리에서는 총량 일괄과 결과가 같아야 한다.
+      const t2 = t1 + 1_800_000;
+      const elapsedHours = (t2 - t0) / 3_600_000;
+      expectCloseTo(
+        bacAt(twoRecords, maleProfile, t2),
+        beerOnly + sojuOnly - 0.015 * elapsedHours,
+        1e-10,
+      );
+    });
+  });
+
+  // ── 공백을 두고 다시 마시는 경우 ─────────────────────────────────────────────
+
+  describe('BAC 0 을 찍은 뒤 다시 마심', () => {
+    // 세션 자동 종료는 앱이 떠 있을 때만 돌기 때문에(checkAutoClose),
+    // 앱을 안 켜고 저녁·새벽에 나눠 마시면 한 세션에 그대로 들어온다.
+    const lateMs = t0 + 8 * 3_600_000; // 맥주가 다 깨고(2.26h) 한참 뒤
+    const lateRecord: DrinkRecord = {
+      consumedAt: lateMs,
+      abvPercent: 4.5,
+      volumeMl: 500,
+      finishedAt: lateMs,
+    };
+    const records = [beerRecord, lateRecord];
+
+    test('두 번째 잔 직후 BAC = 그 잔의 기여분 (0 이 아니다)', () => {
+      const contribution = calcBacContribution(lateRecord, maleProfile, 2026);
+      expectCloseTo(bacAt(records, maleProfile, lateMs), contribution, 1e-10);
+      // 총량 일괄이면 8시간치 분해(0.12)가 총량(0.068)을 넘어 0 이 나온다 —
+      // 방금 마신 사람에게 "지금 안전" 이라고 말하게 된다
+      expect(bacAt(records, maleProfile, lateMs)).toBeGreaterThan(0.03);
+    });
+
+    test('회복 예상 시각은 두 번째 잔 기준으로 다시 잡힌다', () => {
+      const soberAt = estimatedSoberAt(records, maleProfile, 2026);
+      expect(soberAt).not.toBeNull();
+      expect(soberAt!).toBeGreaterThan(lateMs);
+    });
+  });
+
+  // ── 회복 시각은 항상 마지막 잔 뒤 ────────────────────────────────────────────
+
+  describe('estimatedSoberAt 은 마지막 잔보다 뒤', () => {
+    test('길게 마신 세션에서도 마지막 잔보다 앞서지 않는다', () => {
+      // 첫 잔 기준 총량 모델에서는 이런 조합이 "마지막 잔보다 먼저 깸" 으로 나왔다
+      const records: DrinkRecord[] = [0, 1, 2, 3].map(i => ({
+        consumedAt: t0 + i * 3_600_000,
+        abvPercent: 4.5,
+        volumeMl: 200,
+        finishedAt: t0 + i * 3_600_000,
+      }));
+      const lastFinishedAt = t0 + 3 * 3_600_000;
+      const soberAt = estimatedSoberAt(records, maleProfile, 2026);
+      expect(soberAt).not.toBeNull();
+      expect(soberAt!).toBeGreaterThan(lastFinishedAt);
+    });
+  });
+
+  // ── bacCurve 계단 ────────────────────────────────────────────────────────────
+
+  describe('bacCurve 계단 표현', () => {
+    const t1 = t0 + 3_600_000;
+    const sojuRecord: DrinkRecord = {
+      consumedAt: t1,
+      abvPercent: 16.5,
+      volumeMl: 50,
+      finishedAt: t1,
+    };
+
+    test('둘째 잔 시각에 1ms 간격 두 점이 들어가 수직으로 오른다', () => {
+      const curve = bacCurve([beerRecord, sojuRecord], maleProfile);
+      const before = curve.find(([t]) => t === t1 - 1);
+      const after = curve.find(([t]) => t === t1);
+      expect(before).toBeDefined();
+      expect(after).toBeDefined();
+      expect(after![1]).toBeGreaterThan(before![1]);
+    });
+
+    test('시각 오름차순이 유지된다 (렌더러가 그대로 이어 그린다)', () => {
+      const curve = bacCurve([beerRecord, sojuRecord], maleProfile);
+      for (let i = 1; i < curve.length; i++) {
+        expect(curve[i][0]).toBeGreaterThanOrEqual(curve[i - 1][0]);
+      }
+    });
+
+    test('첫 점은 전체 합이 아니라 첫 잔 기여분', () => {
+      const curve = bacCurve([beerRecord, sojuRecord], maleProfile);
+      const beerOnly = calcBacContribution(beerRecord, maleProfile, 2026);
+      expectCloseTo(curve[0][1], beerOnly, 1e-10);
     });
   });
 });
