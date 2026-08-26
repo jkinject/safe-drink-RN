@@ -130,7 +130,7 @@ Safedrink가 보여주는 수치는 공개된 계산식에 기반한 참고용 �
 ## 제출 전 체크리스트
 
 - [x] 개인정보처리방침 작성 (`docs/privacy-policy.html`)
-- [ ] GitHub Pages 활성화 → URL 확인
+- [x] GitHub Pages 배포 완료 — https://jkinject.github.io/safe-drink-RN/privacy-policy.html (HTTP 200 확인)
 - [x] 스토어 아이콘 512×512 (알파 포함) — `store/graphics/play-icon-512.png`
 - [x] 그래픽 이미지 1024×500 — `store/graphics/feature-graphic-1024x500.png`
 - [x] 스크린샷 6장 (1080×1920) — `store/screenshots/`

@@ -14,7 +14,7 @@
 | 그래픽 이미지 1024×500 | `store/graphics/feature-graphic-1024x500.png` |
 | 스크린샷 (6장, 1080×1920) | `store/screenshots/` |
 | 등록정보 문구 | `store/play-listing.md` |
-| 개인정보처리방침 | https://jkinject.github.io/safe-drink-RN/privacy-policy.html |
+| 개인정보처리방침 | https://jkinject.github.io/safe-drink-RN/privacy-policy.html (배포 완료·앱 내 링크 동작 확인) |
 | 소스 | `docs/privacy-policy.html` |
 
 ---
