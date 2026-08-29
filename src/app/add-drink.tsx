@@ -350,7 +350,18 @@ function AddPresetCard({ onPress }: { onPress: () => void }) {
 
 export default function AddDrinkScreen() {
   const router = useRouter();
-  const { recordId } = useLocalSearchParams<{ recordId?: string }>();
+  /**
+   * recordId — 수정 모드.
+   * dupAbv/dupVol/dupIcon/dupLabel — "한 잔 더" 복제. 같은 술을 방금 시각으로
+   * 새로 기록하는 것이라 수정과 달리 기존 기록을 건드리지 않는다.
+   */
+  const { recordId, dupAbv, dupVol, dupIcon, dupLabel } = useLocalSearchParams<{
+    recordId?: string;
+    dupAbv?: string;
+    dupVol?: string;
+    dupIcon?: string;
+    dupLabel?: string;
+  }>();
   const locale = localeStore(s => s.locale);
   void locale;
 
@@ -383,10 +394,10 @@ export default function AddDrinkScreen() {
 
   // Form state
   const [abvText, setAbvText] = useState(
-    editRecord ? String(editRecord.abvPercent) : '',
+    editRecord ? String(editRecord.abvPercent) : (dupAbv ?? ''),
   );
   const [volText, setVolText] = useState(
-    editRecord ? String(Math.round(editRecord.volumeMl)) : '',
+    editRecord ? String(Math.round(editRecord.volumeMl)) : (dupVol ?? ''),
   );
   const [consumedAt, setConsumedAt] = useState(
     editRecord?.consumedAt ?? Date.now(),
@@ -416,7 +427,11 @@ export default function AddDrinkScreen() {
   const [selectedPresetIdx, setSelectedPresetIdx] = useState<number | null>(null);
   const [selectedPresetAbv, setSelectedPresetAbv] = useState<number | null>(null);
   const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(null);
-  const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(null);
+  // 복제로 들어왔으면 원래 술 이름을 그대로 이어받는다 —
+  // 안 그러면 "소주 1잔" 을 복제했는데 목록에 「수동입력」 으로 뜬다
+  const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(
+    dupLabel ?? null,
+  );
 
   /**
    * 이 기록에 저장할 아이콘.
@@ -430,6 +445,7 @@ export default function AddDrinkScreen() {
       const p = presets.find(x => x.label === editRecord.presetLabel);
       if (p) return resolveDrinkIcon(p);
     }
+    if (dupIcon && isDrinkIconName(dupIcon)) return dupIcon;
     return 'cup';
   });
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -46,6 +46,7 @@ import { LastSessionCard } from '@/components/last-session-card';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
+import { calendarDayDiff } from '@/core/dateUtils';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Animated character ───────────────────────────────────────────────────────
@@ -163,12 +164,40 @@ function formatDuration(hours: number): string {
   return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
 }
 
+/**
+ * 남은 시간을 시계 시각으로 환산해 보여준다.
+ *
+ * "3시간 30분 남음" 만 있으면 사용자가 현재 시각에 더해 "그래서 몇 시?" 를
+ * 직접 계산해야 한다. 이 카드에서 가장 자주 찾는 답이 그 시각이므로,
+ * 정보량이 없던 "남은 시간" 라벨 자리를 시각으로 바꾼다.
+ *
+ * 자정을 넘기면 "다음날 02:20" — 이 앱은 넘기는 게 오히려 기본이라
+ * 시각만 찍으면 오늘 새벽인지 내일 새벽인지 알 수 없다.
+ */
+function formatSoberClock(soberAtMs: number, locale: string | null): string {
+  const time = formatTime(soberAtMs);
+  const dayDiff = calendarDayDiff(Date.now(), soberAtMs);
+  if (dayDiff <= 0) return time;
+  if (dayDiff === 1) return i18n.t('historySoberNextDay', { time });
+  return i18n.t('historySoberOtherDay', {
+    date: new Date(soberAtMs).toLocaleDateString(locale ?? undefined, {
+      month: 'numeric',
+      day: 'numeric',
+    }),
+    time,
+  });
+}
+
 function CountdownCard({
   remainingHrs,
   progress,
+  soberAtMs,
+  locale,
 }: {
   remainingHrs: number;
   progress: number;
+  soberAtMs: number | null;
+  locale: string | null;
 }) {
   return (
     <View style={countdownStyles.card}>
@@ -182,7 +211,16 @@ function CountdownCard({
           ]}
         />
       </View>
-      <Text style={countdownStyles.subLabel}>{i18n.t('timerRemainingLabel')}</Text>
+      {soberAtMs != null && (
+        <View style={countdownStyles.soberRow}>
+          <Icon name="clock" size={IconSize.sm} color={AppColors.accent} strokeWidth={2.2} />
+          <Text style={countdownStyles.soberText}>
+            {i18n.t('timerSoberAtClock', {
+              time: formatSoberClock(soberAtMs, locale),
+            })}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -216,7 +254,23 @@ const countdownStyles = StyleSheet.create({
     backgroundColor: AppColors.accent,
     borderRadius: Radius.pill,
   },
-  subLabel: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.sm },
+  // 기존 subLabel("남은 시간")은 정보가 없어 작고 흐렸다.
+  // 그 자리를 가장 많이 찾는 값(깨는 시각)으로 바꾸고 액센트로 강조한다
+  soberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Space.xs,
+    marginTop: Space.md,
+    backgroundColor: '#F1EFFF',
+    paddingHorizontal: Space.md,
+    paddingVertical: Space.sm,
+    borderRadius: Radius.pill,
+  },
+  soberText: {
+    fontSize: Font.body,
+    fontWeight: Weight.bold,
+    color: AppColors.accent,
+  },
 });
 
 // ── Record tile ───────────────────────────────────────────────────────────────
@@ -232,9 +286,10 @@ interface RecordTileProps {
   onEdit: () => void;
   onFinish: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 
-function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTileProps) {
+function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete, onDuplicate }: RecordTileProps) {
   const isDrinking = record.finishedAt == null;
   const abvStr = record.abvPercent % 1 === 0
     ? record.abvPercent.toString()
@@ -270,9 +325,23 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTi
               : i18n.t('recordFinishedAtSuffix', { time: formatTime(record.finishedAt!) })}
           </Text>
         </View>
-        <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="delete" size={20} color={AppColors.sub} strokeWidth={1.8} />
-        </TouchableOpacity>
+        {/* 복제 → 삭제 순. 되돌릴 수 없는 삭제를 가장자리에 두어야 오탭이 덜하다 */}
+        <View style={tileStyles.actions}>
+          <TouchableOpacity
+            onPress={onDuplicate}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={i18n.t('recordDuplicate')}
+          >
+            <Icon name="copy" size={20} color={AppColors.accent} strokeWidth={1.8} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onDelete}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={i18n.t('recordDelete')}
+          >
+            <Icon name="delete" size={20} color={AppColors.sub} strokeWidth={1.8} />
+          </TouchableOpacity>
+        </View>
       </View>
       {/* Row 2: 도수·용량 뱃지 (+ 다마심) */}
       <View style={[tileStyles.row, { marginTop: Space.sm }]}>
@@ -297,6 +366,8 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete }: RecordTi
 }
 
 const tileStyles = StyleSheet.create({
+  // 복제·삭제 두 버튼을 묶는다. 간격을 좁히면 삭제를 오탭하기 쉽다
+  actions: { flexDirection: 'row', alignItems: 'center', gap: Space.lg },
   container: {
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.lg,
@@ -600,6 +671,19 @@ export default function TimerScreen() {
     ? currentBacWithConstantR(records, profile, nowMs)
     : 0;
   const remHours = profile ? remainingHours(records, profile, nowMs) : 0;
+  /**
+   * 표시용 역순 사본 — 최근 잔이 위로.
+   * store 의 records 는 BAC 계산이 쓰는 배열이므로 절대 제자리 정렬하지 않는다.
+   * consumedAt 이 같으면 id 로 tie-break (같은 분에 두 잔을 넣으면 순서가 흔들린다).
+   */
+  const recordsNewestFirst = useMemo(
+    () =>
+      [...records].sort(
+        (a, b) => b.consumedAt - a.consumedAt || (b.id ?? 0) - (a.id ?? 0),
+      ),
+    [records],
+  );
+
   const soberAtMs = profile ? estimatedSoberAt(records, profile) : null;
   const soberWidmarkMs = profile
     ? estimatedSoberAtWithConstantR(records, profile)
@@ -649,6 +733,24 @@ export default function TimerScreen() {
       destructive: true,
     });
     if (ok && record.id != null) deleteRecord(record.id).catch(() => {});
+  }
+
+  /**
+   * 같은 술 한 잔 더 — 기록 추가 화면을 같은 값으로 채워서 연다.
+   *
+   * 기존 기록을 복사해 바로 저장하지 않고 화면을 여는 이유: 시각이나 용량을
+   * 손볼 여지를 남기고, "실수로 눌러서 한 잔이 늘어나는" 일을 막기 위해서다.
+   */
+  function handleDuplicateRecord(record: DrinkRecord) {
+    router.push({
+      pathname: '/add-drink',
+      params: {
+        dupAbv: String(record.abvPercent),
+        dupVol: String(Math.round(record.volumeMl)),
+        dupIcon: iconFor(record),
+        ...(record.presetLabel ? { dupLabel: record.presetLabel } : {}),
+      },
+    });
   }
 
   return (
@@ -721,7 +823,12 @@ export default function TimerScreen() {
 
           {/* Countdown card (only when finished records exist) */}
           {hasFinishedRecords && (
-            <CountdownCard remainingHrs={remHours} progress={progress} />
+            <CountdownCard
+              remainingHrs={remHours}
+              progress={progress}
+              soberAtMs={soberAtMs}
+              locale={locale}
+            />
           )}
 
           {/* Records section */}
@@ -732,7 +839,11 @@ export default function TimerScreen() {
                 <Text style={styles.addBtn}>{i18n.t('addRecordButton')}</Text>
               </TouchableOpacity>
             </View>
-            {records.map(record => (
+            {/* 최근에 추가한 잔이 위로 온다. 방금 넣은 기록을 바로 확인·수정하려면
+                맨 아래까지 스크롤해야 했다.
+                store 의 records 는 BAC 계산이 쓰는 배열이라 정렬을 건드리지 않고
+                표시용 사본만 뒤집는다. */}
+            {recordsNewestFirst.map(record => (
               <RecordTile
                 key={record.id}
                 record={record}
@@ -740,6 +851,7 @@ export default function TimerScreen() {
                 onEdit={() => handleEditRecord(record)}
                 onFinish={() => handleFinishRecord(record)}
                 onDelete={() => handleDeleteRecord(record)}
+                onDuplicate={() => handleDuplicateRecord(record)}
               />
             ))}
           </View>
