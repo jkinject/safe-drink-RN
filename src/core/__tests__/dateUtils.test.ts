@@ -4,7 +4,7 @@
  * 이 앱은 자정을 넘기는 게 예외가 아니라 기본이라, 여기가 틀리면
  * 새벽 2시에 깬 걸 "같은 날 02:20" 으로 찍어 하루를 통째로 오해하게 만든다.
  */
-import { calendarDayDiff, startOfDayMs } from '../dateUtils';
+import { calendarDayDiff, displayedMinuteDiff, startOfDayMs } from '../dateUtils';
 
 function at(y: number, mo: number, d: number, h: number, mi = 0): number {
   return new Date(y, mo - 1, d, h, mi).getTime();
@@ -44,5 +44,29 @@ describe('startOfDayMs', () => {
     const d = new Date(startOfDayMs(at(2026, 8, 25, 23, 59)));
     expect([d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()]).toEqual([0, 0, 0, 0]);
     expect(d.getDate()).toBe(25);
+  });
+});
+
+describe('displayedMinuteDiff', () => {
+  function at(h: number, mi: number, sec = 0): number {
+    return new Date(2026, 7, 30, h, mi, sec).getTime();
+  }
+
+  test('같은 분 안이면 0 (빠른 선택으로 즉시 기록)', () => {
+    expect(displayedMinuteDiff(at(0, 48, 5), at(0, 48, 50))).toBe(0);
+  });
+
+  test('40초여도 분 표시가 바뀌면 1 — 경과 ms 로 재면 0 이 되는 함정', () => {
+    // 00:48:50 → 00:49:30. 화면에는 00:48 ~ 00:49 로 찍히므로 "1분" 이어야 한다
+    expect(displayedMinuteDiff(at(0, 48, 50), at(0, 49, 30))).toBe(1);
+  });
+
+  test('59초를 꽉 채워도 같은 분이면 0', () => {
+    expect(displayedMinuteDiff(at(0, 48, 0), at(0, 48, 59))).toBe(0);
+  });
+
+  test('시간 경계를 넘어도 분으로 센다', () => {
+    expect(displayedMinuteDiff(at(23, 58), at(0, 2))).toBe(-1436);
+    expect(displayedMinuteDiff(at(11, 48), at(12, 49))).toBe(61);
   });
 });

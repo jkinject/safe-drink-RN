@@ -22,3 +22,16 @@ export function calendarDayDiff(fromMs: number, toMs: number): number {
   const DAY_MS = 86_400_000;
   return Math.round((startOfDayMs(toMs) - startOfDayMs(fromMs)) / DAY_MS);
 }
+
+/**
+ * 화면에 찍히는 "분" 기준의 차이.
+ *
+ * 경과 밀리초를 60000 으로 나누면 00:48:50 → 00:49:30 (40초) 이 0분이 되어,
+ * 시각은 00:48 ~ 00:49 로 달라 보이는데 "0분" 이라는 모순이 생긴다.
+ * 표시가 분 단위이므로 비교도 분 단위로 자른 뒤에 해야 한다.
+ *
+ * 시간대 오프셋은 분 단위라 epoch 분으로 잘라도 로컬 표시와 경계가 어긋나지 않는다.
+ */
+export function displayedMinuteDiff(fromMs: number, toMs: number): number {
+  return Math.floor(toMs / 60_000) - Math.floor(fromMs / 60_000);
+}

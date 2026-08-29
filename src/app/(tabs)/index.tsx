@@ -46,7 +46,7 @@ import { LastSessionCard } from '@/components/last-session-card';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
-import { calendarDayDiff } from '@/core/dateUtils';
+import { calendarDayDiff, displayedMinuteDiff } from '@/core/dateUtils';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Animated character ───────────────────────────────────────────────────────
@@ -286,8 +286,11 @@ function formatTime(epochMs: number): string {
  * 예전에는 마시는중이면 시작 시각만, 다 마셨으면 종료 시각만 보여줘서
  * 한 잔을 얼마 동안 마셨는지 알 수 없었다. 범위로 보여준다.
  *
- * 걸린 시간이 1분 미만이면 괄호를 붙이지 않는다 — 빠른 선택으로 넣으면
- * 시작·종료가 같은 순간이라 "(0분간 마심)" 이 매번 붙어 지저분해진다.
+ * 걸린 시간은 실제 경과가 아니라 **화면에 찍히는 분** 기준으로 센다.
+ * 밀리초로 재면 00:48:50 → 00:49:30 (40초) 처럼 시각은 달라 보이는데
+ * 1분 미만이라 괄호가 사라져, 표시가 서로 모순돼 보인다.
+ * 시작·종료가 같은 분이면(빠른 선택) 괄호를 붙이지 않는다 —
+ * "(0분간 마심)" 이 매번 붙어 지저분해진다.
  */
 function formatRecordRange(record: DrinkRecord): string {
   const start = formatTime(record.consumedAt);
@@ -297,10 +300,8 @@ function formatRecordRange(record: DrinkRecord): string {
   }
 
   const end = formatTime(finishedAt);
-  const ms = finishedAt - record.consumedAt;
-  if (ms < 60_000) return i18n.t('recordRangeDone', { start, end });
-
-  const minutes = Math.floor(ms / 60_000);
+  const minutes = displayedMinuteDiff(record.consumedAt, finishedAt);
+  if (minutes <= 0) return i18n.t('recordRangeDone', { start, end });
   const duration =
     minutes >= 60
       ? i18n.t('historyDuration', {
