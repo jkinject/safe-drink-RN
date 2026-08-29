@@ -425,10 +425,21 @@ export default function AddDrinkScreen() {
 
   // Preset selection
   const [selectedPresetIdx, setSelectedPresetIdx] = useState<number | null>(null);
-  const [selectedPresetAbv, setSelectedPresetAbv] = useState<number | null>(null);
-  const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(null);
-  // 복제로 들어왔으면 원래 술 이름을 그대로 이어받는다 —
-  // 안 그러면 "소주 1잔" 을 복제했는데 목록에 「수동입력」 으로 뜬다
+  /**
+   * 복제로 들어왔으면 원래 술 이름과 그 기준 수치를 함께 이어받는다.
+   *
+   * 이름만 넣으면 안 된다 — effectivePresetLabel() 은 현재 도수·용량이
+   * 기준값과 일치할 때만 이름을 유지하므로(숫자를 고치면 이름을 떼는 장치),
+   * 기준값이 없으면 항상 「수동입력」 으로 저장된다.
+   */
+  const dupAbvNum = dupAbv != null ? parseFloat(dupAbv) : NaN;
+  const dupVolNum = dupVol != null ? parseFloat(dupVol) : NaN;
+  const [selectedPresetAbv, setSelectedPresetAbv] = useState<number | null>(
+    dupLabel && !isNaN(dupAbvNum) ? dupAbvNum : null,
+  );
+  const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(
+    dupLabel && !isNaN(dupVolNum) ? dupVolNum : null,
+  );
   const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(
     dupLabel ?? null,
   );
