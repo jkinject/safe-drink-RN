@@ -280,6 +280,37 @@ function formatTime(epochMs: number): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+/**
+ * 잔 하나의 시간 표시 — "11:48 ~ 00:49 (61분간 마심)".
+ *
+ * 예전에는 마시는중이면 시작 시각만, 다 마셨으면 종료 시각만 보여줘서
+ * 한 잔을 얼마 동안 마셨는지 알 수 없었다. 범위로 보여준다.
+ *
+ * 걸린 시간이 1분 미만이면 괄호를 붙이지 않는다 — 빠른 선택으로 넣으면
+ * 시작·종료가 같은 순간이라 "(0분간 마심)" 이 매번 붙어 지저분해진다.
+ */
+function formatRecordRange(record: DrinkRecord): string {
+  const start = formatTime(record.consumedAt);
+  const finishedAt = record.finishedAt;
+  if (finishedAt == null) {
+    return i18n.t('recordRangeOngoing', { start });
+  }
+
+  const end = formatTime(finishedAt);
+  const ms = finishedAt - record.consumedAt;
+  if (ms < 60_000) return i18n.t('recordRangeDone', { start, end });
+
+  const minutes = Math.floor(ms / 60_000);
+  const duration =
+    minutes >= 60
+      ? i18n.t('historyDuration', {
+          hours: Math.floor(minutes / 60),
+          minutes: minutes % 60,
+        })
+      : i18n.t('historyDurationMinutes', { minutes });
+  return i18n.t('recordRangeDoneWithDuration', { start, end, duration });
+}
+
 interface RecordTileProps {
   record: DrinkRecord;
   presetIcon: DrinkIconName;
@@ -319,11 +350,7 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete, onDuplicat
               </View>
             )}
           </View>
-          <Text style={tileStyles.finishedText}>
-            {isDrinking
-              ? i18n.t('recordTimeSuffix', { time: formatTime(record.consumedAt) })
-              : i18n.t('recordFinishedAtSuffix', { time: formatTime(record.finishedAt!) })}
-          </Text>
+          <Text style={tileStyles.finishedText}>{formatRecordRange(record)}</Text>
         </View>
         {/* 복제 → 삭제 순. 되돌릴 수 없는 삭제를 가장자리에 두어야 오탭이 덜하다 */}
         <View style={tileStyles.actions}>
