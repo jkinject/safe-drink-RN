@@ -81,6 +81,8 @@ const ko = {
   addDrinkSimDeltaMinutes: '술 깨는 시간 +%{minutes}분',
   addDrinkSimSoberAt: '%{time}에 완전히 깸',
   addDrinkIconLabel: '술 종류',
+  addDrinkNameLabel: '술 이름',
+  addDrinkNameError: '1~20자로 입력해주세요',
   addDrinkAbvLabel: '도수 (%)',
   addDrinkAbvError: '0~100 사이의 도수를 입력해주세요',
   addDrinkVolumeLabel: '용량 (ml)',

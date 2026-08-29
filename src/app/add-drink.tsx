@@ -25,6 +25,7 @@ import {
   resolveDrinkIcon,
 } from '@/components/drink-icon';
 import { DrinkIconPicker } from '@/components/drink-icon-picker';
+import { DrinkIconSelect } from '@/components/drink-icon-select';
 import { Text } from '@/components/typography';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
@@ -406,6 +407,15 @@ export default function AddDrinkScreen() {
   const [finishedAt, setFinishedAt] = useState<number | null>(
     editRecord?.finishedAt ?? null,
   );
+  /**
+   * 술 이름. 이제 모든 기록이 이름을 갖는다 —
+   * 예전에는 프리셋과 도수·용량이 정확히 일치할 때만 이름이 붙어서,
+   * 숫자를 조금만 고쳐도 목록에 「수동입력」 으로 남았다.
+   */
+  const [nameText, setNameText] = useState(
+    editRecord?.presetLabel ?? dupLabel ?? '',
+  );
+  const [nameErr, setNameErr] = useState('');
   const [abvErr, setAbvErr] = useState('');
   const [volErr, setVolErr] = useState('');
   const [timeNotice, setTimeNotice] = useState('');
@@ -425,24 +435,11 @@ export default function AddDrinkScreen() {
 
   // Preset selection
   const [selectedPresetIdx, setSelectedPresetIdx] = useState<number | null>(null);
-  /**
-   * 복제로 들어왔으면 원래 술 이름과 그 기준 수치를 함께 이어받는다.
-   *
-   * 이름만 넣으면 안 된다 — effectivePresetLabel() 은 현재 도수·용량이
-   * 기준값과 일치할 때만 이름을 유지하므로(숫자를 고치면 이름을 떼는 장치),
-   * 기준값이 없으면 항상 「수동입력」 으로 저장된다.
-   */
-  const dupAbvNum = dupAbv != null ? parseFloat(dupAbv) : NaN;
-  const dupVolNum = dupVol != null ? parseFloat(dupVol) : NaN;
-  const [selectedPresetAbv, setSelectedPresetAbv] = useState<number | null>(
-    dupLabel && !isNaN(dupAbvNum) ? dupAbvNum : null,
-  );
-  const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(
-    dupLabel && !isNaN(dupVolNum) ? dupVolNum : null,
-  );
-  const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(
-    dupLabel ?? null,
-  );
+  // 프리셋 선택 상태 — 이제 이름은 nameText 가 들고 있고,
+  // 이 값들은 빠른 선택 카드의 선택 표시에만 쓰인다
+  const [selectedPresetAbv, setSelectedPresetAbv] = useState<number | null>(null);
+  const [selectedPresetVol, setSelectedPresetVol] = useState<number | null>(null);
+  const [selectedPresetLabel, setSelectedPresetLabel] = useState<string | null>(null);
 
   /**
    * 이 기록에 저장할 아이콘.
@@ -466,23 +463,15 @@ export default function AddDrinkScreen() {
   const [editPresetIdx, setEditPresetIdx] = useState<number | null>(null);
   const editPreset = editPresetIdx != null ? presets[editPresetIdx] : undefined;
 
-  function effectivePresetLabel(): string | undefined {
-    if (!selectedPresetLabel || selectedPresetAbv == null || selectedPresetVol == null) return undefined;
-    const a = parseFloat(abvText);
-    const v = parseFloat(volText);
-    if (isNaN(a) || isNaN(v)) return undefined;
-    if (Math.abs(a - selectedPresetAbv) < 0.001 && Math.abs(v - selectedPresetVol) < 0.001) {
-      return selectedPresetLabel;
-    }
-    return undefined;
-  }
-
   function handlePresetTap(idx: number) {
     const preset = presets[idx];
     setSelectedPresetIdx(idx);
     setSelectedPresetAbv(preset.abvPercent);
     setSelectedPresetVol(preset.volumeMl);
     setSelectedPresetLabel(preset.label);
+    // 이름도 같이 채운다 — 빠른 선택으로 넣은 기록이 이름 없이 저장되면 안 된다
+    setNameText(preset.label);
+    setNameErr('');
     // 프리셋을 고르면 아래 아이콘 선택도 그 술로 따라간다
     setIcon(resolveDrinkIcon(preset));
     setAbvText(
@@ -573,6 +562,10 @@ export default function AddDrinkScreen() {
 
   function validate(): boolean {
     let ok = true;
+    const trimmedName = nameText.trim();
+    if (!trimmedName || trimmedName.length > 20) {
+      setNameErr(i18n.t('addDrinkNameError')); ok = false;
+    } else setNameErr('');
     const a = parseFloat(abvText);
     if (isNaN(a) || a <= 0 || a > 100) {
       setAbvErr(i18n.t('addDrinkAbvError')); ok = false;
@@ -598,6 +591,7 @@ export default function AddDrinkScreen() {
           finishedAt: finishedAt ?? undefined,
           abvPercent: abv,
           volumeMl: vol,
+          presetLabel: nameText.trim(),
           icon,
         });
       } else {
@@ -610,7 +604,7 @@ export default function AddDrinkScreen() {
           consumedAt: now,
           abvPercent: abv,
           volumeMl: vol,
-          presetLabel: effectivePresetLabel(),
+          presetLabel: nameText.trim(),
           icon,
           finishedAt: isPast ? consumedAt : undefined,
         });
@@ -723,10 +717,23 @@ export default function AddDrinkScreen() {
 
         {/* Manual form */}
         <View style={styles.formCard}>
-          {/* Icon — 빠른 선택을 누르면 여기가 그 술로 바뀐다 */}
-          <View style={styles.iconField}>
-            <Text style={styles.iconFieldLabel}>{i18n.t('addDrinkIconLabel')}</Text>
-            <DrinkIconPicker value={icon} onChange={setIcon} />
+          {/* 아이콘 + 술 이름 한 줄.
+              아이콘 그리드를 펼쳐 두면 두 줄을 먹어서 도수·용량이 아래로 밀렸다.
+              이름은 필수 — 이제 모든 기록이 이름을 갖는다 (「수동입력」 없음). */}
+          <View style={styles.nameRow}>
+            <View style={styles.iconSelectCell}>
+              <DrinkIconSelect value={icon} onChange={setIcon} />
+            </View>
+            <View style={styles.nameCell}>
+              <FloatingLabelInput
+                label={i18n.t('addDrinkNameLabel')}
+                value={nameText}
+                onChangeText={v => { setNameText(v); setNameErr(''); }}
+                onFocus={scrollToForm}
+                maxLength={20}
+                error={nameErr || null}
+              />
+            </View>
           </View>
 
           {/* ABV */}
@@ -896,6 +903,11 @@ const styles = StyleSheet.create({
   },
   presetCell: {},
   divider: { height: 1, backgroundColor: AppColors.border },
+  // 아이콘(좁게) + 이름(남는 폭). FloatingLabelInput 이 아래 여백을 갖고 있어
+  // 아이콘 쪽을 위로 맞춰야 두 칸의 윗선이 어긋나지 않는다
+  nameRow: { flexDirection: 'row', gap: Space.sm, alignItems: 'flex-start' },
+  iconSelectCell: { width: 88 },
+  nameCell: { flex: 1 },
   formCard: {
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,

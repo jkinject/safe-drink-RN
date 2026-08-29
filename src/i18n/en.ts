@@ -81,6 +81,8 @@ const en = {
   addDrinkSimDeltaMinutes: 'Sober time +%{minutes}m',
   addDrinkSimSoberAt: 'Sober at %{time}',
   addDrinkIconLabel: 'Drink type',
+  addDrinkNameLabel: 'Drink name',
+  addDrinkNameError: 'Enter 1-20 characters',
   addDrinkAbvLabel: 'ABV (%)',
   addDrinkAbvError: 'Enter ABV between 0 and 100',
   addDrinkVolumeLabel: 'Volume (ml)',
