@@ -13,7 +13,8 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 | 개발 서버 | `npx expo start` |
 | iOS 시뮬레이터 빌드·실행 | `npx expo run:ios --device 0247D9DE-DC44-4617-B5A3-0AB05FF8E983` (iPhone 17) |
 | Android 로컬 릴리스 APK | `cd android && ./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk` |
-| OTA 게시 | `npx eas-cli update --channel preview --environment preview -m "메시지"` |
+| OTA 게시 (실사용자) | `npx eas-cli update --channel production --environment production -m "메시지"` |
+| OTA 게시 (내부 테스트) | `npx eas-cli update --channel preview --environment preview -m "메시지"` |
 
 - **번들 검증 시 `expo export`는 `--platform ios`(또는 android)로** — web 타깃은 expo-sqlite wasm 미지원으로 제거됨 (app.json platforms: ios/android).
 - 빌드/설치 명령을 파이프(`| tail`)로 자르면 실패가 가려진다 — 전체 로그를 남길 것.
@@ -34,6 +35,8 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 ## OTA (EAS Update)
 
+- **⚠️ 스토어 출시 후에는 `--channel production` 이 기본이다.** 스토어 AAB 는 production 채널을 물고 있어서 preview 로 올린 업데이트는 **실사용자에게 영원히 도달하지 않는다.** 실제로 출시 직후 preview 로만 올려 놓고 "왜 최신이 아니지" 를 겪었다. 게시 후 `eas channel:view production` 으로 Runtime Version·Message 가 채워졌는지 확인할 것 — `N/A` 면 아무도 못 받는다.
+- 폴드7·플립7 로컬 빌드 테스트용으로만 `--channel preview` 를 쓴다. 두 채널을 하나로 묶지 말 것 — 테스트 게시가 곧바로 전체 사용자에게 나간다.
 - **OTA 채널은 `eas.json` 프로필이 정한다. `app.json` 에 `updates.requestHeaders` 를 넣지 말 것** — 프로덕션 빌드가 preview 채널을 물어 실사용자에게 테스트 번들이 나간다.
 - 로컬(비-EAS) 릴리스 빌드가 preview OTA 를 받게 하려면 `android/app/src/main/AndroidManifest.xml` 에 직접 넣는다 (이 파일은 `/android` 가 gitignore 라 로컬에만 남고 EAS 빌드에는 영향이 없다):
   ```xml
