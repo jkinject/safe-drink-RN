@@ -5,6 +5,30 @@
 
 ---
 
+## 출시 이력
+
+| versionCode | 커밋 | 상태 |
+|---|---|---|
+| 3 (1.1.1) | `a7ce2b4` | 2026-09-02 프로덕션 출시 |
+| 4 (1.1.1) | `c5e15fb` | 2026-09-02 업로드·심사 제출 |
+
+**OTA 는 `production` 채널이 최신(`c5e15fb`)이라 code 3/4 어느 쪽이든 같은 번들로 수렴한다.**
+runtimeVersion 은 둘 다 `1.1.1` 이라 채널이 그대로 적용된다.
+
+### Play Console 경고 3건 — 모두 조치 불필요로 판단
+
+| 경고 | 기한 | 판단 |
+|---|---|---|
+| 지원 중단 API (edge-to-edge) | 없음 | 호출 지점이 전부 RN 코어·Material 내부. 우리 코드 아님. RN 업그레이드 시 해소 |
+| 대형 화면 방향 제한 | 없음 | 폴드7 펼친 화면(1968×2184, sw≈874dp)에서 홈·설정·기록추가·다이얼로그 전부 정상 확인. `orientation: portrait` 유지 |
+| 난독화 1% | **2027-02** | R8 이 꺼져 있다(`android.enableMinifyInReleaseBuilds` 미설정). 1.2.0 때 켤 것 — 아래 참고 |
+
+**R8 을 켤 때 주의**: `expo-notifications` 패치가 `R.layout.safedrink_timer_*` 를 이름으로 참조하므로
+리소스 축소에 지워질 수 있다. keep 규칙을 넣고 알림 카운트다운을 릴리스 빌드에서 반드시 재검증할 것.
+reanimated/worklets, expo-sqlite, expo-updates 도 릴리스에서만 터지는 유형이라 실기기 확인이 필요하다.
+
+---
+
 ## 준비물 위치
 
 | 자료 | 경로 / 값 |
