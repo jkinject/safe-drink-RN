@@ -18,6 +18,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 - **번들 검증 시 `expo export`는 `--platform ios`(또는 android)로** — web 타깃은 expo-sqlite wasm 미지원으로 제거됨 (app.json platforms: ios/android).
 - 빌드/설치 명령을 파이프(`| tail`)로 자르면 실패가 가려진다 — 전체 로그를 남길 것.
+- `expo run:ios` 가 `pod install` 단계에서 "Unicode Normalization not appropriate for ASCII-8BIT" 로 죽으면 셸 로케일 문제다 — `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` 을 앞에 붙여 실행.
 
 ## Android 빌드·기기
 
@@ -57,16 +58,23 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - `SCHEDULE_EXACT_ALARM` 은 유지한다. Android 14+ 는 기본 거부지만 expo-notifications 가 `canScheduleExactAlarms()` 로 가드하고 `setAndAllowWhileIdle` 로 폴백하므로 **예외가 나지 않는다** (`ExpoSchedulingDelegate.kt:105`). 거부 상태에서는 "이제 안전해요" 알림이 몇 분 늦을 수 있고, 알림창 카운트다운은 시스템 크로노미터라 영향 없다.
 - 권한을 바꾼 뒤에는 `aapt2 dump permissions <APK>` 로 실제 산출물을 확인할 것 — app.json 만 고치고 `android/` 를 재생성하지 않으면 로컬 빌드에는 반영되지 않는다.
 
+## AdMob 광고
+
+- 탭바 바로 위 하단 배너. 코드·ID·미완 항목은 `docs/ADMOB.md`.
+- **앱 ID 는 아직 Google 샘플 값(`ca-app-pub-3940256099942544~…`)이다.** AdMob 심사가 끝나면 `app.json` 플러그인 옵션의 `iosAppId`/`androidAppId` 를 실제 값(`ca-app-pub-3101837066146809~…`)으로 바꾸고 prebuild + 새 바이너리를 낸다. 광고 단위(`/3087280996`)는 `src/config/ads.ts` 에 있고 `__DEV__` 에서는 테스트 단위로 자동 대체된다.
+- 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
+
 ## 구조
 
 ```
 src/
 ├── core/          # 순수 계산 로직 (bacCalculator, planCalculator, types) — UI 의존 금지
 ├── storage/       # expo-sqlite(기록) + AsyncStorage(프로필/프리셋/로케일)
-├── services/      # notifications (expo-notifications 래핑)
-├── state/         # zustand 스토어 (session/profile/presets/locale)
+├── config/        # ads (AdMob 단위 ID)
+├── services/      # notifications (expo-notifications 래핑), ads (SDK 초기화)
+├── state/         # zustand 스토어 (session/profile/presets/locale/ad)
 ├── i18n/          # ko/en 딕셔너리 (i18n-js)
-├── components/    # 공용 UI (character-image, bac-graph, floating-label-input, time-picker-sheet …)
+├── components/    # 공용 UI (character-image, bac-graph, ad-banner, floating-label-input, time-picker-sheet …)
 ├── hooks/         # useOtaUpdates
 └── app/           # expo-router 라우트 (onboarding, (tabs)/{index,plan,settings}, add-drink, info)
 ```
@@ -86,7 +94,8 @@ src/
 ## 알려진 함정 / 이력
 
 - **React Compiler 실험 기능 끔** (app.json experiments) — zustand v5와 충돌해 "Should have a queue" 렌더 오류. 다시 켜지 말 것.
-- **patch-package**: `patches/expo-modules-jsi+*.patch` — 최신 Xcode Swift 타입 추론 버그 수정. postinstall로 자동 적용.
+- **patch-package**: `patches/expo-modules-jsi+*.patch` — 최신 Xcode Swift 타입 추론 버그 수정(`JavaScriptCodable+Date.swift` 한 줄, `abs()` → `.magnitude`). postinstall로 자동 적용.
+  - **이 패치에 `apple/Products/`·`.DerivedData/`·`.generated/` 를 절대 넣지 말 것.** ExpoModulesJSI 는 빌드 시 `scripts/build-xcframework.sh` 가 소스 해시(`.build-hash`)를 비교해 xcframework 를 만드는데, 해시 파일과 0바이트 바이너리(patch-package 는 바이너리를 못 실음)가 같이 들어가면 재빌드를 건너뛰고 깨진 프레임워크를 써서 clean install 후 "malformed compiled module … ExpoModulesJSI.swiftdoc" 로 빌드가 깨진다(실제로 11MB 패치로 겪음). 재생성은 `npm pack expo-modules-jsi@<ver>` 원본 위에 한 줄만 고치고 `npx patch-package expo-modules-jsi`, 그 뒤 `grep '^diff --git'` 로 파일 하나뿐인지 확인.
 - **react-native-svg는 height 필수** — 없으면 높이 0으로 보이지 않음. BacGraph는 onLayout 실측 폭 기반 픽셀 렌더링 사용 (viewBox 스케일링 금지).
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).
 - **jest 타입**: `jest-types.d.ts`로 고정 (expo가 expo-env.d.ts를 재생성하며 참조를 지움).

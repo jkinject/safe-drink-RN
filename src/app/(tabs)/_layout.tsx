@@ -7,9 +7,12 @@ import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { BottomAdBanner } from '@/components/ad-banner';
 
 /** 아이콘 + 라벨 한 줄의 높이 (탭바 높이를 여기에 맞춘다) */
 const TAB_CONTENT_HEIGHT = IconSize.lg + Space.xxs + Font.micro + 4;
+/** 하단 안전영역을 뺀 탭바 높이 — 광고 배너를 이 위에 올린다 */
+const TAB_BAR_BASE_HEIGHT = TAB_CONTENT_HEIGHT + Space.md * 2;
 
 function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; label: string }) {
   return (
@@ -38,8 +41,10 @@ export default function TabsLayout() {
   void locale;
   // Android edge-to-edge: 시스템 네비게이션 바 높이만큼 하단 여백 확보
   const insets = useSafeAreaInsets();
+  const tabBarHeight = TAB_BAR_BASE_HEIGHT + insets.bottom;
 
   return (
+    <View style={styles.root}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -48,7 +53,7 @@ export default function TabsLayout() {
         tabBarStyle: [
           styles.tabBar,
           {
-            height: TAB_CONTENT_HEIGHT + Space.md * 2 + insets.bottom,
+            height: tabBarHeight,
             paddingTop: Space.md,
             paddingBottom: Space.md + insets.bottom,
           },
@@ -84,6 +89,10 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    {/* 탭바가 absolute 라 배너도 같은 방식으로 그 바로 위에 띄운다.
+        높이는 광고가 로드된 뒤 adStore 로 전달되고, 각 탭 화면이 하단 여백에 더한다. */}
+    <BottomAdBanner style={[styles.banner, { bottom: tabBarHeight }]} />
+    </View>
   );
 }
 
@@ -95,6 +104,8 @@ const tabIconStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
+  banner: { position: 'absolute', left: 0, right: 0 },
   tabBar: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0,

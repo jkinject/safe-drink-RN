@@ -18,6 +18,7 @@ import { localeStore } from '@/state/localeStore';
 import type { LocalePreference } from '@/storage/localeStorage';
 import { appVersionLabel, PRIVACY_POLICY_URL, updateLabel } from '@/constants/appInfo';
 import { i18n } from '@/i18n';
+import { useBottomBannerHeight } from '@/state/adStore';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
@@ -41,6 +42,7 @@ function languageOptions(): SelectOption<LocalePreference>[] {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const bannerHeight = useBottomBannerHeight();
   const locale = localeStore(s => s.locale);
   const setLocale = localeStore(s => s.setLocale);
   const profile = profileStore(s => s.profile);
@@ -211,7 +213,7 @@ export default function SettingsScreen() {
           {!!updateLabel && <Text style={styles.versionSub}>{updateLabel}</Text>}
         </View>
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 90 + bannerHeight }} />
       </ScrollView>
 
       <SelectSheet

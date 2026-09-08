@@ -11,6 +11,7 @@ import { localeStore } from '@/state/localeStore';
 import { sessionStore } from '@/state/sessionStore';
 import { settingsStore } from '@/state/settingsStore';
 import * as notificationService from '@/services/notifications';
+import * as adsService from '@/services/ads';
 import { useOtaUpdates } from '@/hooks/useOtaUpdates';
 
 SplashScreen.preventAutoHideAsync();
@@ -34,6 +35,11 @@ export default function RootLayout() {
   const checkAutoClose = sessionStore(s => s.checkAutoClose);
   const router = useRouter();
   const segments = useSegments();
+
+  // 광고 SDK 는 앱 초기화와 무관하니 기다리지 않고 바로 시작한다
+  useEffect(() => {
+    adsService.initialize();
+  }, []);
 
   useEffect(() => {
     // 설정을 먼저 읽는다 — loadSession() 이 알림을 띄우므로, 설정보다 늦으면
