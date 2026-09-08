@@ -73,7 +73,8 @@
             "wzmmz9fp6w.skadnetwork"
           ]
         }
-      ]
+      ],
+      "expo-iap"
     ],
     "updates": {
       "enabled": true,

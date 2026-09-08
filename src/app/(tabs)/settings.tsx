@@ -15,6 +15,7 @@ import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
+import { purchaseStore } from '@/state/purchaseStore';
 import type { LocalePreference } from '@/storage/localeStorage';
 import { appVersionLabel, PRIVACY_POLICY_URL, updateLabel } from '@/constants/appInfo';
 import { i18n } from '@/i18n';
@@ -51,6 +52,44 @@ export default function SettingsScreen() {
   const refreshNotifications = sessionStore(s => s.refreshNotifications);
   const restorePresets = presetsStore(s => s.restoreDefaults);
   const clearAll = sessionStore(s => s.clearAll);
+  const adsRemoved = purchaseStore(s => s.adsRemoved);
+  const removeAdsProduct = purchaseStore(s => s.product);
+  const storeReady = purchaseStore(s => s.storeReady);
+  const purchaseStatus = purchaseStore(s => s.status);
+  const purchaseRemoveAds = purchaseStore(s => s.purchase);
+  const restorePurchases = purchaseStore(s => s.restore);
+
+  /**
+   * 광고 제거 구매. 취소는 조용히 넘기고, 완료·실패만 알린다.
+   * 스토어에 상품이 없거나 연결이 안 되면 시트 대신 안내만 띄운다.
+   */
+  async function handleRemoveAds() {
+    if (!removeAdsProduct) {
+      await alert({
+        title: i18n.t('settingsRemoveAdsUnavailableTitle'),
+        message: i18n.t('settingsRemoveAdsUnavailableDesc'),
+        confirmLabel: i18n.t('dialogOk'),
+      });
+      return;
+    }
+    const result = await purchaseRemoveAds();
+    if (result === 'cancelled') return;
+    await alert({
+      message: i18n.t(result === 'owned' ? 'settingsRemoveAdsPurchased' : 'settingsRemoveAdsFailed'),
+      confirmLabel: i18n.t('dialogOk'),
+    });
+  }
+
+  async function handleRestorePurchases() {
+    const result = await restorePurchases();
+    const key =
+      result === 'restored'
+        ? 'settingsRestoreDone'
+        : result === 'nothing'
+          ? 'settingsRestoreNothing'
+          : 'settingsRestoreFailed';
+    await alert({ message: i18n.t(key), confirmLabel: i18n.t('dialogOk') });
+  }
 
   /**
    * 토글 후 알림을 즉시 반영한다.
@@ -92,6 +131,14 @@ export default function SettingsScreen() {
   const localeValue: LocalePreference = locale ?? 'system';
   const currentLanguageLabel =
     languageOptions().find(o => o.value === localeValue)?.label ?? '';
+
+  const removeAdsValue = adsRemoved
+    ? i18n.t('settingsRemoveAdsOwned')
+    : removeAdsProduct
+      ? removeAdsProduct.displayPrice
+      : storeReady
+        ? i18n.t('settingsRemoveAdsUnavailable')
+        : '';
 
   const sexLabel = profile
     ? i18n.t(profile.sex === 'male' ? 'settingsMale' : 'settingsFemale')
@@ -164,6 +211,24 @@ export default function SettingsScreen() {
             label={i18n.t('languageTitle')}
             value={currentLanguageLabel}
             onPress={() => setLanguageSheetOpen(true)}
+            chevron
+            last
+          />
+        </SettingsSection>
+
+        {/* 광고 제거 — 스토어 정책상 구매와 복원 둘 다 눈에 보이는 자리에 있어야 한다 */}
+        <SettingsSection title={i18n.t('settingsAdsSection')}>
+          <SettingsRow
+            label={i18n.t('settingsRemoveAds')}
+            description={adsRemoved ? undefined : i18n.t('settingsRemoveAdsDesc')}
+            value={removeAdsValue}
+            onPress={adsRemoved || purchaseStatus !== 'idle' ? undefined : handleRemoveAds}
+            chevron={!adsRemoved}
+          />
+          <SettingsRow
+            label={i18n.t('settingsRestorePurchases')}
+            description={i18n.t('settingsRestorePurchasesDesc')}
+            onPress={purchaseStatus !== 'idle' ? undefined : handleRestorePurchases}
             chevron
             last
           />

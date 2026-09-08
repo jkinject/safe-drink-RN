@@ -1,4 +1,4 @@
-# AdMob 배너 (탭바 위 하단 광고)
+# AdMob 배너 (탭바 위 하단 광고) · 광고 제거 인앱결제
 
 `react-native-google-mobile-ads` 로 세 탭 화면 공통의 탭바 바로 위에 앵커드 적응형 배너를 띄운다.
 
@@ -27,6 +27,33 @@
 플러그인이 넣는 것: iOS `GADApplicationIdentifier` + `SKAdNetworkItems`, Android `com.google.android.gms.ads.APPLICATION_ID` 메타데이터.
 `app.json` 의 플러그인 옵션을 바꾼 뒤에는 `npx expo prebuild --platform ios|android` 로 다시 생성해야 반영된다 (Android 는 prebuild 가 지우는 `local.properties`·`gradle.properties`·OTA 채널 헤더를 CLAUDE.md 대로 다시 넣을 것). 반영 여부는
 `grep -A1 GADApplicationIdentifier ios/Safedrink/Info.plist` 로 확인.
+
+## 광고 제거 인앱결제 (expo-iap)
+
+설정 탭 → "광고" 섹션에 **광고 제거**(비소모성, 1회 결제)와 **구매 복원**이 있다.
+
+| 항목 | 값 | 위치 |
+|------|----|------|
+| 상품 ID | `remove_ads` | `src/config/iap.ts` |
+| 상품 종류 | 비소모성 (Non-Consumable / 관리되는 상품 1회성) | App Store Connect · Play Console 에 **같은 ID** 로 등록 |
+
+- `src/services/iap.ts` — expo-iap 래퍼. 연결·상품 조회·구매·복원·리스너.
+- `src/state/purchaseStore.ts` — `adsRemoved`(구매 여부)·`product`(가격)·`status`. 루트 레이아웃이 시작 시 `load()`(AsyncStorage 캐시) → `initialize()`(스토어 연결·보유 확인·리스너 구독) 순으로 부른다.
+- `src/storage/purchaseStorage.ts` — 캐시 키 `ads_removed`. 스토어 조회가 끝나면 그 결과로 덮어쓴다(환불·계정 전환 대응).
+- 탭 레이아웃은 `adsRemoved` 면 배너를 마운트하지 않는다.
+- 구매 결과는 `requestPurchase` 반환값이 아니라 `purchaseUpdatedListener` 로 온다. 완료되면 `finishTransaction` 으로 마무리(Android 는 3일 안에 acknowledge 안 하면 자동 환불). 앱 밖에서 끝난 결제·재설치 후 재생되는 트랜잭션도 같은 리스너로 들어온다.
+- 서버 영수증 검증은 없다(클라이언트 판단). 소액 1회 결제라 감수하는 구조이며, 부정 사용을 막아야 하면 `verifyPurchase` 로 서버 검증을 붙인다.
+
+### 테스트
+
+- **iOS 시뮬레이터**: `expo run:ios` 로 띄운 앱은 StoreKit 테스트 구성이 붙지 않아 상품 조회가 비어 "지금은 구매할 수 없어요" 로 보인다. 결제 흐름을 보려면 `ios/Safedrink.xcworkspace` 를 Xcode 로 열고 Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration 에 `storekit/Safedrink.storekit` 을 고른 뒤 Xcode 에서 실행한다. 이 파일에는 `remove_ads` 가 ₩3,300 으로 들어 있다.
+- **실기기**: App Store Connect 에 상품을 만들고 Sandbox 테스터 계정으로, Android 는 Play Console 라이선스 테스터로 확인한다.
+- 단위 테스트: `src/state/__tests__/purchaseStore.test.ts` (services/iap 목).
+
+### 스토어 등록 체크리스트
+
+- App Store Connect: 앱 → 인앱 구입 → 비소모성 `remove_ads`, 가격·현지화 입력, **심사용 스크린샷** 필수. 앱 심사 제출 시 인앱 구입을 같이 제출.
+- Play Console: 수익 창출 → 제품 → 인앱 상품 `remove_ads` 활성화. 결제 라이브러리 권한(`com.android.vending.BILLING`)은 expo-iap 플러그인이 넣는다.
 
 ## 아직 안 한 것
 

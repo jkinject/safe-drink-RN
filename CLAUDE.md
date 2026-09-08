@@ -63,16 +63,17 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - 탭바 바로 위 하단 배너. 코드·ID·미완 항목은 `docs/ADMOB.md`.
 - **앱 ID 는 아직 Google 샘플 값(`ca-app-pub-3940256099942544~…`)이다.** AdMob 심사가 끝나면 `app.json` 플러그인 옵션의 `iosAppId`/`androidAppId` 를 실제 값(`ca-app-pub-3101837066146809~…`)으로 바꾸고 prebuild + 새 바이너리를 낸다. 광고 단위(`/3087280996`)는 `src/config/ads.ts` 에 있고 `__DEV__` 에서는 테스트 단위로 자동 대체된다.
 - 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
+- **광고 제거 인앱결제**(expo-iap, 상품 ID `remove_ads`, 비소모성)는 설정 탭 "광고" 섹션. 구매 여부는 `purchaseStore.adsRemoved` — 캐시(AsyncStorage)로 먼저 채우고 스토어 보유 조회로 덮어쓴다. 시뮬레이터에서 결제를 보려면 Xcode 스킴에 `storekit/Safedrink.storekit` 을 물려 Xcode 로 실행해야 한다(`expo run:ios` 로는 상품이 안 잡힌다).
 
 ## 구조
 
 ```
 src/
 ├── core/          # 순수 계산 로직 (bacCalculator, planCalculator, types) — UI 의존 금지
-├── storage/       # expo-sqlite(기록) + AsyncStorage(프로필/프리셋/로케일)
-├── config/        # ads (AdMob 단위 ID)
-├── services/      # notifications (expo-notifications 래핑), ads (SDK 초기화)
-├── state/         # zustand 스토어 (session/profile/presets/locale/ad)
+├── storage/       # expo-sqlite(기록) + AsyncStorage(프로필/프리셋/로케일/구매 캐시)
+├── config/        # ads (AdMob 단위 ID), iap (인앱결제 상품 ID)
+├── services/      # notifications (expo-notifications 래핑), ads (SDK 초기화), iap (expo-iap 래핑)
+├── state/         # zustand 스토어 (session/profile/presets/locale/ad/purchase)
 ├── i18n/          # ko/en 딕셔너리 (i18n-js)
 ├── components/    # 공용 UI (character-image, bac-graph, ad-banner, floating-label-input, time-picker-sheet …)
 ├── hooks/         # useOtaUpdates
