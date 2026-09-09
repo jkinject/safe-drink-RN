@@ -68,18 +68,47 @@ def rounded_frame(raw: Image.Image):
     return shot, mask
 
 
-def compose(raw_path, headline, sub, out_path):
-    canvas = background()
-    shot, mask = rounded_frame(Image.open(raw_path))
-    # 연보라 그림자
+# 04·05 처럼 화면 일부만 크게 보여주는 장면: 원본에서 잘라낼 영역(l, t, r, b) 과 합성 폭.
+# 카드는 헤드라인 아래 남는 공간의 세로 가운데에 놓인다.
+CROPS = {
+    '04': ((36, 240, 1044, 1590), 960),   # 기록 목록의 첫 세션 카드
+    # 05 원본은 알림창 전체가 아니라 Safedrink 알림 카드만 잘라 둔 것(개인 알림이 같이 찍히므로)
+    '05': ((0, 0, 960, 180), 1000),
+}
+
+
+def rounded_card(raw: Image.Image, box, width):
+    card = raw.convert('RGB').crop(box)
+    scale = width / card.width
+    card = card.resize((width, round(card.height * scale)), Image.LANCZOS)
+    mask = Image.new('L', card.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, card.width - 1, card.height - 1), RADIUS, fill=255)
+    return card, mask
+
+
+def paste_with_shadow(canvas, shot, mask, x, y):
     shadow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow)
-    sd.rounded_rectangle((FRAME_X, FRAME_Y + 18, FRAME_X + FRAME_W, FRAME_Y + shot.height + 18),
-                         RADIUS, fill=(108, 99, 224, 70))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (x, y + 18, x + shot.width, y + shot.height + 18), RADIUS, fill=(108, 99, 224, 70))
     shadow = shadow.filter(ImageFilter.GaussianBlur(28))
     canvas = Image.alpha_composite(canvas.convert('RGBA'), shadow)
-    canvas.paste(shot, (FRAME_X, FRAME_Y), mask)
-    # 하단은 캔버스 밖으로 나가므로 자연스럽게 잘린다
+    canvas.paste(shot, (x, y), mask)
+    return canvas
+
+
+def compose(raw_path, headline, sub, out_path, crop=None):
+    canvas = background()
+    raw = Image.open(raw_path)
+    if crop:
+        box, width = crop
+        shot, mask = rounded_card(raw, box, width)
+        x = (W - shot.width) // 2
+        y = FRAME_Y + max(0, (H - FRAME_Y - shot.height) // 2)
+        canvas = paste_with_shadow(canvas, shot, mask, x, y)
+    else:
+        shot, mask = rounded_frame(raw)
+        # 하단은 캔버스 밖으로 나가므로 자연스럽게 잘린다
+        canvas = paste_with_shadow(canvas, shot, mask, FRAME_X, FRAME_Y)
 
     d = ImageDraw.Draw(canvas)
     hf = font('Pretendard-Bold.ttf', 68)
@@ -102,7 +131,7 @@ def main():
         if num not in CAPTIONS[lang]:
             print('skip (no caption):', raw); continue
         headline, sub = CAPTIONS[lang][num]
-        compose(raw, headline, sub, os.path.join(out_dir, os.path.basename(raw)))
+        compose(raw, headline, sub, os.path.join(out_dir, os.path.basename(raw)), CROPS.get(num))
 
 
 if __name__ == '__main__':
