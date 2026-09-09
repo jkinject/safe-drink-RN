@@ -20,6 +20,7 @@ import type { LocalePreference } from '@/storage/localeStorage';
 import { appVersionLabel, PRIVACY_POLICY_URL, updateLabel } from '@/constants/appInfo';
 import { i18n } from '@/i18n';
 import { useBottomBannerHeight } from '@/state/adStore';
+import { ADS_SUPPORTED } from '@/config/ads';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
@@ -216,7 +217,9 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
 
-        {/* 광고 제거 — 스토어 정책상 구매와 복원 둘 다 눈에 보이는 자리에 있어야 한다 */}
+        {/* 광고 제거 — 스토어 정책상 구매와 복원 둘 다 눈에 보이는 자리에 있어야 한다.
+            광고가 없는 플랫폼(iOS)에서는 팔 것이 없으니 섹션째 숨긴다. */}
+        {ADS_SUPPORTED ? (
         <SettingsSection title={i18n.t('settingsAdsSection')}>
           <SettingsRow
             label={i18n.t('settingsRemoveAds')}
@@ -233,6 +236,7 @@ export default function SettingsScreen() {
             last
           />
         </SettingsSection>
+        ) : null}
 
         <SettingsSection title={i18n.t('settingsDataSection')}>
           <SettingsRow

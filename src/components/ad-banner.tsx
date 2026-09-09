@@ -41,6 +41,9 @@ export function BottomAdBanner({ style }: { style?: StyleProp<ViewStyle> }) {
     [setHeight],
   );
 
+  // 이 플랫폼에 광고 단위가 없으면 아무것도 그리지 않는다
+  if (BOTTOM_BANNER_UNIT_ID == null) return null;
+
   return (
     <View style={[styles.container, style]} pointerEvents="box-none">
       <BannerAd

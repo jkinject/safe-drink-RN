@@ -61,7 +61,9 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 ## AdMob 광고
 
 - 탭바 바로 위 하단 배너. 코드·ID·미완 항목은 `docs/ADMOB.md`.
-- **앱 ID 는 아직 Google 샘플 값(`ca-app-pub-3940256099942544~…`)이다.** AdMob 심사가 끝나면 `app.json` 플러그인 옵션의 `iosAppId`/`androidAppId` 를 실제 값(`ca-app-pub-3101837066146809~…`)으로 바꾸고 prebuild + 새 바이너리를 낸다. 광고 단위(`/3087280996`)는 `src/config/ads.ts` 에 있고 `__DEV__` 에서는 테스트 단위로 자동 대체된다.
+- Android 앱 ID `ca-app-pub-3101837066146809~5991615665`(app.json 플러그인 옵션), 하단 배너 단위 `/3087280996`(`src/config/ads.ts`). `__DEV__` 에서는 테스트 단위로 자동 대체된다.
+- **iOS 는 앱스토어 등록 후 AdMob 에 추가할 예정** — 그때까지 `ADS_SUPPORTED` 가 false 라 배너·광고 제거 구매 섹션·SDK 초기화를 모두 건너뛴다. 켤 때는 `src/config/ads.ts` 의 iOS 단위 ID 와 app.json `iosAppId` 두 곳만 바꾸면 된다. `iosAppId` 의 Google 샘플 값은 Info.plist 자리 채움용이니 그 전에는 지우지 말 것(없으면 SDK 가 죽는다).
+- `react-native-google-mobile-ads` 는 **16.3.0 고정**(광고 SDK 25.0.0). 16.4+ 가 무는 play-services-ads 25.4 는 Kotlin 2.3 으로 컴파일돼 RN 0.86(Kotlin 2.1) 에서 "incompatible version of Kotlin metadata" 로 Android 빌드가 깨진다. 올리려면 프로젝트 Kotlin 을 같이 올려야 한다.
 - 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
 - **광고 제거 인앱결제**(expo-iap, 상품 ID `remove_ads`, 비소모성)는 설정 탭 "광고" 섹션. 구매 여부는 `purchaseStore.adsRemoved` — 캐시(AsyncStorage)로 먼저 채우고 스토어 보유 조회로 덮어쓴다. 시뮬레이터에서 결제를 보려면 Xcode 스킴에 `storekit/Safedrink.storekit` 을 물려 Xcode 로 실행해야 한다(`expo run:ios` 로는 상품이 안 잡힌다).
 

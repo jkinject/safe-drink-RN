@@ -9,6 +9,7 @@ import { localeStore } from '@/state/localeStore';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { BottomAdBanner } from '@/components/ad-banner';
 import { useAdsRemoved } from '@/state/purchaseStore';
+import { ADS_SUPPORTED } from '@/config/ads';
 
 /** 아이콘 + 라벨 한 줄의 높이 (탭바 높이를 여기에 맞춘다) */
 const TAB_CONTENT_HEIGHT = IconSize.lg + Space.xxs + Font.micro + 4;
@@ -94,7 +95,7 @@ export default function TabsLayout() {
     {/* 탭바가 absolute 라 배너도 같은 방식으로 그 바로 위에 띄운다.
         높이는 광고가 로드된 뒤 adStore 로 전달되고, 각 탭 화면이 하단 여백에 더한다. */}
     {/* 광고 제거를 산 사용자는 배너를 아예 마운트하지 않는다 — 언마운트 시 높이도 0 으로 돌아간다 */}
-    {adsRemoved ? null : <BottomAdBanner style={[styles.banner, { bottom: tabBarHeight }]} />}
+    {!ADS_SUPPORTED || adsRemoved ? null : <BottomAdBanner style={[styles.banner, { bottom: tabBarHeight }]} />}
     </View>
   );
 }

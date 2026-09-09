@@ -13,6 +13,7 @@ import { settingsStore } from '@/state/settingsStore';
 import { purchaseStore } from '@/state/purchaseStore';
 import * as notificationService from '@/services/notifications';
 import * as adsService from '@/services/ads';
+import { ADS_SUPPORTED } from '@/config/ads';
 import { useOtaUpdates } from '@/hooks/useOtaUpdates';
 
 SplashScreen.preventAutoHideAsync();
@@ -41,12 +42,13 @@ export default function RootLayout() {
 
   // 광고 SDK 는 앱 초기화와 무관하니 기다리지 않고 바로 시작한다
   useEffect(() => {
-    adsService.initialize();
+    if (ADS_SUPPORTED) adsService.initialize();
   }, []);
 
   // 광고 제거 구매 여부: 캐시를 먼저 읽어 배너가 잠깐 떴다 사라지는 걸 막고,
   // 그 다음 스토어에 연결해 실제 보유 여부로 맞춘다. 구매 이벤트 구독은 앱이 사는 동안 유지.
   useEffect(() => {
+    if (!ADS_SUPPORTED) return;
     let unsubscribe: (() => void) | undefined;
     let cancelled = false;
     loadPurchase()
