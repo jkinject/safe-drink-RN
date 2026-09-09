@@ -179,6 +179,7 @@ npx eas-cli submit --platform android --latest
 ## 스크린샷 다시 만들기
 
 1. **광고를 숨긴 캡처용 빌드**: `cd android && EXPO_PUBLIC_HIDE_ADS=1 ./gradlew assembleRelease` → 폴드7 에 설치. 실광고가 찍히면 안 되고, 광고 제거 섹션도 스토어 캡처에는 빼는 편이 깔끔하다. **이 빌드를 배포하거나 폰에 남겨 두지 말 것** — 광고가 안 나오는 빌드로 테스트하다 헷갈린다.
+   - ⚠️ **되돌릴 때는 번들 캐시를 지우고 빌드할 것**: `rm -rf android/app/build/generated/assets android/app/build/intermediates/assets` 후 `./gradlew assembleRelease`. 환경변수는 Gradle 번들 태스크의 입력이 아니라서, 그냥 다시 빌드하면 `createBundleReleaseJsAndAssets` 가 up-to-date 로 건너뛰고 **캡처용 번들이 그대로 들어간 APK** 가 나온다(실제로 겪음 — 설정에 광고 섹션이 없어서 알아챘다).
 2. 앱 언어를 원하는 언어로 바꾼다 (손대지 않은 기본 프리셋이면 언어에 맞는 세트로 자동 교체된다).
 3. 폴드7 커버 화면(1080×2520)에서 `adb shell screencap -p /sdcard/sc.png` → pull. 원본은 `store/raw/<lang>/NN-이름.png` 로 둔다. **05(알림창)는 개인 알림이 같이 찍히므로 Safedrink 알림 카드만 잘라 저장한다.**
 4. `python3 store/compose_screenshots.py en` (ko 는 `ko`). 헤드라인·서브 문구와 04·05 의 크롭 좌표는 스크립트 상단 `CAPTIONS`·`CROPS`.
