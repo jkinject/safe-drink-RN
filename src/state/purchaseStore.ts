@@ -76,7 +76,9 @@ export const purchaseStore = create<PurchaseState>((set, get) => {
           iap.fetchRemoveAdsProduct().catch(() => null),
           iap.checkOwnership(),
         ]);
-        set({ product });
+        // 스토어에 상품이 아직 없을 때 가격이 빈 껍데기가 오는 경우가 있다(Play, 등록 전).
+        // 그대로 두면 가격 없는 행을 눌러 결제 시도 → 실패로 이어지니 "구매 불가" 로 다룬다.
+        set({ product: product?.displayPrice ? product : null });
         // 스토어가 "없다" 고 하면 캐시가 true 여도 내린다 — 환불·계정 전환 대응
         if (owned !== get().adsRemoved) await applyOwnership(set, owned);
       } catch {

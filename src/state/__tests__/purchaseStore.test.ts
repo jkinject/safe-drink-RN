@@ -80,6 +80,15 @@ describe('load / initialize', () => {
   });
 });
 
+describe('initialize — 상품 껍데기', () => {
+  it('가격이 비어 있는 상품은 없는 것으로 다룬다', async () => {
+    (iap.fetchRemoveAdsProduct as jest.Mock).mockResolvedValueOnce({ id: 'remove_ads', displayPrice: '' });
+    await purchaseStore.getState().initialize();
+    expect(purchaseStore.getState().product).toBeNull();
+    expect(purchaseStore.getState().storeReady).toBe(true);
+  });
+});
+
 describe('purchase', () => {
   it('리스너로 완료가 오면 owned 를 돌려주고 캐시에 저장한다', async () => {
     await purchaseStore.getState().initialize();
