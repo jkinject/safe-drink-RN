@@ -48,12 +48,14 @@
 
 <div class="card">
   <h1>Safedrink 개인정보처리방침</h1>
-  <p class="meta">최종 수정일: 2026년 8월 27일 · 앱 버전 1.1.1</p>
+  <p class="meta">최종 수정일: 2026년 9월 9일 · 앱 버전 1.2.0</p>
 
   <div class="lead">
-    <strong>요약: Safedrink는 이용자의 개인정보를 서버로 전송하거나 수집하지 않습니다.</strong>
-    입력하신 신체 정보와 음주 기록은 <strong>기기 안에만</strong> 저장되며, 개발자를 포함한
-    누구도 이를 열람할 수 없습니다. 회원가입·로그인이 없고, 광고·분석 도구도 사용하지 않습니다.
+    <strong>요약: 입력하신 신체 정보와 음주 기록은 기기 안에만 저장되며, 개발자를 포함한
+    누구도 이를 열람할 수 없습니다.</strong> 회원가입·로그인이 없습니다.
+    Android 앱 1.2.0부터 화면 하단에 <strong>Google AdMob 배너 광고</strong>가 표시되며, 이를 위해
+    Google의 광고 SDK가 광고 식별자 등 일부 기기 정보를 수집합니다(제3절 참고). 광고는
+    1회 인앱 결제로 영구히 제거할 수 있습니다.
   </div>
 
   <h2>1. 앱이 저장하는 정보</h2>
@@ -81,19 +83,52 @@
     계산은 전부 기기 안에서 이루어집니다.
   </p>
 
-  <h2>2. 수집하지 않는 정보</h2>
+  <h2>2. 개발자가 수집하지 않는 정보</h2>
   <ul>
     <li>이름, 이메일, 전화번호 등 이용자를 식별할 수 있는 정보</li>
-    <li>위치 정보, 연락처, 사진, 통화·문자 기록</li>
-    <li>광고 식별자(AAID), 이용 행태 분석 데이터</li>
+    <li>정확한 위치 정보, 연락처, 사진, 통화·문자 기록</li>
+    <li>이용자가 입력한 신체 정보와 음주 기록 (기기 밖으로 나가지 않습니다)</li>
   </ul>
-  <p>Safedrink에는 회원가입 기능이 없으며, 광고 SDK와 분석 SDK를 포함하고 있지 않습니다.</p>
+  <p>Safedrink에는 회원가입 기능이 없으며, 개발자는 이용자 데이터를 보관하는 서버를 운영하지 않습니다.</p>
 
-  <h2>3. 앱이 사용하는 네트워크 통신</h2>
+  <h2>3. 광고 (Google AdMob)</h2>
   <p>
-    Safedrink가 인터넷에 연결하는 경우는 <strong>앱 업데이트 확인 한 가지뿐</strong>입니다.
-    앱을 실행할 때 Expo(EAS Update) 서버(<code>u.expo.dev</code>)에 새 버전이 있는지 확인하고,
-    있으면 앱 코드를 내려받습니다.
+    Android 앱은 화면 하단에 Google AdMob 배너 광고를 표시합니다. 광고를 불러오기 위해
+    Google Mobile Ads SDK가 다음 정보를 Google에 전송하며, Google은 이를 광고 게재·측정,
+    사기 방지, 서비스 개선 목적으로 처리합니다.
+  </p>
+  <table>
+    <tr><th>항목</th><th>내용</th></tr>
+    <tr><td>기기 또는 기타 식별자</td><td>Android 광고 ID(AAID), 앱 세트 ID</td></tr>
+    <tr><td>대략적인 위치</td><td>IP 주소로 추정되는 국가·지역 수준의 위치 (앱은 위치 권한을 요청하지 않습니다)</td></tr>
+    <tr><td>앱 상호작용</td><td>앱 실행, 광고 노출·탭 등 광고 관련 이용 정보</td></tr>
+    <tr><td>진단 정보</td><td>앱·SDK 성능 관련 정보</td></tr>
+  </table>
+  <p>
+    이 정보는 전송 중 암호화(TLS)됩니다. 이용자가 입력한 신체 정보와 음주 기록은
+    <strong>광고 SDK에 전달되지 않습니다.</strong> Google의 처리 방식은
+    <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google 광고 기술 정책</a>과
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>을 참고하십시오.
+  </p>
+  <p>
+    광고 ID는 기기의 <strong>설정 → Google → 광고</strong>에서 재설정하거나 삭제할 수 있고,
+    맞춤 광고를 끌 수 있습니다. 앱 설정의 <strong>광고 제거</strong>를 구매하면 배너가 표시되지
+    않으며 광고 SDK가 광고를 요청하지 않습니다.
+  </p>
+
+  <h2>4. 인앱 결제 (Google Play 결제)</h2>
+  <p>
+    "광고 제거"는 Google Play 결제 시스템을 통해 1회 결제하는 상품입니다. 결제 정보(카드,
+    계좌 등)는 Google Play가 처리하며 <strong>앱과 개발자는 결제 수단 정보를 받지 않습니다.</strong>
+    앱은 구매 여부만 Google Play에서 확인해 기기에 저장합니다. 앱을 다시 설치하거나 기기를
+    바꾼 경우 설정의 "구매 복원"으로 되찾을 수 있습니다.
+  </p>
+
+  <h2>5. 앱이 사용하는 네트워크 통신</h2>
+  <p>
+    Safedrink가 인터넷에 연결하는 경우는 <strong>앱 업데이트 확인, 광고 요청, Google Play 결제</strong>
+    세 가지입니다. 업데이트 확인은 앱을 실행할 때 Expo(EAS Update) 서버(<code>u.expo.dev</code>)에
+    새 버전이 있는지 묻고, 있으면 앱 코드를 내려받습니다.
   </p>
   <p>
     이 과정에서 기기의 <strong>운영체제 종류와 앱 버전 정보</strong>가 요청에 포함됩니다.
@@ -102,15 +137,17 @@
     <a href="https://expo.dev/privacy" target="_blank" rel="noopener">expo.dev/privacy</a>를 참고하십시오.
   </p>
 
-  <h2>4. 권한 사용 목적</h2>
+  <h2>6. 권한 사용 목적</h2>
   <table>
     <tr><th>권한</th><th>사용 목적</th></tr>
     <tr><td>알림</td><td>술이 깨는 예정 시각 알림, 알림창의 남은 시간 표시</td></tr>
     <tr><td>알람 및 리마인더</td><td>예정 시각에 알림이 정확히 도착하도록 예약 (허용하지 않아도 앱은 정상 동작하며, 알림이 다소 늦어질 수 있습니다)</td></tr>
     <tr><td>기기 부팅 완료 수신</td><td>기기를 다시 켰을 때 예약된 알림을 복원</td></tr>
+    <tr><td>인터넷</td><td>앱 업데이트 확인, 광고 요청, Google Play 결제</td></tr>
+    <tr><td>광고 ID (AD_ID)</td><td>Google 광고 SDK가 광고 게재·측정에 사용 (Android 13 이상)</td></tr>
   </table>
 
-  <h2>5. 데이터 보관과 삭제</h2>
+  <h2>7. 데이터 보관과 삭제</h2>
   <p>
     기록은 이용자가 삭제하기 전까지 기기에 보관됩니다. 앱 안에서 술자리 기록을 개별 삭제하거나,
     설정에서 전체 기록을 삭제할 수 있습니다.
@@ -123,19 +160,20 @@
     백업 데이터를 삭제할 수 있습니다.
   </p>
 
-  <h2>6. 제3자 제공</h2>
+  <h2>8. 제3자 제공</h2>
   <p>
-    개발자는 이용자의 데이터를 보유하지 않으므로, 제3자에게 제공하거나 판매하는 일이
-    발생하지 않습니다.
+    개발자는 이용자의 데이터를 보유하지 않으므로, 개발자가 제3자에게 제공하거나 판매하는 일은
+    없습니다. 다만 제3절의 광고 관련 정보는 광고 SDK가 Google(및 Google의 광고 파트너)에
+    직접 전송합니다.
   </p>
 
-  <h2>7. 아동의 개인정보</h2>
+  <h2>9. 아동의 개인정보</h2>
   <p>
     Safedrink는 음주와 관련된 앱으로 성인 이용자를 대상으로 합니다.
     아동으로부터 의도적으로 개인정보를 수집하지 않습니다.
   </p>
 
-  <h2>8. 면책</h2>
+  <h2>10. 면책</h2>
   <p>
     Safedrink가 제시하는 혈중알코올농도와 회복 예정 시각은 공개된 계산식
     (Widmark 공식 및 Watson 총체수분량 공식)에 기반한 <strong>참고용 추정치</strong>입니다.
@@ -146,12 +184,12 @@
     술을 마신 뒤에는 절대 운전하지 마십시오.
   </p>
 
-  <h2>9. 방침 변경</h2>
+  <h2>11. 방침 변경</h2>
   <p>
     본 방침이 변경되는 경우 이 페이지에 수정된 내용과 최종 수정일을 게시합니다.
   </p>
 
-  <h2>10. 문의</h2>
+  <h2>12. 문의</h2>
   <p>
     개인정보 처리에 관한 문의는 아래로 연락해 주십시오.<br>
     이메일: <a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a>
@@ -162,13 +200,14 @@
 
 <div class="card" id="en">
   <h1>Safedrink Privacy Policy</h1>
-  <p class="meta">Last updated: August 27, 2026 · App version 1.1.1</p>
+  <p class="meta">Last updated: September 9, 2026 · App version 1.2.0</p>
 
   <div class="lead">
-    <strong>Summary: Safedrink does not collect or transmit your personal information.</strong>
-    The body measurements and drink records you enter stay <strong>on your device only</strong>.
-    No one — including the developer — can access them. There is no account or sign-in,
-    and the app contains no advertising or analytics SDKs.
+    <strong>Summary: the body measurements and drink records you enter stay on your device only.
+    No one — including the developer — can access them.</strong> There is no account or sign-in.
+    Starting with Android version 1.2.0 the app shows a <strong>Google AdMob banner</strong>, and
+    Google's ads SDK collects some device information such as the advertising ID for that purpose
+    (see section 3). A one-time in-app purchase removes ads permanently.
   </div>
 
   <h2>1. Information stored by the app</h2>
@@ -184,18 +223,52 @@
     estimate. All calculations run on the device.
   </p>
 
-  <h2>2. Information we do not collect</h2>
+  <h2>2. Information the developer does not collect</h2>
   <ul>
     <li>Name, email address, phone number, or any other identifying information</li>
-    <li>Location, contacts, photos, call or message logs</li>
-    <li>Advertising identifiers (AAID) or behavioral analytics</li>
+    <li>Precise location, contacts, photos, call or message logs</li>
+    <li>Your body measurements and drink records (they never leave the device)</li>
   </ul>
+  <p>There is no account system, and the developer runs no server that stores user data.</p>
 
-  <h2>3. Network usage</h2>
+  <h2>3. Advertising (Google AdMob)</h2>
   <p>
-    The only reason Safedrink connects to the internet is to <strong>check for app updates</strong>.
-    On launch it asks the Expo (EAS Update) server (<code>u.expo.dev</code>) whether a newer
-    version of the app code exists and downloads it if so.
+    The Android app shows a Google AdMob banner at the bottom of the screen. To serve ads, the
+    Google Mobile Ads SDK sends the following to Google, which processes it for ad delivery and
+    measurement, fraud prevention, and service improvement.
+  </p>
+  <table>
+    <tr><th>Category</th><th>Details</th></tr>
+    <tr><td>Device or other identifiers</td><td>Android advertising ID (AAID), app set ID</td></tr>
+    <tr><td>Approximate location</td><td>Country/region-level location inferred from the IP address (the app does not request location permission)</td></tr>
+    <tr><td>App interactions</td><td>App launches, ad impressions and taps</td></tr>
+    <tr><td>Diagnostics</td><td>App and SDK performance information</td></tr>
+  </table>
+  <p>
+    This data is encrypted in transit (TLS). Your body measurements and drink records are
+    <strong>never passed to the ads SDK.</strong> See
+    <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses information from ads</a> and the
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
+  </p>
+  <p>
+    You can reset or delete your advertising ID and opt out of personalized ads under
+    <strong>Settings → Google → Ads</strong> on your device. Purchasing <strong>Remove Ads</strong>
+    in the app's settings hides the banner and stops ad requests.
+  </p>
+
+  <h2>4. In-app purchase (Google Play Billing)</h2>
+  <p>
+    "Remove Ads" is a one-time purchase handled by Google Play's billing system. Payment details
+    are processed by Google Play; <strong>the app and the developer never receive them.</strong>
+    The app only checks with Google Play whether the purchase exists and stores that status on the
+    device. After reinstalling or switching devices, use "Restore Purchases" in Settings.
+  </p>
+
+  <h2>5. Network usage</h2>
+  <p>
+    Safedrink connects to the internet for three reasons: <strong>checking for app updates,
+    requesting ads, and Google Play billing</strong>. On launch it asks the Expo (EAS Update)
+    server (<code>u.expo.dev</code>) whether a newer version of the app code exists and downloads it if so.
   </p>
   <p>
     That request includes your device's <strong>operating system and app version</strong>.
@@ -204,15 +277,17 @@
     for Expo's own privacy practices.
   </p>
 
-  <h2>4. Permissions</h2>
+  <h2>6. Permissions</h2>
   <table>
     <tr><th>Permission</th><th>Purpose</th></tr>
     <tr><td>Notifications</td><td>Alert you when alcohol is estimated to have cleared; show the remaining time in the notification shade</td></tr>
     <tr><td>Alarms &amp; reminders</td><td>Deliver that alert at the estimated time. Optional — the app works without it, though the alert may arrive a few minutes late</td></tr>
     <tr><td>Boot completed</td><td>Restore scheduled notifications after the device restarts</td></tr>
+    <tr><td>Internet</td><td>Update checks, ad requests, Google Play billing</td></tr>
+    <tr><td>Advertising ID (AD_ID)</td><td>Used by Google's ads SDK for ad delivery and measurement (Android 13+)</td></tr>
   </table>
 
-  <h2>5. Retention and deletion</h2>
+  <h2>7. Retention and deletion</h2>
   <p>
     Records remain on your device until you delete them. You can delete individual sessions
     in the app, or clear all records from Settings.
@@ -225,16 +300,20 @@
     backed-up data in your device settings.
   </p>
 
-  <h2>6. Sharing with third parties</h2>
-  <p>The developer holds none of your data, so there is nothing to share or sell.</p>
+  <h2>8. Sharing with third parties</h2>
+  <p>
+    The developer holds none of your data, so the developer shares or sells nothing. The
+    advertising data described in section 3 is sent by the ads SDK directly to Google (and
+    Google's advertising partners).
+  </p>
 
-  <h2>7. Children's privacy</h2>
+  <h2>9. Children's privacy</h2>
   <p>
     Safedrink concerns alcohol consumption and is intended for adults. We do not knowingly
     collect personal information from children.
   </p>
 
-  <h2>8. Disclaimer</h2>
+  <h2>10. Disclaimer</h2>
   <p>
     The blood alcohol concentration and sober-by time shown in Safedrink are
     <strong>reference estimates</strong> based on published formulas (the Widmark equation and
@@ -246,10 +325,10 @@
     to drive.</strong> Never drive after drinking.
   </p>
 
-  <h2>9. Changes to this policy</h2>
+  <h2>11. Changes to this policy</h2>
   <p>Any changes will be posted on this page along with a revised "last updated" date.</p>
 
-  <h2>10. Contact</h2>
+  <h2>12. Contact</h2>
   <p>
     Questions about privacy:
     <a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a>
