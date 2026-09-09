@@ -81,3 +81,10 @@ If you have been drinking, do not drive.
 | 06 settings | Private by design | No account. Everything stays on your device |
 
 Regenerate the composites with `python3 store/compose_screenshots.py en` after dropping raw captures in `store/raw/en/`.
+
+## Machine translations (2026-09-09)
+
+- Play Console → 사용자 늘리기 → 번역 → "무료 기계 번역" 주문(원본 en-US, 대상 스토어 등록정보만). 지원 언어 27개 전부 적용: nl, no, da, de, ru, ro, vi, sv, es-419, es-ES, sk, ar, uk, it, id, ja, zh-CN, cs, th, tr, pt-BR, pl, fr, fi, hu, iw, hi. (zh-TW·pt-PT·ms·fil 은 기계 번역 미지원.)
+- 앱 이름 30자·짧은 설명 80자 한도를 넘긴 21개 언어는 aside 가 짧게 손봤다. 아랍어 앱 이름은 "중독 회복 타이머" 오역이라 수정함. 자세한 설명은 기계 번역 그대로 — 품질 검수는 안 했다.
+- **기본 언어를 ko-KR → en-US 로 변경**. 그래픽이 없는 언어는 이제 영어 스크린샷·피처 그래픽으로 폴백한다. 한국어 등록정보·그래픽은 번역 항목으로 그대로 유지. en-US 에 앱 아이콘을 따로 넣어야 했다(기본 언어는 아이콘 필수).
+- 번역·기본 언어 변경은 기존 검토(1.2.0 출시)와 합쳐져 다시 검토 중.
