@@ -51,6 +51,8 @@ export {
 
 export {
   DEFAULT_PRESETS,
+  DEFAULT_PRESETS_EN,
+  defaultPresets,
   loadPresets,
   savePresets,
   updatePresetAt,

@@ -26,8 +26,13 @@ export const BOTTOM_BANNER_UNIT_ID: string | null = __DEV__
   ? TestIds.ADAPTIVE_BANNER
   : PRODUCTION_BOTTOM_BANNER_UNIT_ID;
 
-/** 이 빌드에서 광고(와 광고 제거 구매)를 제공하는지 */
-export const ADS_SUPPORTED = BOTTOM_BANNER_UNIT_ID != null;
+/**
+ * 이 빌드에서 광고(와 광고 제거 구매)를 제공하는지.
+ * `EXPO_PUBLIC_HIDE_ADS=1` 로 번들하면 강제로 끈다 — 스토어 스크린샷처럼 실광고가
+ * 찍히면 안 되는 마케팅 캡처용. 배포 빌드에서는 절대 켜지 말 것.
+ */
+export const ADS_SUPPORTED =
+  BOTTOM_BANNER_UNIT_ID != null && process.env.EXPO_PUBLIC_HIDE_ADS !== '1';
 
 /**
  * 하단 배너 크기. 화면 폭에 맞춰 높이(50~90)가 정해지는 앵커드 적응형.

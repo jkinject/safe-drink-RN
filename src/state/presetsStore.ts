@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DrinkPreset } from '../core/types';
 import * as presetStorage from '../storage/presetStorage';
+import { localeStore, type LocaleCode } from './localeStore';
 
 interface PresetsState {
   presets: DrinkPreset[];
@@ -13,6 +14,8 @@ interface PresetsState {
   updateAt: (index: number, preset: DrinkPreset) => Promise<void>;
   /** 누락된 기본 프리셋 복원 */
   restoreDefaults: () => Promise<void>;
+  /** 언어 변경 시 손대지 않은 기본 프리셋을 새 언어 기본으로 교체 (localeStore 가 부른다) */
+  swapDefaultsForLocale: (from: LocaleCode, to: LocaleCode) => Promise<void>;
 }
 
 export const presetsStore = create<PresetsState>((set, get) => ({
@@ -22,7 +25,8 @@ export const presetsStore = create<PresetsState>((set, get) => ({
   load: async () => {
     set({ isLoading: true });
     try {
-      const presets = await presetStorage.seedIfNeeded();
+      const locale = localeStore.getState().locale;
+      const presets = await presetStorage.seedIfNeeded(locale);
       set({ presets, isLoading: false });
     } catch {
       set({ isLoading: false });
@@ -40,8 +44,14 @@ export const presetsStore = create<PresetsState>((set, get) => ({
     set({ presets: updated });
   },
 
+  swapDefaultsForLocale: async (from, to) => {
+    const swapped = await presetStorage.swapDefaultsForLocale(from, to);
+    if (swapped) set({ presets: swapped });
+  },
+
   restoreDefaults: async () => {
-    const restored = await presetStorage.restoreDefaults();
+    const locale = localeStore.getState().locale;
+    const restored = await presetStorage.restoreDefaults(locale);
     set({ presets: restored });
   },
 }));
