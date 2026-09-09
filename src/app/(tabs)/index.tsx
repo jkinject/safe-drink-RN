@@ -32,6 +32,7 @@ import { sessionStore } from '@/state/sessionStore';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
 import { presetsStore } from '@/state/presetsStore';
+import { useBottomBannerHeight } from '@/state/adStore';
 import {
   bacCurve,
   currentBac,
@@ -657,6 +658,8 @@ export default function TimerScreen() {
   const profile = profileStore(s => s.profile);
   const presets = presetsStore(s => s.presets);
   const insets = useSafeAreaInsets();
+  // 탭바 위 광고 배너만큼 하단 여백·FAB 를 올린다 (광고 없으면 0)
+  const bannerHeight = useBottomBannerHeight();
   // 기록에 저장된 아이콘이 우선. v4 이전 기록은 icon 이 없으므로
   // 예전처럼 프리셋 라벨로 되짚는다 (과거 데이터는 소급 채우지 않기로 했다).
   const iconFor = useCallback(
@@ -908,13 +911,13 @@ export default function TimerScreen() {
           <TipBanner />
 
           {/* Bottom padding for tab bar */}
-          <View style={{ height: 90 + insets.bottom }} />
+          <View style={{ height: 90 + insets.bottom + bannerHeight }} />
         </ScrollView>
       )}
 
       {/* FAB */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: 84 + insets.bottom }]}
+        style={[styles.fab, { bottom: 84 + insets.bottom + bannerHeight }]}
         onPress={() => router.push('/add-drink')}
         activeOpacity={0.85}
       >

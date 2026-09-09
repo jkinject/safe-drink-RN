@@ -18,6 +18,7 @@ import { FloatingLabelInput } from '@/components/floating-label-input';
 import { profileStore } from '@/state/profileStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
+import { useBottomBannerHeight } from '@/state/adStore';
 import { calculate as planCalculate } from '@/core/planCalculator';
 import { PlanResult } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
@@ -78,6 +79,7 @@ const pickerStyles = StyleSheet.create({
 
 export default function PlanScreen() {
   const router = useRouter();
+  const bannerHeight = useBottomBannerHeight();
   const locale = localeStore(s => s.locale);
   void locale;
 
@@ -235,7 +237,7 @@ export default function PlanScreen() {
           </View>
         )}
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 90 + bannerHeight }} />
       </ScrollView>
 
       <TimePickerModal

@@ -18,6 +18,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 - **번들 검증 시 `expo export`는 `--platform ios`(또는 android)로** — web 타깃은 expo-sqlite wasm 미지원으로 제거됨 (app.json platforms: ios/android).
 - 빌드/설치 명령을 파이프(`| tail`)로 자르면 실패가 가려진다 — 전체 로그를 남길 것.
+- `expo run:ios` 가 `pod install` 단계에서 "Unicode Normalization not appropriate for ASCII-8BIT" 로 죽으면 셸 로케일 문제다 — `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` 을 앞에 붙여 실행.
 
 ## Android 빌드·기기
 
@@ -57,16 +58,33 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - `SCHEDULE_EXACT_ALARM` 은 유지한다. Android 14+ 는 기본 거부지만 expo-notifications 가 `canScheduleExactAlarms()` 로 가드하고 `setAndAllowWhileIdle` 로 폴백하므로 **예외가 나지 않는다** (`ExpoSchedulingDelegate.kt:105`). 거부 상태에서는 "이제 안전해요" 알림이 몇 분 늦을 수 있고, 알림창 카운트다운은 시스템 크로노미터라 영향 없다.
 - 권한을 바꾼 뒤에는 `aapt2 dump permissions <APK>` 로 실제 산출물을 확인할 것 — app.json 만 고치고 `android/` 를 재생성하지 않으면 로컬 빌드에는 반영되지 않는다.
 
+## AdMob 광고
+
+- 탭바 바로 위 하단 배너. 코드·ID·미완 항목은 `docs/ADMOB.md`.
+- Android 앱 ID `ca-app-pub-3101837066146809~5991615665`(app.json 플러그인 옵션), 하단 배너 단위 `/3087280996`(`src/config/ads.ts`). `__DEV__` 에서는 테스트 단위로 자동 대체된다.
+- **iOS 는 앱스토어 등록 후 AdMob 에 추가할 예정** — 그때까지 `ADS_SUPPORTED` 가 false 라 배너·광고 제거 구매 섹션·SDK 초기화를 모두 건너뛴다. 켤 때는 `src/config/ads.ts` 의 iOS 단위 ID 와 app.json `iosAppId` 두 곳만 바꾸면 된다. `iosAppId` 의 Google 샘플 값은 Info.plist 자리 채움용이니 그 전에는 지우지 말 것(없으면 SDK 가 죽는다).
+- `react-native-google-mobile-ads` 는 **16.3.0 고정**(광고 SDK 25.0.0). 16.4+ 가 무는 play-services-ads 25.4 는 Kotlin 2.3 으로 컴파일돼 RN 0.86(Kotlin 2.1) 에서 "incompatible version of Kotlin metadata" 로 Android 빌드가 깨진다. 올리려면 프로젝트 Kotlin 을 같이 올려야 한다.
+- 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
+- **광고 제거 인앱결제**(expo-iap, 상품 ID `remove_ads`, 비소모성)는 설정 탭 "광고" 섹션. 구매 여부는 `purchaseStore.adsRemoved` — 캐시(AsyncStorage)로 먼저 채우고 스토어 보유 조회로 덮어쓴다. 시뮬레이터에서 결제를 보려면 Xcode 스킴에 `storekit/Safedrink.storekit` 을 물려 Xcode 로 실행해야 한다(`expo run:ios` 로는 상품이 안 잡힌다).
+
+## 스토어 등록정보·스크린샷
+
+- 한국어 `store/play-listing.md`, 영어 `store/play-listing-en.md`. 기능이 바뀌면 둘 다 고친다.
+- 스크린샷은 `store/compose_screenshots.py` 로 합성한다(원본 `store/raw/<lang>/`, 결과 `store/screenshots[/en]/`). 캡처는 `EXPO_PUBLIC_HIDE_ADS=1` 로 빌드한 APK 로 찍는다 — 절차는 `store/SUBMISSION.md` "스크린샷 다시 만들기".
+- **`EXPO_PUBLIC_*` 환경변수를 바꿔 다시 빌드할 때는 `android/app/build/generated/assets` 를 지울 것.** Gradle 번들 태스크가 환경변수를 입력으로 안 봐서 이전 번들을 재사용한다.
+- 기본 술 프리셋은 로케일별이다(`presetStorage.defaultPresets`). 영어는 소주·막걸리 없이 국제 세트. 언어를 바꿀 때 손대지 않은 기본 세트는 새 언어 세트로 교체된다.
+
 ## 구조
 
 ```
 src/
 ├── core/          # 순수 계산 로직 (bacCalculator, planCalculator, types) — UI 의존 금지
-├── storage/       # expo-sqlite(기록) + AsyncStorage(프로필/프리셋/로케일)
-├── services/      # notifications (expo-notifications 래핑)
-├── state/         # zustand 스토어 (session/profile/presets/locale)
+├── storage/       # expo-sqlite(기록) + AsyncStorage(프로필/프리셋/로케일/구매 캐시)
+├── config/        # ads (AdMob 단위 ID), iap (인앱결제 상품 ID)
+├── services/      # notifications (expo-notifications 래핑), ads (SDK 초기화), iap (expo-iap 래핑)
+├── state/         # zustand 스토어 (session/profile/presets/locale/ad/purchase)
 ├── i18n/          # ko/en 딕셔너리 (i18n-js)
-├── components/    # 공용 UI (character-image, bac-graph, floating-label-input, time-picker-sheet …)
+├── components/    # 공용 UI (character-image, bac-graph, ad-banner, floating-label-input, time-picker-sheet …)
 ├── hooks/         # useOtaUpdates
 └── app/           # expo-router 라우트 (onboarding, (tabs)/{index,plan,settings}, add-drink, info)
 ```
@@ -86,7 +104,8 @@ src/
 ## 알려진 함정 / 이력
 
 - **React Compiler 실험 기능 끔** (app.json experiments) — zustand v5와 충돌해 "Should have a queue" 렌더 오류. 다시 켜지 말 것.
-- **patch-package**: `patches/expo-modules-jsi+*.patch` — 최신 Xcode Swift 타입 추론 버그 수정. postinstall로 자동 적용.
+- **patch-package**: `patches/expo-modules-jsi+*.patch` — 최신 Xcode Swift 타입 추론 버그 수정(`JavaScriptCodable+Date.swift` 한 줄, `abs()` → `.magnitude`). postinstall로 자동 적용.
+  - **이 패치에 `apple/Products/`·`.DerivedData/`·`.generated/` 를 절대 넣지 말 것.** ExpoModulesJSI 는 빌드 시 `scripts/build-xcframework.sh` 가 소스 해시(`.build-hash`)를 비교해 xcframework 를 만드는데, 해시 파일과 0바이트 바이너리(patch-package 는 바이너리를 못 실음)가 같이 들어가면 재빌드를 건너뛰고 깨진 프레임워크를 써서 clean install 후 "malformed compiled module … ExpoModulesJSI.swiftdoc" 로 빌드가 깨진다(실제로 11MB 패치로 겪음). 재생성은 `npm pack expo-modules-jsi@<ver>` 원본 위에 한 줄만 고치고 `npx patch-package expo-modules-jsi`, 그 뒤 `grep '^diff --git'` 로 파일 하나뿐인지 확인.
 - **react-native-svg는 height 필수** — 없으면 높이 0으로 보이지 않음. BacGraph는 onLayout 실측 폭 기반 픽셀 렌더링 사용 (viewBox 스케일링 금지).
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).
 - **jest 타입**: `jest-types.d.ts`로 고정 (expo가 expo-env.d.ts를 재생성하며 참조를 지움).

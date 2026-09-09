@@ -1,0 +1,46 @@
+{
+  "identifier" : "5C1E0B2A-7A6B-4B1E-9C2D-3F4A5B6C7D8E",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3300",
+      "familyShareable" : false,
+      "internalID" : "remove_ads",
+      "localizations" : [
+        {
+          "description" : "하단 배너 광고를 영구히 없앱니다.",
+          "displayName" : "광고 제거",
+          "locale" : "ko"
+        },
+        {
+          "description" : "Permanently removes the bottom banner.",
+          "displayName" : "Remove Ads",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "remove_ads",
+      "referenceName" : "Remove Ads",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "ko_KR",
+    "_storefront" : "KOR",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

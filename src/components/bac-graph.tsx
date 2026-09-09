@@ -17,7 +17,9 @@ import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 const CHART_HEIGHT = 170;
 const PAD_LEFT = 4;
-const PAD_RIGHT = 78; // 우측 기준선 라벨 영역 (Flutter판과 동일하게 우측 배치)
+// 우측 기준선 라벨 영역 (Flutter판과 동일하게 우측 배치).
+// 영어 라벨("Revocation 0.08%")은 한국어("면허 취소 0.08%")보다 길어서 잘리므로 로케일별로 잡는다.
+const padRight = () => (i18n.locale === 'en' ? 96 : 78);
 const PAD_TOP = 14;
 const PAD_BOTTOM = 6;
 
@@ -62,6 +64,7 @@ export function BacGraph({
   const [width, setWidth] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
+  const PAD_RIGHT = padRight();
   const innerW = Math.max(0, width - PAD_LEFT - PAD_RIGHT);
   const INNER_H = height - PAD_TOP - PAD_BOTTOM;
 

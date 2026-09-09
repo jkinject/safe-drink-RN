@@ -22,7 +22,7 @@ function resolveSystemLocale(): LocaleCode {
 const initialLocale = resolveSystemLocale();
 i18n.locale = initialLocale;
 
-export const localeStore = create<LocaleState>((set) => ({
+export const localeStore = create<LocaleState>((set, get) => ({
   locale: initialLocale,
 
   load: async () => {
@@ -34,10 +34,22 @@ export const localeStore = create<LocaleState>((set) => ({
   },
 
   setLocale: async (pref: LocalePreference) => {
+    const prev = get().locale;
     await localeStorage.saveLocale(pref);
     const resolved: LocaleCode =
       pref === 'system' ? resolveSystemLocale() : pref;
     i18n.locale = resolved;
     set({ locale: resolved });
+    // 손대지 않은 기본 프리셋은 새 언어 기본으로 바꿔 준다.
+    // presetsStore 가 이 파일을 import 하므로 순환을 피해 동적으로 가져온다.
+    // 실패해도 언어 변경 자체는 이미 끝났으니 삼킨다.
+    if (prev !== resolved) {
+      try {
+        const { presetsStore } = await import('./presetsStore');
+        await presetsStore.getState().swapDefaultsForLocale(prev, resolved);
+      } catch {
+        // noop
+      }
+    }
   },
 }));

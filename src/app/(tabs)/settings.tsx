@@ -15,9 +15,12 @@ import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
+import { purchaseStore } from '@/state/purchaseStore';
 import type { LocalePreference } from '@/storage/localeStorage';
 import { appVersionLabel, PRIVACY_POLICY_URL, updateLabel } from '@/constants/appInfo';
 import { i18n } from '@/i18n';
+import { useBottomBannerHeight } from '@/state/adStore';
+import { ADS_SUPPORTED } from '@/config/ads';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
@@ -41,6 +44,7 @@ function languageOptions(): SelectOption<LocalePreference>[] {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const bannerHeight = useBottomBannerHeight();
   const locale = localeStore(s => s.locale);
   const setLocale = localeStore(s => s.setLocale);
   const profile = profileStore(s => s.profile);
@@ -49,6 +53,44 @@ export default function SettingsScreen() {
   const refreshNotifications = sessionStore(s => s.refreshNotifications);
   const restorePresets = presetsStore(s => s.restoreDefaults);
   const clearAll = sessionStore(s => s.clearAll);
+  const adsRemoved = purchaseStore(s => s.adsRemoved);
+  const removeAdsProduct = purchaseStore(s => s.product);
+  const storeReady = purchaseStore(s => s.storeReady);
+  const purchaseStatus = purchaseStore(s => s.status);
+  const purchaseRemoveAds = purchaseStore(s => s.purchase);
+  const restorePurchases = purchaseStore(s => s.restore);
+
+  /**
+   * 광고 제거 구매. 취소는 조용히 넘기고, 완료·실패만 알린다.
+   * 스토어에 상품이 없거나 연결이 안 되면 시트 대신 안내만 띄운다.
+   */
+  async function handleRemoveAds() {
+    if (!removeAdsProduct) {
+      await alert({
+        title: i18n.t('settingsRemoveAdsUnavailableTitle'),
+        message: i18n.t('settingsRemoveAdsUnavailableDesc'),
+        confirmLabel: i18n.t('dialogOk'),
+      });
+      return;
+    }
+    const result = await purchaseRemoveAds();
+    if (result === 'cancelled') return;
+    await alert({
+      message: i18n.t(result === 'owned' ? 'settingsRemoveAdsPurchased' : 'settingsRemoveAdsFailed'),
+      confirmLabel: i18n.t('dialogOk'),
+    });
+  }
+
+  async function handleRestorePurchases() {
+    const result = await restorePurchases();
+    const key =
+      result === 'restored'
+        ? 'settingsRestoreDone'
+        : result === 'nothing'
+          ? 'settingsRestoreNothing'
+          : 'settingsRestoreFailed';
+    await alert({ message: i18n.t(key), confirmLabel: i18n.t('dialogOk') });
+  }
 
   /**
    * 토글 후 알림을 즉시 반영한다.
@@ -90,6 +132,14 @@ export default function SettingsScreen() {
   const localeValue: LocalePreference = locale ?? 'system';
   const currentLanguageLabel =
     languageOptions().find(o => o.value === localeValue)?.label ?? '';
+
+  const removeAdsValue = adsRemoved
+    ? i18n.t('settingsRemoveAdsOwned')
+    : removeAdsProduct
+      ? removeAdsProduct.displayPrice
+      : storeReady
+        ? i18n.t('settingsRemoveAdsUnavailable')
+        : '';
 
   const sexLabel = profile
     ? i18n.t(profile.sex === 'male' ? 'settingsMale' : 'settingsFemale')
@@ -167,6 +217,27 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
 
+        {/* 광고 제거 — 스토어 정책상 구매와 복원 둘 다 눈에 보이는 자리에 있어야 한다.
+            광고가 없는 플랫폼(iOS)에서는 팔 것이 없으니 섹션째 숨긴다. */}
+        {ADS_SUPPORTED ? (
+        <SettingsSection title={i18n.t('settingsAdsSection')}>
+          <SettingsRow
+            label={i18n.t('settingsRemoveAds')}
+            description={adsRemoved ? undefined : i18n.t('settingsRemoveAdsDesc')}
+            value={removeAdsValue}
+            onPress={adsRemoved || purchaseStatus !== 'idle' ? undefined : handleRemoveAds}
+            chevron={!adsRemoved}
+          />
+          <SettingsRow
+            label={i18n.t('settingsRestorePurchases')}
+            description={i18n.t('settingsRestorePurchasesDesc')}
+            onPress={purchaseStatus !== 'idle' ? undefined : handleRestorePurchases}
+            chevron
+            last
+          />
+        </SettingsSection>
+        ) : null}
+
         <SettingsSection title={i18n.t('settingsDataSection')}>
           <SettingsRow
             label={i18n.t('settingsRestorePresets')}
@@ -211,7 +282,7 @@ export default function SettingsScreen() {
           {!!updateLabel && <Text style={styles.versionSub}>{updateLabel}</Text>}
         </View>
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 90 + bannerHeight }} />
       </ScrollView>
 
       <SelectSheet
