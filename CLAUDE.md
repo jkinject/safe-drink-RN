@@ -67,6 +67,12 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
 - **광고 제거 인앱결제**(expo-iap, 상품 ID `remove_ads`, 비소모성)는 설정 탭 "광고" 섹션. 구매 여부는 `purchaseStore.adsRemoved` — 캐시(AsyncStorage)로 먼저 채우고 스토어 보유 조회로 덮어쓴다. 시뮬레이터에서 결제를 보려면 Xcode 스킴에 `storekit/Safedrink.storekit` 을 물려 Xcode 로 실행해야 한다(`expo run:ios` 로는 상품이 안 잡힌다).
 
+## 스토어 등록정보·스크린샷
+
+- 한국어 `store/play-listing.md`, 영어 `store/play-listing-en.md`. 기능이 바뀌면 둘 다 고친다.
+- 스크린샷은 `store/compose_screenshots.py` 로 합성한다(원본 `store/raw/<lang>/`, 결과 `store/screenshots[/en]/`). 캡처는 `EXPO_PUBLIC_HIDE_ADS=1` 로 빌드한 APK 로 찍는다 — 절차는 `store/SUBMISSION.md` "스크린샷 다시 만들기".
+- 기본 술 프리셋은 로케일별이다(`presetStorage.defaultPresets`). 영어는 소주·막걸리 없이 국제 세트. 언어를 바꿀 때 손대지 않은 기본 세트는 새 언어 세트로 교체된다.
+
 ## 구조
 
 ```

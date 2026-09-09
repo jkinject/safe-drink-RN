@@ -36,8 +36,9 @@ reanimated/worklets, expo-sqlite, expo-updates 도 릴리스에서만 터지는 
 | AAB | EAS production 빌드 산출물 (`eas build:list`) |
 | 스토어 아이콘 512×512 | `store/graphics/play-icon-512.png` |
 | 그래픽 이미지 1024×500 | `store/graphics/feature-graphic-1024x500.png` |
-| 스크린샷 (6장, 1080×1920) | `store/screenshots/` |
-| 등록정보 문구 | `store/play-listing.md` |
+| 스크린샷 (6장, 1080×1920) | `store/screenshots/` (한국어) · `store/screenshots/en/` (영어) |
+| 등록정보 문구 | `store/play-listing.md` (한국어) · `store/play-listing-en.md` (en-US) |
+| 영어 그래픽 이미지 | `store/graphics/feature-graphic-en-1024x500.png` (`store/make_feature_graphic_en.py` 로 생성) |
 | 개인정보처리방침 | https://jkinject.github.io/safe-drink-RN/privacy-policy.html (배포 완료·앱 내 링크 동작 확인) |
 | 소스 | `docs/privacy-policy.html` |
 
@@ -171,3 +172,15 @@ npx eas-cli submit --platform android --latest
   내부 테스트용이며, 실사용자 대상 배포는 `--channel production` 을 쓴다.
 - 네이티브를 건드리면 `app.json` 의 `version` 을 올리고 **새 AAB 를 올려야** 한다.
   OTA 는 JS/에셋만 전달하며, runtimeVersion 이 다르면 아예 전달되지 않는다.
+
+---
+
+## 스크린샷 다시 만들기
+
+1. **광고를 숨긴 캡처용 빌드**: `cd android && EXPO_PUBLIC_HIDE_ADS=1 ./gradlew assembleRelease` → 폴드7 에 설치. 실광고가 찍히면 안 되고, 광고 제거 섹션도 스토어 캡처에는 빼는 편이 깔끔하다. **이 빌드를 배포하거나 폰에 남겨 두지 말 것** — 광고가 안 나오는 빌드로 테스트하다 헷갈린다.
+2. 앱 언어를 원하는 언어로 바꾼다 (손대지 않은 기본 프리셋이면 언어에 맞는 세트로 자동 교체된다).
+3. 폴드7 커버 화면(1080×2520)에서 `adb shell screencap -p /sdcard/sc.png` → pull. 원본은 `store/raw/<lang>/NN-이름.png` 로 둔다. **05(알림창)는 개인 알림이 같이 찍히므로 Safedrink 알림 카드만 잘라 저장한다.**
+4. `python3 store/compose_screenshots.py en` (ko 는 `ko`). 헤드라인·서브 문구와 04·05 의 크롭 좌표는 스크립트 상단 `CAPTIONS`·`CROPS`.
+5. 지난 세션(04)이 필요하면 기록 편집 화면에서 시작·종료 시각을 오전으로 옮기고 홈→재실행하면 세션이 닫혀 기록 목록에 들어간다.
+
+en-US 등록정보 텍스트·그래픽 업로드는 2026-09-09 에 aside 로 저장했다(검토 제출은 안 함). 다음 출시 때 게시 개요에서 함께 전송된다.
