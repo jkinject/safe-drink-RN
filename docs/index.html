@@ -1,58 +1,256 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Safedrink — 술 깨는 시간 계산 앱 | 혈중알코올농도 타이머</title>
-<meta name="description" content="마신 술을 기록하면 내 키·몸무게·성별에 맞춰 혈중알코올농도와 완전히 깨는 시각을 계산해 카운트다운으로 보여주는 무료 Android 앱. 회원가입 없음, 기록은 기기에만 저장.">
-<link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Safedrink — 술 깨는 시간, 정확하게">
-<meta property="og:description" content="내 몸에 맞춘 혈중알코올농도 계산과 술 깨는 시각 카운트다운. 무료 Android 앱.">
-<meta property="og:image" content="https://jkinject.github.io/safe-drink-RN/og-calc.png">
-<meta property="og:url" content="https://jkinject.github.io/safe-drink-RN/">
-<link rel="icon" href="./icon.png">
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Safedrink — 술 깨는 시간 계산","operatingSystem":"Android","applicationCategory":"LifestyleApplication","installUrl":"https://play.google.com/store/apps/details?id=com.safedrink.app","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"마신 술을 기록하면 키·몸무게·성별에 맞춰 혈중알코올농도와 술이 깨는 시각을 계산해 카운트다운으로 보여주는 앱"}
-</script>
-<style>
-  :root { --bg:#EEEDF8; --accent:#6C63E0; --navy:#2D2B52; --sub:#9E9AC8; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--navy); font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif; line-height:1.5; }
-  main { max-width:560px; margin:0 auto; padding:40px 20px 64px; }
-  .hero { text-align:center; }
-  .hero img.icon { width:96px; height:96px; border-radius:24px; box-shadow:0 4px 16px rgba(108,99,224,.15); }
-  h1 { font-size:30px; margin:16px 0 6px; letter-spacing:-.5px; }
-  .tag { color:var(--sub); font-size:15px; margin:0 0 24px; }
-  .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:14px 22px; border-radius:12px; font-weight:700; font-size:15px; }
-  .btn.ghost { background:#fff; color:var(--accent); border:1px solid #C9C4F0; margin-left:8px; }
-  .feat { background:#fff; border-radius:20px; padding:20px; box-shadow:0 2px 8px rgba(108,99,224,.08); margin-top:32px; display:grid; gap:14px; }
-  .feat div { display:flex; gap:12px; font-size:14px; } .feat b { display:block; margin-bottom:2px; } .feat p { margin:0; color:#55527A; }
-  .feat span { width:8px; height:8px; border-radius:4px; background:var(--accent); flex-shrink:0; margin-top:8px; }
-  .disc { font-size:12px; color:#7A6000; background:#FFF8E1; border:1px solid #FFD97D; border-radius:12px; padding:10px 14px; margin-top:24px; text-align:center; }
-  footer { margin-top:32px; text-align:center; font-size:12px; color:var(--sub); } footer a { color:var(--accent); }
-  @media (max-width:420px) { .btn { display:block; margin:8px 0 0 !important; } }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#EEEDF8">
+  <title>Safedrink — 술 깨는 시간 계산 앱 | 혈중알코올농도 타이머</title>
+  <meta name="description" content="마신 술을 한 잔씩 기록하면 내 몸에 맞춘 혈중알코올농도 계산과 술 깨는 시각 카운트다운을 보여주는 무료 Android 앱. 앱을 꺼도 알림창에서 확인하고, 기록은 기기에만 보관하세요.">
+  <link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="Safedrink — 술 깨는 시간, 정확하게">
+  <meta property="og:description" content="내 몸에 맞춘 혈중알코올농도 계산과 술 깨는 시각 카운트다운. 회원가입 없이 사용하는 무료 Android 앱.">
+  <meta property="og:image" content="https://jkinject.github.io/safe-drink-RN/og-calc.png">
+  <meta property="og:url" content="https://jkinject.github.io/safe-drink-RN/">
+  <link rel="icon" href="./icon.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Safedrink — 술 깨는 시간 계산",
+    "operatingSystem": "Android",
+    "applicationCategory": "LifestyleApplication",
+    "installUrl": "https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dsite%26utm_medium%3Dweb",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+    "description": "내 몸에 맞춘 혈중알코올농도 추정과 술 깨는 시각 카운트다운. 음주 기록은 기기에만 저장하는 무료 Android 앱."
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #EEEDF8;
+      --card: #FFFFFF;
+      --accent: #6C63E0;
+      --navy: #2D2B52;
+      --sub: #9E9AC8;
+      --muted: #625E82;
+      --border: #E8E6FF;
+      --chip: #F0EEFF;
+      --panel: #F4F3FC;
+      --shadow: 0 2px 8px rgba(108,99,224,.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--navy);
+      font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-size: 16px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-underline-offset: 4px; }
+    a:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--navy); outline-offset: 5px; }
+    img { display: block; max-width: 100%; height: auto; }
+    h1, h2, h3, p, figure { margin: 0; }
+    h1, h2, h3 { font-weight: 700; line-height: 1.35; letter-spacing: -.04em; }
+    h2 { font-size: clamp(28px, 3vw, 36px); }
+    h3 { font-size: 20px; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    .skip { position: absolute; top: -80px; left: 20px; padding: 12px; background: white; z-index: 10; }
+    .skip:focus { top: 12px; }
+    .hero { padding-top: 32px; }
+    .brand { display: inline-flex; align-items: center; gap: 12px; }
+    .brand img { width: 48px; height: 48px; border-radius: 12px; box-shadow: var(--shadow); }
+    .brand-name { display: block; font-size: 20px; font-weight: 700; letter-spacing: -.04em; }
+    .brand-description { display: block; color: var(--muted); font-size: 12px; }
+    .hero-grid { display: grid; gap: 16px; padding-top: 40px; align-items: center; }
+    .eyebrow { color: #554CC0; font-size: 12px; font-weight: 700; letter-spacing: .08em; margin-bottom: 16px; }
+    .pill { display: inline-flex; padding: 4px 12px; background: var(--chip); border: 1px solid #D8D4F5; border-radius: 40px; }
+    h1 { font-size: clamp(40px, 5vw, 64px); line-height: 1.2; letter-spacing: -.055em; }
+    h1 span { display: block; color: var(--accent); }
+    .hero-description { max-width: 440px; margin-top: 24px; color: var(--muted); font-size: 17px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 52px; padding: 12px 20px; border-radius: 12px; text-decoration: none;
+      background: var(--accent); color: white; font-size: 14px; font-weight: 700;
+      transition: background-color .15s;
+    }
+    .button:hover { background: #5B52CC; }
+    .button.secondary { background: white; color: var(--navy); border: 1px solid var(--border); }
+    .button.secondary:hover { background: var(--panel); }
+    .hero-note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .hero-art { position: relative; width: min(100%, 480px); margin: 0 auto; padding-bottom: 24px; }
+    .hero-art > img { width: 100%; border-radius: 40px; }
+    .art-note {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: 100%; padding: 12px 24px; border: 1px solid var(--border);
+      background: white; border-radius: 16px; box-shadow: var(--shadow); font-size: 14px;
+    }
+    .art-note strong { color: #554CC0; font-weight: 700; }
+    .section { padding-top: 80px; }
+    .section-intro { margin-top: 12px; color: var(--muted); max-width: 600px; }
+    .features { display: grid; gap: 16px; margin-top: 32px; }
+    .card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); }
+    .feature { padding: 28px; }
+    .feature-icon {
+      display: flex; align-items: center; justify-content: center; width: 72px; height: 72px;
+      margin-bottom: 24px; background: var(--panel); border-radius: 20px; overflow: hidden;
+    }
+    .feature-icon img { width: 56px; height: 56px; object-fit: contain; }
+    .feature-icon.mascot { background: var(--bg); }
+    .feature-icon.mascot img { width: 72px; height: 72px; }
+    .feature p { margin-top: 12px; color: var(--muted); font-size: 15px; }
+    .steps-panel { margin-top: 32px; padding: 28px; }
+    .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 32px; }
+    .step-number {
+      display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+      margin-bottom: 16px; border-radius: 12px; background: var(--chip); color: #554CC0; font-weight: 700;
+    }
+    .steps p { color: var(--muted); font-size: 15px; margin-top: 8px; }
+    .formula { margin-top: 32px; padding: 20px; border-radius: 12px; background: var(--panel); font-size: 13px; color: var(--muted); }
+    .formula strong { display: block; color: var(--navy); margin-bottom: 4px; font-weight: 600; }
+    .gallery {
+      display: grid; grid-auto-flow: column; grid-auto-columns: 76%; gap: 16px;
+      overflow-x: auto; scroll-snap-type: x mandatory; margin-top: 32px; padding: 4px 4px 20px;
+      scrollbar-color: var(--sub) var(--border); scrollbar-width: thin;
+    }
+    .gallery figure { min-width: 0; scroll-snap-align: start; }
+    .gallery img { width: 100%; border-radius: 20px; box-shadow: var(--shadow); }
+    .gallery figcaption { display: flex; gap: 8px; align-items: baseline; padding: 16px 4px 0; font-size: 14px; font-weight: 600; }
+    .gallery figcaption span { color: #625AAB; font-size: 12px; }
+    .swipe-note { color: var(--muted); font-size: 12px; margin-top: 16px; }
+    .trust { padding: 32px 28px; display: grid; gap: 32px; }
+    .trust ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
+    .trust li strong { display: block; font-weight: 600; }
+    .trust li p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .trust a { text-decoration-color: var(--sub); }
+    .disclaimer { margin-top: 40px; padding: 24px; border: 1px solid #FFD97D; border-radius: 20px; background: #FFF8E1; color: #7A6000; font-size: 14px; }
+    .disclaimer h2 { font-size: 16px; letter-spacing: -.02em; margin-bottom: 8px; }
+    footer { padding: 32px 0 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; font-size: 12px; color: var(--muted); }
+    footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+    footer a { display: inline-flex; align-items: center; min-height: 44px; }
+    footer > p { align-self: center; }
+    @media (max-width: 479px) {
+      .actions { flex-direction: column; }
+      .hero-art { width: 288px; }
+    }
+    @media (min-width: 768px) {
+      .hero { padding-top: 40px; }
+      .hero-grid { grid-template-columns: 1.15fr 1fr; gap: 24px; padding-top: 48px; }
+      .features { grid-template-columns: repeat(3, 1fr); }
+      .feature { padding: 24px; }
+      .steps { grid-template-columns: repeat(3, 1fr); gap: 40px; }
+      .steps-panel { padding: 40px; }
+      .gallery { grid-auto-flow: initial; grid-auto-columns: auto; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+      .swipe-note { display: none; }
+      .trust { padding: 40px; grid-template-columns: .85fr 1.4fr; gap: 48px; }
+      .trust ul { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .section { padding-top: 96px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
+  </style>
 </head>
 <body>
-<main>
-  <div class="hero">
-    <img class="icon" src="./icon.png" alt="Safedrink" width="96" height="96">
-    <h1>Safedrink</h1>
-    <p class="tag">술 깨는 시간, 정확하게 · Know when you'll be sober</p>
-    <a class="btn" href="https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dsite%26utm_medium%3Dweb">Google Play 에서 받기</a>
-    <a class="btn ghost" href="./calc/">웹에서 바로 계산하기</a>
-  </div>
+  <a class="skip" href="#features">주요 기능으로 건너뛰기</a>
+  <main class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="brand">
+        <img src="./icon.png" alt="Safedrink 앱 아이콘" width="48" height="48">
+        <div><span class="brand-name">Safedrink</span><span class="brand-description">술 깨는 시간 계산</span></div>
+      </div>
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow pill">무료 Android 앱</p>
+          <h1 id="hero-title">술 깨는 시간,<span>정확하게</span></h1>
+          <p class="hero-description">마신 술을 한 잔씩 기록하세요.<br>내 몸에 맞춰 술 깨는 예상 시각과<br>남은 시간을 보여드려요.</p>
+          <div class="actions">
+            <a class="button" href="https://play.google.com/store/apps/details?id=com.safedrink.app&amp;referrer=utm_source%3Dsite%26utm_medium%3Dweb">Google Play에서 받기</a>
+            <a class="button secondary" href="./calc/">설치 없이 웹에서 계산하기</a>
+          </div>
+          <p class="hero-note">회원가입 없이 바로 시작 · 계산 결과는 개인차가 있는 추정치예요.</p>
+        </div>
+        <div class="hero-art">
+          <img src="./img/male_drinking.png" alt="맥주잔을 들고 있는 Safedrink의 3D 캐릭터" width="480" height="480" fetchpriority="high">
+          <p class="art-note">마신 한 잔부터, <strong>남은 시간까지.</strong></p>
+        </div>
+      </div>
+    </section>
 
-  <section class="feat">
-    <div><span></span><div><b>내 몸에 맞춘 계산</b><p>키·몸무게·성별·출생연도로 체수분(Watson)을 반영해 혈중알코올농도를 개인화합니다.</p></div></div>
-    <div><span></span><div><b>잔 단위 기록, 한 번의 탭</b><p>맥주·소주·와인·위스키 프리셋으로 기록하고, 마시기 전에 "몇 분 늘어나는지" 미리 봅니다.</p></div></div>
-    <div><span></span><div><b>앱을 꺼도 알림창에서 카운트다운</b><p>완전히 깨는 시각이 되면 "이제 안전해요" 알림이 옵니다.</p></div></div>
-    <div><span></span><div><b>개인정보 없음</b><p>회원가입이 없고 기록은 기기 안에만 저장됩니다.</p></div></div>
-  </section>
+    <section class="section" id="features" aria-labelledby="features-title">
+      <p class="eyebrow">나의 음주 기록</p>
+      <h2 id="features-title">기록은 가볍게, 확인은 한눈에.</h2>
+      <div class="features">
+        <article class="feature card">
+          <div class="feature-icon mascot"><img src="./img/mascot_water_tip.png" alt="" width="72" height="72" loading="lazy"></div>
+          <h3>내 몸에 맞춘 계산</h3>
+          <p>키·몸무게·성별·나이를 반영해요. 같은 한 잔이라도 내 몸의 체수분량에 맞춰 혈중알코올농도를 추정해요.</p>
+        </article>
+        <article class="feature card">
+          <div class="feature-icon"><img src="./calc/img/beerMug.png" alt="" width="56" height="56" loading="lazy"></div>
+          <h3>잔 단위 기록·미리보기</h3>
+          <p>맥주, 소주, 와인까지 한 잔씩 간편하게. 추가로 마시면 예상 시간이 얼마나 늘어나는지 미리 볼 수 있어요.</p>
+        </article>
+        <article class="feature card">
+          <div class="feature-icon mascot"><img src="./img/mascot_water_shield.png" alt="" width="72" height="72" loading="lazy"></div>
+          <h3>앱을 꺼도<br>알림창 카운트다운</h3>
+          <p>앱을 닫은 뒤에도 카운트다운은 계속돼요. Android 알림창을 내려 남은 시간을 바로 확인하세요.</p>
+        </article>
+      </div>
+    </section>
 
-  <div class="disc">이 앱은 참고용이며 법적·의학적 판단 기준이 아닙니다. 술을 마셨다면 운전하지 마세요.</div>
-  <footer><a href="./privacy-policy.html">개인정보처리방침 / Privacy Policy</a> · <a href="https://github.com/jkinject/safe-drink-RN">GitHub</a></footer>
-</main>
+    <section class="section" aria-labelledby="steps-title">
+      <p class="eyebrow">세 단계로 간단하게</p>
+      <h2 id="steps-title">이렇게 계산해요</h2>
+      <div class="steps-panel card">
+        <ol class="steps">
+          <li><span class="step-number" aria-hidden="true">01</span><h3>프로필 입력</h3><p>키, 몸무게, 성별, 나이를 입력해 내 몸에 맞는 계산을 준비해요.</p></li>
+          <li><span class="step-number" aria-hidden="true">02</span><h3>잔 기록</h3><p>마신 술의 종류와 양, 마신 시각을 기록해요. 한 잔 더 마셨다면 추가하세요.</p></li>
+          <li><span class="step-number" aria-hidden="true">03</span><h3>카운트다운·그래프</h3><p>술 깨는 예상 시각과 남은 시간, 시간에 따른 혈중알코올농도 변화를 확인해요.</p></li>
+        </ol>
+        <div class="formula">
+          <strong>계산의 기준도 알려드려요.</strong>
+          <p>Watson 체수분 공식으로 개인별 분포계수(r)를 구해 Widmark 공식에 반영하고, 시간당 0.015%p(0.015%/h)의 분해율을 가정해요. 실제 분해 속도는 컨디션과 개인차에 따라 달라지므로, 표시된 시각이 실제로 술이 완전히 깬 시각을 보장하지는 않아요.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="screens-title">
+      <p class="eyebrow">앱 미리보기</p>
+      <h2 id="screens-title">필요한 정보만, 또렷하게.</h2>
+      <p class="section-intro">남은 시간부터 한 잔의 기록까지 한눈에 확인해요. 그래프에는 혈중알코올농도 0.03% 면허 정지 · 0.08% 면허 취소 기준선도 함께 표시해요.</p>
+      <p class="swipe-note" id="swipe-hint">옆으로 밀어 앱 화면 4개를 살펴보세요.</p>
+      <div class="gallery" tabindex="0" role="region" aria-label="앱 화면 4개, 가로 스크롤" aria-describedby="swipe-hint">
+        <figure><img src="./img/screen-01-timer.png" alt="술 깨는 예상 시각과 남은 시간을 보여주는 타이머 화면" width="405" height="720" loading="lazy"><figcaption><span>01</span> 남은 시간 확인</figcaption></figure>
+        <figure><img src="./img/screen-02-graph.png" alt="시간에 따른 혈중알코올농도 변화와 면허 정지·취소 기준선을 보여주는 그래프 화면" width="405" height="720" loading="lazy"><figcaption><span>02</span> 농도 변화 한눈에</figcaption></figure>
+        <figure><img src="./img/screen-03-add.png" alt="마신 술을 선택하고 잔 단위로 추가하는 기록 화면" width="405" height="720" loading="lazy"><figcaption><span>03</span> 한 잔씩 간편하게</figcaption></figure>
+        <figure><img src="./img/screen-05-notification.png" alt="앱을 닫아도 남은 시간을 확인할 수 있는 Android 알림창" width="405" height="720" loading="lazy"><figcaption><span>04</span> 알림창에서도 계속</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="trust-title">
+      <div class="trust card">
+        <div><p class="eyebrow">부담 없이 시작해요</p><h2 id="trust-title">내 기록은 내 손안에.</h2><p class="section-intro">꼭 필요한 것만 담았어요.<br>계정도, 복잡한 시작도 필요 없어요.</p></div>
+        <ul>
+          <li><strong>회원가입 없음</strong><p>계정을 만들지 않고 바로 사용해요.</p></li>
+          <li><strong>기록은 기기 안에만</strong><p>프로필과 음주 기록은 기기에만 저장하고, 서버로 보내지 않아요.</p></li>
+          <li><strong>광고 하나, 3,300원으로 영구 제거</strong><p>작은 배너 광고와 함께 무료로 사용해요. 광고 제거는 한 번만 결제하면 돼요.</p></li>
+          <li><strong><a href="https://github.com/jkinject/safe-drink-RN">오픈소스</a></strong><p>어떻게 만들어졌는지 GitHub에서 코드를 직접 확인할 수 있어요.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <aside class="disclaimer" aria-labelledby="disclaimer-title">
+      <h2 id="disclaimer-title">꼭 기억해 주세요</h2>
+      <p>이 앱은 참고용이며 법적·의학적 판단 기준이 아닙니다. 술을 마셨다면 운전하지 마세요.</p>
+    </aside>
+  </main>
+  <footer class="wrap">
+    <p>Safedrink · 술 깨는 시간 계산</p>
+    <nav aria-label="서비스 정보">
+      <a href="./privacy-policy.html">개인정보처리방침</a>
+      <a href="https://github.com/jkinject/safe-drink-RN">GitHub</a>
+      <a href="mailto:jkinject@gmail.com">문의 jkinject@gmail.com</a>
+    </nav>
+  </footer>
 </body>
 </html>
