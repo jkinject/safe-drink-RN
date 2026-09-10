@@ -106,7 +106,6 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
       <View style={styles.footer}>
         <Icon name="timer" size={16} color={AppColors.accent} strokeWidth={2.2} />
         <Text style={styles.footerBrand}>safedrink</Text>
-        <Text style={styles.footerText}>{i18n.t('shareCardFooter')}</Text>
       </View>
       <Text style={styles.disclaimer}>{i18n.t('disclaimerText')}</Text>
     </View>
@@ -142,6 +141,5 @@ const styles = StyleSheet.create({
     paddingTop: Space.md,
   },
   footerBrand: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
-  footerText: { flex: 1, fontSize: Font.caption, color: AppColors.sub, textAlign: 'right' },
   disclaimer: { fontSize: Font.micro, color: StatusColors.warningText, textAlign: 'center' },
 });
