@@ -69,6 +69,10 @@
   label { display:block; font-size:12px; color:var(--sub); margin-bottom:4px; }
   input, select { width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 14px; font-size:16px; color:var(--navy); background:#fff; font-family:inherit; }
   input:focus, select:focus { outline:none; border:2px solid var(--accent); }
+  input::placeholder { color:#C3C0DD; opacity:1; font-weight:400; }
+  input.err { border:2px solid var(--danger); }
+  .hint { display:none; font-size:12px; color:var(--danger); margin-top:4px; }
+  .hint.show { display:block; }
   .sex { display:flex; gap:12px; }
   .sex label { flex:1; margin:0; }
   .sex input { display:none; }
@@ -119,9 +123,9 @@
   <section class="card">
     <h2 id="h-profile">내 정보</h2>
     <div class="grid">
-      <div><label for="height" id="l-height">키 (cm)</label><input id="height" type="number" inputmode="decimal" placeholder="175" min="100" max="250"></div>
-      <div><label for="weight" id="l-weight">몸무게 (kg)</label><input id="weight" type="number" inputmode="decimal" placeholder="70" min="30" max="300"></div>
-      <div><label for="year" id="l-year">출생연도</label><input id="year" type="number" inputmode="numeric" placeholder="1990" min="1920" max="2010"></div>
+      <div><label for="height" id="l-height">키 (cm)</label><input id="height" type="number" inputmode="decimal" placeholder="예) 175" min="100" max="250"><div class="hint" id="e-height">키를 입력해 주세요 (100~250cm)</div></div>
+      <div><label for="weight" id="l-weight">몸무게 (kg)</label><input id="weight" type="number" inputmode="decimal" placeholder="예) 70" min="30" max="300"><div class="hint" id="e-weight">몸무게를 입력해 주세요 (30~300kg)</div></div>
+      <div><label for="year" id="l-year">출생연도</label><input id="year" type="number" inputmode="numeric" placeholder="예) 1990 (선택)" min="1920" max="2010"></div>
       <div><label id="l-sex">성별</label>
         <div class="sex">
           <label><input type="radio" name="sex" value="male" checked><span id="s-male">남성</span></label>
@@ -135,8 +139,8 @@
     <h2 id="h-drinks">마신 술</h2>
     <div class="grid3" id="presets"></div>
     <div class="grid" style="margin-top:12px">
-      <div><label for="abv" id="l-abv">도수 (%)</label><input id="abv" type="number" inputmode="decimal" placeholder="16.5" step="0.1"></div>
-      <div><label for="vol" id="l-vol">용량 (ml)</label><input id="vol" type="number" inputmode="numeric" placeholder="360"></div>
+      <div><label for="abv" id="l-abv">도수 (%)</label><input id="abv" type="number" inputmode="decimal" placeholder="예) 16.5" step="0.1"></div>
+      <div><label for="vol" id="l-vol">용량 (ml)</label><input id="vol" type="number" inputmode="numeric" placeholder="예) 360"></div>
     </div>
     <button class="btn" id="addManual" style="background:#fff;color:var(--accent);border:1px solid var(--accent);height:44px;margin-top:8px">+ <span id="t-add">직접 추가</span></button>
     <div class="drinks" id="drinks"></div>
@@ -221,8 +225,11 @@ setNowDefault();
 
 $('calc').onclick = () => {
   const heightCm = parseFloat($('height').value), weightKg = parseFloat($('weight').value);
-  if (!(heightCm >= 100 && heightCm <= 250)) { $('height').focus(); return; }
-  if (!(weightKg >= 30 && weightKg <= 300)) { $('weight').focus(); return; }
+  const okH = heightCm >= 100 && heightCm <= 250, okW = weightKg >= 30 && weightKg <= 300;
+  $('height').classList.toggle('err', !okH); $('e-height').classList.toggle('show', !okH);
+  $('weight').classList.toggle('err', !okW); $('e-weight').classList.toggle('show', !okW);
+  if (!okH) { $('height').focus(); $('height').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+  if (!okW) { $('weight').focus(); $('weight').scrollIntoView({ behavior:'smooth', block:'center' }); return; }
   const year = parseInt($('year').value, 10);
   const profile = { heightCm, weightKg, sex: document.querySelector('input[name=sex]:checked').value, ...(year ? { birthYear: year } : {}) };
   const today = Date.now();
@@ -254,7 +261,9 @@ function applyEn() {
   T = { ...KO, ...EN }; lang = 'en'; document.documentElement.lang = 'en';
   document.title = 'Sober Time Calculator — BAC & when you can drive | Safedrink';
   $('h1').textContent = EN.h1; $('lead').textContent = EN.lead; $('disc').textContent = EN.disc; $('h-profile').textContent = EN.profile;
-  $('l-height').textContent = EN.height; $('l-weight').textContent = EN.weight; $('l-year').textContent = EN.year; $('l-sex').textContent = EN.sex; $('s-male').textContent = EN.male; $('s-female').textContent = EN.female;
+  $('l-height').textContent = EN.height; $('l-weight').textContent = EN.weight; $('l-year').textContent = EN.year;
+  $('height').placeholder = 'e.g. 175'; $('weight').placeholder = 'e.g. 70'; $('year').placeholder = 'e.g. 1990 (optional)'; $('abv').placeholder = 'e.g. 40'; $('vol').placeholder = 'e.g. 44';
+  $('e-height').textContent = 'Enter your height (100–250 cm)'; $('e-weight').textContent = 'Enter your weight (30–300 kg)'; $('l-sex').textContent = EN.sex; $('s-male').textContent = EN.male; $('s-female').textContent = EN.female;
   $('h-drinks').textContent = EN.drinks; $('l-abv').textContent = EN.abv; $('l-vol').textContent = EN.vol; $('t-add').textContent = EN.add; $('l-last').textContent = EN.last; $('l-now').textContent = EN.now; $('t-calc').textContent = EN.calc;
   $('r-label').textContent = EN.remaining; $('m-bac-l').textContent = EN.bac; $('m-peak-l').textContent = EN.peak; $('m-g-l').textContent = EN.g; $('st-title').textContent = EN.stTitle; $('st-desc').textContent = EN.stDesc;
   $('faq').classList.add('hidden'); document.querySelector('.lang').innerHTML = '<a href="./">한국어</a> · English';
