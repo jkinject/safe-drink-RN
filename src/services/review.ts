@@ -11,7 +11,7 @@ import type { ReviewState } from '@/storage/reviewStorage';
  *
  * 묻는 시점: 술자리가 끝나 "지금 안전" 화면으로 돌아왔을 때 — 앱이 약속을 지킨 직후라
  * 만족도가 가장 높다. 닫힌 술자리가 MIN_SESSIONS 개 이상 쌓였을 때 한 번, "나중에" 를
- * 고르면 LATER_INTERVAL 뒤에 다시, 칭찬하기를 누른 뒤에는 다시 묻지 않는다.
+ * 고르면 다음날(LATER_INTERVAL) 다시, 칭찬하기를 누른 뒤에는 다시 묻지 않는다.
  * 앱 실행 한 번에 한 번만 시도한다. 대놓고 "리뷰 써 달라" 고 하지 않는 게 방침이라
  * 문구는 칭찬을 청하는 톤으로 두고, 실제 창은 Google 인앱 리뷰(별점 시트)가 뜬다.
  *
@@ -21,7 +21,7 @@ import type { ReviewState } from '@/storage/reviewStorage';
  */
 
 export const MIN_SESSIONS = 2;
-export const LATER_INTERVAL_MS = 14 * 24 * 60 * 60 * 1000;
+export const LATER_INTERVAL_MS = 24 * 60 * 60 * 1000; // 나중에 → 다음날 다시
 
 let promptedThisLaunch = false;
 

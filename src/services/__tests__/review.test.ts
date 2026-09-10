@@ -30,8 +30,8 @@ describe('shouldPrompt', () => {
     expect(shouldPrompt({ status: 'never', lastPromptAt: now - 100 * DAY }, 10, now, 'android')).toBe(false);
   });
 
-  it('나중에는 2주가 지나야 다시 묻는다', () => {
-    expect(shouldPrompt({ status: 'later', lastPromptAt: now - DAY }, 5, now, 'android')).toBe(false);
+  it('나중에는 다음날 다시 묻는다', () => {
+    expect(shouldPrompt({ status: 'later', lastPromptAt: now - DAY / 2 }, 5, now, 'android')).toBe(false);
     expect(shouldPrompt({ status: 'later', lastPromptAt: now - LATER_INTERVAL_MS }, 5, now, 'android')).toBe(true);
   });
 
