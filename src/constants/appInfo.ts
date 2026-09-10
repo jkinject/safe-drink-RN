@@ -9,6 +9,11 @@ import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
 /** 개인정보처리방침 — Play Console 에 등록한 URL 과 반드시 같아야 한다 */
+/** Play 스토어 등록 페이지 — 공유 문구·리뷰 요청에서 쓴다 */
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.safedrink.app';
+/** 기기에 Play 앱이 있으면 이 스킴이 스토어 앱을 바로 연다 */
+export const PLAY_MARKET_URL = 'market://details?id=com.safedrink.app';
+
 export const PRIVACY_POLICY_URL =
   'https://jkinject.github.io/safe-drink-RN/privacy-policy.html';
 

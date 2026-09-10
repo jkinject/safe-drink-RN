@@ -23,6 +23,7 @@ import { bacCurve } from '@/core/bacCalculator';
 import { calendarDayDiff } from '@/core/dateUtils';
 import { getBacBadge } from '@/core/sessionUtils';
 import { bacBadgeColors } from '@/constants/colors';
+import { shareSession } from '@/services/share';
 import { DrinkRecord, DrinkSession } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
@@ -260,6 +261,14 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
               })} · ${i18n.t('historyDrinkCount', { n: session.drinkCount })}`}
             </Text>
           </View>
+          {/* 공유 → 삭제 순. 되돌릴 수 없는 삭제를 가장자리에 두어야 오탭이 덜하다 */}
+          <TouchableOpacity
+            onPress={() => shareSession(session, locale)}
+            hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+            accessibilityLabel={i18n.t('shareSession')}
+          >
+            <Icon name="share" size={IconSize.md} color={AppColors.accent} strokeWidth={2} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={onDelete}
             hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
@@ -341,7 +350,7 @@ const cardStyles = StyleSheet.create({
     ...cardShadowSm,
   },
   body: { padding: Space.xl, gap: Space.lg },
-  header: { flexDirection: 'row', alignItems: 'flex-start', gap: Space.sm },
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: Space.lg },
   headerText: { flex: 1, gap: Space.xxs },
   date: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
   range: { fontSize: Font.caption, color: AppColors.sub },

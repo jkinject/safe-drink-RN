@@ -5,6 +5,7 @@ import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { DrinkSession } from '@/core/types';
+import { shareSession } from '@/services/share';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
@@ -57,6 +58,13 @@ export function LastSessionCard({ session, onPress }: LastSessionCardProps) {
       <View style={styles.header}>
         <Icon name="history" size={IconSize.md} color={AppColors.accent} strokeWidth={2.1} />
         <Text style={styles.label}>{i18n.t('historyLastSession')}</Text>
+        <TouchableOpacity
+          onPress={() => shareSession(session, locale)}
+          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
+          accessibilityLabel={i18n.t('shareSession')}
+        >
+          <Icon name="share" size={IconSize.md} color={AppColors.accent} strokeWidth={2} />
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.date}>

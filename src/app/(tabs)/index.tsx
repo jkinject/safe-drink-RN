@@ -50,6 +50,7 @@ import { BacGraph } from '@/components/bac-graph';
 import { calendarDayDiff, displayedMinuteDiff } from '@/core/dateUtils';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { TAB_BAR_HEIGHT } from '@/constants/layout';
+import { maybePromptReview } from '@/services/review';
 
 // ── Animated character ───────────────────────────────────────────────────────
 
@@ -691,6 +692,13 @@ export default function TimerScreen() {
   }, [nowMs, records.length, checkAutoClose]);
 
   const hasRecords = records.length > 0;
+
+  // 술자리가 끝나 "지금 안전" 이 보일 때 스토어 평가를 청한다 (조건·빈도는 services/review)
+  useEffect(() => {
+    if (hasRecords || !profile) return;
+    maybePromptReview(sessions.length).catch(() => {});
+  }, [hasRecords, profile, sessions.length]);
+
   const finishedRecords = records.filter(r => r.finishedAt != null);
   const hasFinishedRecords = finishedRecords.length > 0;
   const drinkingCount = records.filter(r => r.finishedAt == null).length;

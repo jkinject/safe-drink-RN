@@ -259,6 +259,13 @@ const ko = {
   historySoberNextDay: '다음날 %{time}',
   historySoberOtherDay: '%{date} %{time}',
   historyChartSoberPrefix: '깸',
+  // 리뷰 요청·공유
+  reviewPromptTitle: 'Safedrink가 도움이 되고 있나요?\n스토어 평가 한 줄이 큰 힘이 돼요.',
+  reviewPromptRate: '스토어에서 평가하기',
+  reviewPromptLater: '나중에 다시',
+  reviewPromptNever: '다시 묻지 않기',
+  shareSession: '술자리 공유',
+  shareSessionText: '%{date} 술자리 — %{start}~%{end} %{n}잔, 최고 혈중알코올농도 %{peak}%, %{sober}에 완전히 깼어요.\nSafedrink로 계산했어요: %{url}',
   drinkingBadge: '마시는중',
   finishedButton: '다마심',
   recordFinishedAtSuffix: '%{time}에 다 마심',

@@ -259,6 +259,13 @@ const en = {
   historySoberNextDay: 'next day %{time}',
   historySoberOtherDay: '%{date} %{time}',
   historyChartSoberPrefix: 'Sober',
+  // Review prompt · share
+  reviewPromptTitle: 'Is Safedrink helping you?\nA quick store rating means a lot.',
+  reviewPromptRate: 'Rate on the store',
+  reviewPromptLater: 'Maybe later',
+  reviewPromptNever: "Don't ask again",
+  shareSession: 'Share session',
+  shareSessionText: '%{date} — %{start}–%{end}, %{n} drinks, peak BAC %{peak}%, fully sober at %{sober}.\nCalculated with Safedrink: %{url}',
   drinkingBadge: 'Drinking',
   finishedButton: 'Finished',
   recordFinishedAtSuffix: 'Finished at %{time}',

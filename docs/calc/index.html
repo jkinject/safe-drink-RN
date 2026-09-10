@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>술 깨는 시간 계산기 — 혈중알코올농도(BAC)로 운전 가능 시각 계산 | Safedrink</title>
+<meta name="description" content="맥주·소주·와인 몇 잔을 마셨는지 입력하면 키·몸무게·성별에 맞춰 혈중알코올농도와 술이 완전히 깨는 시각을 계산합니다. 면허 정지 0.03%, 취소 0.08% 기준선 표시. 무료, 회원가입 없음.">
+<meta name="keywords" content="술 깨는 시간, 술 깨는 시간 계산기, 혈중알코올농도 계산기, 음주 후 운전 가능 시간, 숙취 운전, 위드마크 계산, 알코올 분해 시간, 소주 한병 깨는 시간">
+<link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/calc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="술 깨는 시간 계산기 — 혈중알코올농도로 운전 가능 시각 계산">
+<meta property="og:description" content="마신 술을 입력하면 내 몸에 맞춰 술이 깨는 시각을 계산합니다. Safedrink 앱과 같은 계산식.">
+<meta property="og:url" content="https://jkinject.github.io/safe-drink-RN/calc/">
+<meta property="og:image" content="https://jkinject.github.io/safe-drink-RN/og-calc.png">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "술 깨는 시간 계산기",
+      "url": "https://jkinject.github.io/safe-drink-RN/calc/",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+      "description": "혈중알코올농도(BAC)와 술이 완전히 깨는 시각을 키·몸무게·성별에 맞춰 계산하는 무료 웹 계산기"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Safedrink — 술 깨는 시간 계산",
+      "operatingSystem": "Android",
+      "applicationCategory": "LifestyleApplication",
+      "installUrl": "https://play.google.com/store/apps/details?id=com.safedrink.app",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "소주 한 병 마시면 몇 시간 뒤에 깨나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "소주 1병(360ml, 16.5%)은 순수 알코올 약 47g입니다. 70kg 남성 기준 혈중알코올농도가 약 0.08%까지 오르고, 시간당 0.015%씩 분해되므로 완전히 0이 되기까지 약 5시간 30분이 걸립니다. 몸무게·성별·키에 따라 달라지니 위 계산기에 직접 입력해 보세요." } },
+        { "@type": "Question", "name": "혈중알코올농도 0.03%는 어떤 상태인가요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "대한민국 도로교통법상 0.03% 이상이면 음주운전으로 면허 정지, 0.08% 이상이면 면허 취소 대상입니다. 이 계산기는 두 기준선을 함께 표시합니다." } },
+        { "@type": "Question", "name": "계산 결과를 믿고 운전해도 되나요?",
+          "acceptedAnswer": { "@type": "Answer", "text": "아니요. 공개된 위드마크 공식과 Watson 체수분 공식에 기반한 참고용 추정치이며, 음식·컨디션·약물에 따라 실제 수치는 크게 달라집니다. 술을 마셨다면 운전하지 마세요." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  :root { --bg:#EEEDF8; --accent:#6C63E0; --navy:#2D2B52; --sub:#9E9AC8; --border:#E8E6FF; --card:#fff; --chip:#F0EEFF; --panel:#F4F3FC;
+          --warn-bg:#FFF8E1; --warn-border:#FFD97D; --warn-text:#7A6000; --caution:#FF9500; --danger:#FF3B30; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--navy); font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif; line-height:1.5; }
+  a { color:var(--accent); }
+  main { max-width:560px; margin:0 auto; padding:24px 16px 64px; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .brand { font-weight:700; font-size:22px; letter-spacing:-.3px; text-decoration:none; color:var(--navy); }
+  .lang { font-size:13px; color:var(--sub); }
+  h1 { font-size:26px; line-height:1.3; margin:0 0 8px; letter-spacing:-.5px; }
+  .lead { color:var(--sub); font-size:14px; margin:0 0 20px; }
+  .disclaimer { background:var(--warn-bg); border:1px solid var(--warn-border); color:var(--warn-text); border-radius:12px; padding:10px 14px; font-size:12px; text-align:center; margin-bottom:16px; }
+  .card { background:var(--card); border-radius:20px; padding:20px; box-shadow:0 2px 8px rgba(108,99,224,.08); margin-bottom:16px; }
+  h2 { font-size:16px; margin:0 0 12px; }
+  .grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+  label { display:block; font-size:12px; color:var(--sub); margin-bottom:4px; }
+  input, select { width:100%; height:48px; border:1px solid var(--border); border-radius:12px; padding:0 14px; font-size:16px; color:var(--navy); background:#fff; font-family:inherit; }
+  input:focus, select:focus { outline:none; border:2px solid var(--accent); }
+  .sex { display:flex; gap:12px; }
+  .sex label { flex:1; margin:0; }
+  .sex input { display:none; }
+  .sex span { display:flex; align-items:center; justify-content:center; height:48px; border:1px solid var(--border); border-radius:12px; font-size:15px; font-weight:600; color:var(--navy); cursor:pointer; }
+  .sex input:checked + span { border:2px solid var(--accent); background:#EAE8FF; color:var(--accent); }
+  .preset { display:flex; flex-direction:column; align-items:center; gap:4px; border:1px solid var(--border); border-radius:16px; padding:10px 6px; background:#fff; cursor:pointer; font-family:inherit; }
+  .preset:hover { border-color:var(--accent); }
+  .preset strong { font-size:12px; font-weight:600; }
+  .preset small { font-size:11px; color:var(--sub); }
+  .drinks { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .drink { display:flex; align-items:center; gap:10px; background:var(--panel); border-radius:12px; padding:10px 12px; font-size:14px; }
+  .drink .n { flex:1; font-weight:600; }
+  .drink .chip { background:var(--chip); color:var(--accent); border-radius:8px; padding:2px 8px; font-size:11px; }
+  .drink button { border:0; background:transparent; color:var(--sub); font-size:18px; cursor:pointer; padding:0 4px; }
+  .btn { display:block; width:100%; height:52px; border:0; border-radius:12px; background:var(--accent); color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:16px; font-family:inherit; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .result { text-align:center; }
+  .result .label { font-size:12px; color:var(--sub); }
+  .result .time { font-size:40px; font-weight:700; letter-spacing:1px; margin:6px 0; font-variant-numeric:tabular-nums; }
+  .result .sober { display:inline-flex; gap:6px; align-items:center; background:#F1EFFF; color:var(--accent); font-weight:700; border-radius:999px; padding:8px 14px; font-size:14px; }
+  .badge { display:inline-block; border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; }
+  .badge.caution { background:#FFF8F0; color:var(--caution); } .badge.danger { background:#FFF0EF; color:var(--danger); }
+  .metrics { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin-top:16px; }
+  .metric { background:var(--panel); border-radius:12px; padding:10px; text-align:center; }
+  .metric b { display:block; font-size:16px; } .metric span { font-size:11px; color:var(--sub); }
+  .store { display:flex; align-items:center; gap:14px; }
+  .store img { width:56px; height:56px; border-radius:14px; }
+  .store p { margin:0; font-size:13px; color:var(--sub); }
+  .store strong { display:block; font-size:15px; color:var(--navy); margin-bottom:2px; }
+  .store a.get { margin-left:auto; background:var(--accent); color:#fff; text-decoration:none; font-weight:700; padding:10px 16px; border-radius:12px; white-space:nowrap; font-size:14px; }
+  .faq h3 { font-size:14px; margin:14px 0 4px; } .faq p { margin:0; font-size:13px; color:#55527A; }
+  footer { font-size:12px; color:var(--sub); text-align:center; margin-top:32px; }
+  .hidden { display:none; }
+  @media (max-width:420px) { .grid3 { grid-template-columns:repeat(2, minmax(0,1fr)); } .metrics { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a class="brand" href="../">safedrink</a>
+    <span class="lang">한국어 · <a href="#" id="toEn">English</a></span>
+  </header>
+
+  <h1 id="h1">술 깨는 시간 계산기</h1>
+  <p class="lead" id="lead">마신 술을 넣으면 내 키·몸무게·성별에 맞춰 혈중알코올농도(BAC)와 완전히 깨는 시각을 계산합니다. 회원가입도, 저장도 없습니다.</p>
+  <div class="disclaimer" id="disc">이 계산기는 참고용이며 법적·의학적 판단 기준이 아닙니다. 술을 마셨다면 운전하지 마세요.</div>
+
+  <section class="card">
+    <h2 id="h-profile">내 정보</h2>
+    <div class="grid">
+      <div><label for="height" id="l-height">키 (cm)</label><input id="height" type="number" inputmode="decimal" placeholder="175" min="100" max="250"></div>
+      <div><label for="weight" id="l-weight">몸무게 (kg)</label><input id="weight" type="number" inputmode="decimal" placeholder="70" min="30" max="300"></div>
+      <div><label for="year" id="l-year">출생연도</label><input id="year" type="number" inputmode="numeric" placeholder="1990" min="1920" max="2010"></div>
+      <div><label id="l-sex">성별</label>
+        <div class="sex">
+          <label><input type="radio" name="sex" value="male" checked><span id="s-male">남성</span></label>
+          <label><input type="radio" name="sex" value="female"><span id="s-female">여성</span></label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="h-drinks">마신 술</h2>
+    <div class="grid3" id="presets"></div>
+    <div class="grid" style="margin-top:12px">
+      <div><label for="abv" id="l-abv">도수 (%)</label><input id="abv" type="number" inputmode="decimal" placeholder="16.5" step="0.1"></div>
+      <div><label for="vol" id="l-vol">용량 (ml)</label><input id="vol" type="number" inputmode="numeric" placeholder="360"></div>
+    </div>
+    <button class="btn" id="addManual" style="background:#fff;color:var(--accent);border:1px solid var(--accent);height:44px;margin-top:8px">+ <span id="t-add">직접 추가</span></button>
+    <div class="drinks" id="drinks"></div>
+    <div class="grid" style="margin-top:12px">
+      <div><label for="last" id="l-last">마지막 잔을 비운 시각</label><input id="last" type="time"></div>
+      <div><label for="now" id="l-now">현재 시각</label><input id="now" type="time"></div>
+    </div>
+    <button class="btn" id="calc" disabled><span id="t-calc">계산하기</span></button>
+  </section>
+
+  <section class="card result hidden" id="result">
+    <div class="label" id="r-label">완전히 깨기까지</div>
+    <div class="time" id="r-time">00:00</div>
+    <div class="sober" id="r-sober"></div>
+    <div style="margin-top:12px" id="r-badge"></div>
+    <div class="metrics">
+      <div class="metric"><b id="m-bac">0.000%</b><span id="m-bac-l">현재 BAC</span></div>
+      <div class="metric"><b id="m-peak">0.000%</b><span id="m-peak-l">최고 BAC</span></div>
+      <div class="metric"><b id="m-g">0g</b><span id="m-g-l">순수 알코올</span></div>
+    </div>
+  </section>
+
+  <section class="card store">
+    <img src="../icon.png" alt="Safedrink 앱 아이콘" width="56" height="56">
+    <p><strong id="st-title">앱으로 쓰면 더 편해요</strong><span id="st-desc">잔을 비울 때마다 기록하고, 앱을 끄고도 알림창에서 남은 시간을 봅니다.</span></p>
+    <a class="get" id="st-get" href="https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dcalc%26utm_medium%3Dweb">Google Play</a>
+  </section>
+
+  <section class="card faq" id="faq">
+    <h2>자주 묻는 질문</h2>
+    <h3>소주 한 병 마시면 몇 시간 뒤에 깨나요?</h3>
+    <p>소주 1병(360ml, 16.5%)은 순수 알코올 약 47g입니다. 70kg 남성이면 혈중알코올농도가 약 0.08%까지 오르고 시간당 0.015%씩 분해되므로 완전히 0이 되기까지 약 5시간 30분이 걸립니다. 몸무게·성별·키에 따라 달라지니 위에 직접 입력해 보세요.</p>
+    <h3>0.03%와 0.08%는 무슨 기준인가요?</h3>
+    <p>대한민국 도로교통법상 혈중알코올농도 0.03% 이상은 면허 정지, 0.08% 이상은 면허 취소 대상입니다. 결과에 두 기준선을 함께 표시합니다.</p>
+    <h3>어떻게 계산하나요?</h3>
+    <p>위드마크(Widmark) 공식을 쓰되 체수분 비율 r을 Watson 공식으로 키·몸무게·성별·나이에 맞춰 개인화합니다. 알코올(g) = 용량 × 도수 ÷ 100 × 0.789, BAC(%) = 알코올 ÷ (체중 × r × 10), 분해 속도 0.015%/h. Safedrink 앱과 같은 코드로 계산합니다.</p>
+    <h3>결과를 믿고 운전해도 되나요?</h3>
+    <p>아니요. 참고용 추정치이며 음식·컨디션·약물에 따라 실제 수치는 크게 달라집니다. 이 페이지는 의료기기가 아니고 음주운전 가능 여부를 판단하는 근거가 될 수 없습니다.</p>
+  </section>
+
+  <footer><a href="../privacy-policy.html">개인정보처리방침</a> · 입력값은 이 브라우저 안에서만 계산되고 어디에도 저장되지 않습니다.</footer>
+</main>
+
+<script type="module">
+import { currentBac, estimatedSoberAt, totalAlcoholGrams, bacAt } from './lib/bacCalculator.js';
+
+const KO = {
+  presets: [['맥주 500cc',4.5,500],['맥주 355ml',4.5,355],['소주 1잔',16.5,50],['소주 1병',16.5,360],['와인 1잔',12,150],['양주 1잔',40,30],['막걸리 1사발',6,300],['하이볼 1잔',8,300]],
+  remaining:'완전히 깨기까지', soberAt:t=>`${t}에 완전히 깸`, nextDay:t=>`다음날 ${t}에 완전히 깸`, safe:'이미 완전히 깼어요', badge:{caution:'면허 정지 (0.03% 이상)', danger:'면허 취소 (0.08% 이상)'},
+};
+const EN = {
+  h1:'Sober time calculator', lead:'Enter what you drank and get your blood alcohol concentration (BAC) and the time you will be fully sober, tuned to your height, weight and sex. No sign-up, nothing stored.',
+  disc:'For reference only — not a legal or medical standard. If you have been drinking, do not drive.', profile:'About you', height:'Height (cm)', weight:'Weight (kg)', year:'Birth year', sex:'Sex', male:'Male', female:'Female',
+  drinks:'What you drank', abv:'ABV (%)', vol:'Volume (ml)', add:'Add', last:'Last drink finished at', now:'Current time', calc:'Calculate', remaining:'Time until fully sober',
+  soberAt:t=>`Fully sober at ${t}`, nextDay:t=>`Fully sober tomorrow at ${t}`, safe:'You are already fully sober', bac:'Current BAC', peak:'Peak BAC', g:'Pure alcohol',
+  badge:{caution:'Over 0.03% (license suspension in KR)', danger:'Over 0.08% (license revocation in KR)'}, stTitle:'Easier in the app', stDesc:'Log each drink as you go and watch the countdown from your notification shade.',
+  presets:[['Beer 500ml',4.5,500],['Beer can 355ml',4.5,355],['Wine glass',12,150],['Whisky shot',40,44],['Vodka shot',40,44],['Cocktail',12,200],['Highball',8,300],['Champagne',12,150]],
+};
+let T = KO, lang = 'ko';
+const $ = id => document.getElementById(id);
+const drinks = [];
+
+function renderPresets() {
+  $('presets').innerHTML = T.presets.map((p,i)=>`<button class="preset" data-i="${i}"><strong>${p[0]}</strong><small>${p[1]}% · ${p[2]}ml</small></button>`).join('');
+  $('presets').querySelectorAll('button').forEach(b => b.onclick = () => { const p = T.presets[+b.dataset.i]; drinks.push({label:p[0], abv:p[1], vol:p[2]}); renderDrinks(); });
+}
+function renderDrinks() {
+  $('drinks').innerHTML = drinks.map((d,i)=>`<div class="drink"><span class="n">${d.label}</span><span class="chip">${d.abv}% · ${d.vol}ml</span><button data-i="${i}" aria-label="remove">×</button></div>`).join('');
+  $('drinks').querySelectorAll('button').forEach(b => b.onclick = () => { drinks.splice(+b.dataset.i,1); renderDrinks(); });
+  $('calc').disabled = drinks.length === 0;
+}
+$('addManual').onclick = () => {
+  const abv = parseFloat($('abv').value), vol = parseFloat($('vol').value);
+  if (!(abv > 0 && abv <= 100) || !(vol > 0)) return;
+  drinks.push({label: lang==='ko' ? `직접 입력` : 'Custom', abv, vol}); renderDrinks();
+};
+function hm(ms){ const d=new Date(ms); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function timeToMs(v, base){ const [h,m]=v.split(':').map(Number); const d=new Date(base); d.setHours(h,m,0,0); return d.getTime(); }
+
+function setNowDefault(){ const d=new Date(); $('now').value = hm(d.getTime()); $('last').value = hm(d.getTime()); }
+setNowDefault();
+
+$('calc').onclick = () => {
+  const heightCm = parseFloat($('height').value), weightKg = parseFloat($('weight').value);
+  if (!(heightCm >= 100 && heightCm <= 250)) { $('height').focus(); return; }
+  if (!(weightKg >= 30 && weightKg <= 300)) { $('weight').focus(); return; }
+  const year = parseInt($('year').value, 10);
+  const profile = { heightCm, weightKg, sex: document.querySelector('input[name=sex]:checked').value, ...(year ? { birthYear: year } : {}) };
+  const today = Date.now();
+  let nowMs = timeToMs($('now').value, today);
+  let lastMs = timeToMs($('last').value, today);
+  if (lastMs > nowMs) lastMs -= 86400000; // 어제 밤에 마심
+  // 잔들은 마지막 잔 시각에 몰아 비운 것으로 본다 (가장 보수적)
+  const records = drinks.map((d,i)=>({ id:i+1, consumedAt:lastMs, finishedAt:lastMs, abvPercent:d.abv, volumeMl:d.vol }));
+  const bac = currentBac(records, profile, nowMs);
+  const peak = bacAt(records, profile, lastMs);
+  const soberMs = estimatedSoberAt(records, profile);
+  const grams = totalAlcoholGrams(records);
+  $('result').classList.remove('hidden');
+  $('m-bac').textContent = `${bac.toFixed(3)}%`; $('m-peak').textContent = `${peak.toFixed(3)}%`; $('m-g').textContent = `${grams.toFixed(1)}g`;
+  if (bac <= 0 || soberMs == null || soberMs <= nowMs) {
+    $('r-time').textContent = '00:00'; $('r-sober').textContent = T.safe;
+  } else {
+    const rem = soberMs - nowMs; const h = Math.floor(rem/3600000), m = Math.ceil((rem%3600000)/60000);
+    $('r-time').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    const nextDay = new Date(soberMs).getDate() !== new Date(nowMs).getDate();
+    $('r-sober').textContent = (nextDay ? T.nextDay : T.soberAt)(hm(soberMs));
+  }
+  const lv = bac >= 0.08 ? 'danger' : bac >= 0.03 ? 'caution' : null;
+  $('r-badge').innerHTML = lv ? `<span class="badge ${lv}">${T.badge[lv]}</span>` : '';
+  $('result').scrollIntoView({ behavior:'smooth', block:'start' });
+};
+
+function applyEn() {
+  T = { ...KO, ...EN }; lang = 'en'; document.documentElement.lang = 'en';
+  document.title = 'Sober Time Calculator — BAC & when you can drive | Safedrink';
+  $('h1').textContent = EN.h1; $('lead').textContent = EN.lead; $('disc').textContent = EN.disc; $('h-profile').textContent = EN.profile;
+  $('l-height').textContent = EN.height; $('l-weight').textContent = EN.weight; $('l-year').textContent = EN.year; $('l-sex').textContent = EN.sex; $('s-male').textContent = EN.male; $('s-female').textContent = EN.female;
+  $('h-drinks').textContent = EN.drinks; $('l-abv').textContent = EN.abv; $('l-vol').textContent = EN.vol; $('t-add').textContent = EN.add; $('l-last').textContent = EN.last; $('l-now').textContent = EN.now; $('t-calc').textContent = EN.calc;
+  $('r-label').textContent = EN.remaining; $('m-bac-l').textContent = EN.bac; $('m-peak-l').textContent = EN.peak; $('m-g-l').textContent = EN.g; $('st-title').textContent = EN.stTitle; $('st-desc').textContent = EN.stDesc;
+  $('faq').classList.add('hidden'); document.querySelector('.lang').innerHTML = '<a href="./">한국어</a> · English';
+  renderPresets();
+}
+$('toEn').onclick = e => { e.preventDefault(); history.replaceState(null, '', '?lang=en'); applyEn(); };
+if (new URLSearchParams(location.search).get('lang') === 'en' || (!navigator.language.startsWith('ko') && !location.search)) applyEn();
+renderPresets(); renderDrinks();
+</script>
+</body>
+</html>
