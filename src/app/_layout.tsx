@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { FONTS } from '@/components/typography';
 import { DialogHost } from '@/components/dialog';
+import { ShareCardHost } from '@/components/share-card-host';
 import { profileStore } from '@/state/profileStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -169,6 +170,8 @@ export default function RootLayout() {
       </Stack>
       {/* OS 기본 Alert 대신 쓰는 공통 다이얼로그 — 모든 화면 위에 뜬다 */}
       <DialogHost />
+      {/* 공유 이미지 캡처용 — 화면 밖에 잠깐 그려지는 카드 */}
+      <ShareCardHost />
     </>
   );
 }

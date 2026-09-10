@@ -1,3 +1,7 @@
+jest.mock('expo-sharing', () => ({ isAvailableAsync: jest.fn(async () => false), shareAsync: jest.fn() }));
+jest.mock('@/components/share-card-host', () => ({ shareCardStore: { getState: () => ({ capture: jest.fn() }) } }));
+jest.mock('@/state/sessionStore', () => ({ sessionStore: { getState: () => ({ getSessionRecords: async () => [] }) } }));
+jest.mock('@/state/profileStore', () => ({ profileStore: { getState: () => ({ profile: null }) } }));
 jest.mock('@/constants/appInfo', () => ({
   PLAY_STORE_URL: 'https://play.google.com/store/apps/details?id=com.safedrink.app',
 }));

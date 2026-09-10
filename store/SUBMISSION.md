@@ -187,3 +187,8 @@ npx eas-cli submit --platform android --latest
 5. 지난 세션(04)이 필요하면 기록 편집 화면에서 시작·종료 시각을 오전으로 옮기고 홈→재실행하면 세션이 닫혀 기록 목록에 들어간다.
 
 en-US 등록정보 텍스트·그래픽 업로드는 2026-09-09 에 aside 로 저장했다(검토 제출은 안 함). 다음 출시 때 게시 개요에서 함께 전송된다.
+
+### 1.2.2 (versionCode 7) — 술자리 그래프 이미지 공유
+- 공유 버튼이 텍스트 대신 **요약 카드 이미지**(캐릭터·날짜·술 깬 시각·최고 혈중알코올농도 뱃지·그래프·스토어 안내 푸터)를 OS 공유 시트로 보냄. 캡처 실패 시 텍스트 공유로 폴백.
+- 네이티브 추가: `react-native-view-shot` 5.1.0, `expo-sharing`. → runtimeVersion 1.2.2 분리, **새 바이너리 필수**.
+- 카드 컴포넌트 `src/components/session-share-card.tsx`, 오프스크린 캡처 호스트 `share-card-host.tsx`(루트 레이아웃에 마운트).

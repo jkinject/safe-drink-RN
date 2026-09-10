@@ -2,7 +2,7 @@
   "expo": {
     "name": "Safedrink",
     "slug": "safe-drink-rn",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/app_icon.png",
     "scheme": "safedrinkrn",
@@ -74,7 +74,8 @@
           ]
         }
       ],
-      "expo-iap"
+      "expo-iap",
+      "expo-sharing"
     ],
     "updates": {
       "enabled": true,

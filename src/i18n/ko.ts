@@ -264,6 +264,7 @@ const ko = {
   reviewPromptRate: '칭찬하기',
   reviewPromptLater: '나중에 하기',
   shareSession: '술자리 공유',
+  shareCardFooter: 'Google Play 에서 "Safedrink" 검색',
   shareSessionText: '%{date} 술자리 — %{start}~%{end} %{n}잔, 최고 혈중알코올농도 %{peak}%, %{sober}에 완전히 깼어요.\nSafedrink로 계산했어요: %{url}',
   drinkingBadge: '마시는중',
   finishedButton: '다마심',

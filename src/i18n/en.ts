@@ -264,6 +264,7 @@ const en = {
   reviewPromptRate: 'Leave a kind word',
   reviewPromptLater: 'Maybe later',
   shareSession: 'Share session',
+  shareCardFooter: 'Search "Safedrink" on Google Play',
   shareSessionText: '%{date} — %{start}–%{end}, %{n} drinks, peak BAC %{peak}%, fully sober at %{sober}.\nCalculated with Safedrink: %{url}',
   drinkingBadge: 'Drinking',
   finishedButton: 'Finished',
