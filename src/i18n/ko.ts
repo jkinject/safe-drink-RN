@@ -263,6 +263,7 @@ const ko = {
   reviewPromptTitle: '오늘도 무사히 깨셨네요.\n칭찬은 개발자에게 큰 힘이 됩니다.',
   reviewPromptRate: '칭찬하기',
   reviewPromptLater: '나중에 하기',
+  shareCardMoreDrinks: '외 %{n}잔',
   shareSession: '술자리 공유',
   shareSessionText: '%{date} 술자리 — %{start}~%{end} %{n}잔, 최고 혈중알코올농도 %{peak}%, %{sober}에 완전히 깼어요.\nSafedrink로 계산했어요: %{url}',
   drinkingBadge: '마시는중',

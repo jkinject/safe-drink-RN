@@ -263,6 +263,7 @@ const en = {
   reviewPromptTitle: 'Sober again, safe and sound.\nA kind word goes a long way for a solo developer.',
   reviewPromptRate: 'Leave a kind word',
   reviewPromptLater: 'Maybe later',
+  shareCardMoreDrinks: '+%{n} more',
   shareSession: 'Share session',
   shareSessionText: '%{date} — %{start}–%{end}, %{n} drinks, peak BAC %{peak}%, fully sober at %{sober}.\nCalculated with Safedrink: %{url}',
   drinkingBadge: 'Drinking',

@@ -1,11 +1,13 @@
 import { forwardRef, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppColors, StatusColors, bacBadgeColors } from '@/constants/colors';
-import { Font, Radius, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { Text } from '@/components/typography';
 import { CharacterImage } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
 import { Icon } from '@/components/icon';
+import { DrinkIcon, isDrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
+import { presetsStore } from '@/state/presetsStore';
 import { i18n } from '@/i18n';
 import { bacCurve } from '@/core/bacCalculator';
 import { getBacBadge } from '@/core/sessionUtils';
@@ -17,6 +19,14 @@ export const SHARE_CARD_WIDTH = 360;
 function hm(ms: number): string {
   const d = new Date(ms);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/** 이미지가 무한정 길어지지 않게 마신 술은 이만큼만 */
+const MAX_ROWS = 8;
+
+function abvVolume(r: DrinkRecord): string {
+  const abv = r.abvPercent % 1 === 0 ? r.abvPercent.toString() : r.abvPercent.toFixed(1);
+  return i18n.t('recordAbvVolumeLabel', { abv, volume: r.volumeMl.toFixed(0) });
 }
 
 function duration(ms: number): string {
@@ -46,6 +56,16 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
     () => records.filter(r => r.finishedAt != null).map(r => r.finishedAt as number),
     [records],
   );
+  const presets = presetsStore(s => s.presets);
+  // 기록에 박힌 아이콘 우선, v4 이전 기록은 프리셋 라벨로 되짚는다 (history.tsx 와 같은 경로)
+  const iconFor = (r: DrinkRecord) => {
+    if (r.icon && isDrinkIconName(r.icon)) return r.icon;
+    const preset = presets.find(p => p.label === r.presetLabel);
+    return preset ? resolveDrinkIcon(preset) : 'cup';
+  };
+  const sorted = useMemo(() => [...records].sort((a, b) => a.consumedAt - b.consumedAt), [records]);
+  const shownRecords = sorted.slice(0, MAX_ROWS);
+  const hiddenCount = sorted.length - shownRecords.length;
   const badge = getBacBadge(session.peakBac);
   const badgeColors = badge ? bacBadgeColors(badge.level) : null;
   const date = new Date(session.startedAt).toLocaleDateString(locale, {
@@ -76,6 +96,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
               : i18n.t('historySoberTook', { duration: duration(session.soberAt - session.lastFinishedAt) })}
           </Text>
         </View>
+        <View style={styles.metricDivider} />
         <View style={styles.metric}>
           <Text style={styles.metricLabel}>{i18n.t('historyPeakBac')}</Text>
           <View style={styles.badgeRow}>
@@ -86,8 +107,27 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
               </View>
             )}
           </View>
-          <Text style={styles.metricSub}>{i18n.t('bacAlcoholGramsValue', { g: session.totalAlcoholG.toFixed(1) })} · {duration(session.lastFinishedAt - session.startedAt)}</Text>
+          <Text style={styles.metricSub}>{i18n.t('bacAlcoholGramsValue', { g: session.totalAlcoholG.toFixed(1) })}</Text>
         </View>
+      </View>
+
+      {/* 마신 술 — 무엇을 언제. 너무 많으면 앞 MAX_ROWS 잔만 보이고 나머지는 잔 수로 */}
+      <View style={styles.drinks}>
+        {shownRecords.map((r, i) => (
+          <View key={r.id ?? i} style={styles.drinkRow}>
+            <View style={styles.drinkIcon}>
+              <DrinkIcon name={iconFor(r)} size={IconSize.md} />
+            </View>
+            <Text style={styles.drinkName} numberOfLines={1}>
+              {r.presetLabel ?? i18n.t('recordManualEntry')}
+            </Text>
+            <Text style={styles.drinkSpec}>{abvVolume(r)}</Text>
+            <Text style={styles.drinkTime}>{hm(r.consumedAt)}</Text>
+          </View>
+        ))}
+        {hiddenCount > 0 && (
+          <Text style={styles.drinkMore}>{i18n.t('shareCardMoreDrinks', { n: hiddenCount })}</Text>
+        )}
       </View>
 
       {curve.length > 1 && (
@@ -96,7 +136,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
           nowMs={null}
           firstMs={session.startedAt}
           soberMs={session.soberAt}
-          height={150}
+          height={130}
           variant="bare"
           markMs={markMs}
           soberLabel={`${i18n.t('historyChartSoberPrefix')} ${hm(session.soberAt)}`}
@@ -124,14 +164,36 @@ const styles = StyleSheet.create({
   headerText: { flex: 1, gap: Space.xxs },
   date: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
   range: { fontSize: Font.caption, color: AppColors.sub },
-  metrics: { flexDirection: 'row', gap: Space.md },
-  metric: { flex: 1, backgroundColor: AppColors.panel, borderRadius: Radius.lg, padding: Space.md, gap: Space.xxs },
-  metricLabel: { fontSize: Font.caption, color: AppColors.sub },
-  metricValue: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
+  metrics: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: AppColors.panel,
+    borderRadius: Radius.lg,
+    paddingVertical: Space.sm,
+    paddingHorizontal: Space.md,
+  },
+  metric: { flex: 1, gap: Space.xxs },
+  metricDivider: { width: 1, backgroundColor: AppColors.border, marginHorizontal: Space.md },
+  metricLabel: { fontSize: Font.micro, color: AppColors.sub },
+  metricValue: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
   metricSub: { fontSize: Font.micro, color: AppColors.sub },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, flexWrap: 'wrap' },
-  badge: { paddingHorizontal: Space.sm, paddingVertical: Space.xxs, borderRadius: Radius.sm },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
+  badge: { paddingHorizontal: Space.xs, paddingVertical: Space.xxs, borderRadius: Radius.sm },
   badgeText: { fontSize: Font.micro, fontWeight: Weight.bold },
+  drinks: { gap: Space.sm },
+  drinkRow: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
+  drinkIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.sm,
+    backgroundColor: AppColors.panel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  drinkName: { flex: 1, fontSize: Font.caption, fontWeight: Weight.semibold, color: AppColors.navy },
+  drinkSpec: { fontSize: Font.micro, color: AppColors.sub },
+  drinkTime: { fontSize: Font.caption, color: AppColors.navy, minWidth: 40, textAlign: 'right' },
+  drinkMore: { fontSize: Font.micro, color: AppColors.sub, textAlign: 'center' },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
