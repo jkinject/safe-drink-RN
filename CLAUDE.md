@@ -47,6 +47,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 - EAS 프로젝트: `@jkinject/safe-drink-rn` (projectId `d4523f48-fc64-42d2-a324-64a6e6b6cee0`)
 - runtimeVersion 정책: `appVersion` (app.json `version`) — **네이티브 모듈 추가/변경 시 version 올리고 새 바이너리 배포 필수** (OTA는 JS/에셋만 전달)
+- **런타임 1.1.1 사용자에게 main 을 OTA 하지 말 것.** 1.2.0 부터 main 이 광고·결제 네이티브 모듈을 import 하므로, 1.1.1 바이너리에 그 번들이 가면 시작 시 죽는다. 1.1.1 사용자에게 꼭 필요한 수정은 `4fe17e9`(1.1.1 마지막 커밋) 기준 브랜치에서 따로 게시한다. 정상 게시는 런타임으로 자동 분리되니 그냥 `--channel production` 이면 된다.
 - 채널: development / preview / production (eas.json)
 - 시작 시 자동 확인·즉시 적용: `src/hooks/useOtaUpdates.ts` (루트 레이아웃에서 호출)
 - 상세: `docs/OTA-UPDATE.md`
