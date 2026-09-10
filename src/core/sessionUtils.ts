@@ -72,8 +72,9 @@ export function computeSessionSummary(
  */
 export function getBacBadge(
   bac: number,
-): { labelKey: string; color: string; bg: string } | null {
-  if (bac >= 0.08) return { labelKey: 'bacStatusRevocation', color: '#FF3B30', bg: '#FFF0EF' };
-  if (bac >= 0.03) return { labelKey: 'bacStatusSuspension', color: '#FF9500', bg: '#FFF8F0' };
+): { labelKey: string; level: 'caution' | 'danger' } | null {
+  // 색은 UI 쪽(constants/colors 의 bacBadgeColors)이 붙인다 — core 는 색을 모른다
+  if (bac >= 0.08) return { labelKey: 'bacStatusRevocation', level: 'danger' };
+  if (bac >= 0.03) return { labelKey: 'bacStatusSuspension', level: 'caution' };
   return null;
 }

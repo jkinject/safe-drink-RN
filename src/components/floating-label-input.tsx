@@ -7,7 +7,7 @@ import {
   TextInputProps,
   View,
 } from 'react-native';
-import { AppColors } from '@/constants/colors';
+import { AppColors, StatusColors } from '@/constants/colors';
 import { Text, TextInput } from '@/components/typography';
 import { Space, Radius, Font } from '@/constants/tokens';
 
@@ -46,10 +46,10 @@ export function FloatingLabelInput({
   const labelSize = anim.interpolate({ inputRange: [0, 1], outputRange: [15, 12] });
 
   const borderColor = error
-    ? '#D93025'
+    ? StatusColors.danger
     : focused
       ? AppColors.accent
-      : '#D6D2F0';
+      : AppColors.borderStrong;
 
   return (
     <View style={styles.wrapper}>
@@ -77,7 +77,7 @@ export function FloatingLabelInput({
             {
               top: labelTop,
               fontSize: labelSize,
-              color: error ? '#D93025' : focused ? AppColors.accent : AppColors.sub,
+              color: error ? StatusColors.danger : focused ? AppColors.accent : AppColors.sub,
             },
           ]}
           numberOfLines={1}
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center', // Android — iOS 는 단일 행이면 알아서 가운데
   },
   errorText: {
-    color: '#D93025',
+    color: StatusColors.danger,
     fontSize: Font.micro,
     marginTop: Space.xs,
     marginLeft: Space.sm,

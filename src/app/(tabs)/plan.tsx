@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadow, cardShadowSm } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
@@ -22,6 +22,7 @@ import { useBottomBannerHeight } from '@/state/adStore';
 import { calculate as planCalculate } from '@/core/planCalculator';
 import { PlanResult } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 
 // ── Simple time picker modal ──────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 const pickerStyles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: AppColors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -72,7 +73,7 @@ const pickerStyles = StyleSheet.create({
     borderRadius: Radius.md,
     backgroundColor: AppColors.accent,
   },
-  confirmText: { color: '#fff', fontWeight: Weight.bold },
+  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
 });
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -182,7 +183,7 @@ export default function PlanScreen() {
         {/* Has records warning */}
         {hasRecords && (
           <View style={styles.warningBanner}>
-            <Icon name="warning" size={16} color="#B7791F" strokeWidth={2.1} />
+            <Icon name="warning" size={16} color={StatusColors.warningTextStrong} strokeWidth={2.1} />
             <Text style={styles.warningText}>{i18n.t('planHasRecordsWarning')}</Text>
           </View>
         )}
@@ -237,7 +238,7 @@ export default function PlanScreen() {
           </View>
         )}
 
-        <View style={{ height: 90 + bannerHeight }} />
+        <View style={{ height: TAB_BAR_HEIGHT + Space.xxl + bannerHeight }} />
       </ScrollView>
 
       <TimePickerModal
@@ -264,16 +265,16 @@ const styles = StyleSheet.create({
   appTitle: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
   scrollContent: { padding: Space.lg, gap: Space.lg },
   warningBanner: {
-    backgroundColor: '#FFFBEB',
+    backgroundColor: StatusColors.warningBg,
     borderRadius: Radius.xl,
     borderWidth: 1,
-    borderColor: '#FFE08A',
+    borderColor: StatusColors.warningBorder,
     padding: Space.lg,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Space.sm,
   },
-  warningText: { flex: 1, fontSize: Font.bodySm, color: '#7A6000', lineHeight: 18 },
+  warningText: { flex: 1, fontSize: Font.bodySm, color: StatusColors.warningText, lineHeight: 18 },
   card: {
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
@@ -304,8 +305,8 @@ const styles = StyleSheet.create({
     color: AppColors.navy,
     fontWeight: Weight.regular,
   },
-  textInputError: { borderColor: '#FF3B30' },
-  errorText: { fontSize: Font.micro, color: '#FF3B30', marginTop: Space.xs },
+  textInputError: { borderColor: StatusColors.danger },
+  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xs },
   calcBtn: {
     backgroundColor: AppColors.accent,
     borderRadius: Radius.md,
@@ -313,28 +314,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calcBtnDisabled: { opacity: 0.5 },
-  calcBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
+  calcBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
   errorCard: {
-    backgroundColor: '#FFF0EF',
+    backgroundColor: StatusColors.dangerBg,
     borderRadius: Radius.xl,
     borderWidth: 1,
-    borderColor: '#FFBCB8',
+    borderColor: StatusColors.dangerBorder,
     padding: Space.lg,
   },
-  errorCardText: { fontSize: Font.bodySm, color: '#CC2020', textAlign: 'center' },
+  errorCardText: { fontSize: Font.bodySm, color: StatusColors.danger, textAlign: 'center' },
   resultCard: {
     backgroundColor: AppColors.accent,
     borderRadius: Radius.xl,
     padding: Space.xxl,
     alignItems: 'center',
-    shadowColor: '#6C63E0',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.30,
-    shadowRadius: 20,
-    elevation: 6,
+    ...cardShadow,
     gap: Space.xs,
   },
   resultLabel: { fontSize: Font.bodySm, fontWeight: Weight.regular, color: 'rgba(255,255,255,0.75)' },
-  resultValue: { fontSize: Font.h1, fontWeight: Weight.bold, color: '#fff' },
+  resultValue: { fontSize: Font.h1, fontWeight: Weight.bold, color: AppColors.white },
   resultSub: { fontSize: Font.bodySm, color: 'rgba(255,255,255,0.75)' },
 });

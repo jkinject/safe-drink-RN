@@ -14,7 +14,7 @@
     "android": {
       "package": "com.safedrink.app",
       "adaptiveIcon": {
-        "backgroundColor": "#6B63E8",
+        "backgroundColor": "#6C63E0",
         "foregroundImage": "./assets/images/app_icon.png"
       },
       "permissions": [

@@ -32,7 +32,7 @@ export async function initialize(): Promise<void> {
       description: CHANNEL_DESCRIPTION,
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#208AEF',
+      lightColor: '#6C63E0', // 알림 LED — AppColors.accent 와 같은 값 (services 는 UI 상수를 끌어오지 않는다)
     });
 
     // 카운트다운은 계속 떠 있는 정보성 알림이라 소리·헤드업 없이 조용해야 한다.

@@ -16,7 +16,7 @@ import { Sex } from '@/core/types';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
-import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
@@ -303,10 +303,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     paddingHorizontal: Space.lg,
     paddingVertical: Space.md,
-    ...cardShadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    ...cardShadowSm,
   },
   tipText: {
     fontSize: Font.bodySm,
@@ -351,7 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.h4 },
+  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
   shieldChar: { width: 54, height: 54, marginLeft: Space.sm },
   privacyNote: {
     fontSize: Font.micro,
@@ -389,7 +386,7 @@ const fieldStyles = StyleSheet.create({
     paddingVertical: Space.xs,
   },
   unitText: { fontSize: Font.bodySm, color: AppColors.sub, marginLeft: Space.xs },
-  errorText: { fontSize: Font.micro, color: '#FF3B30', marginTop: Space.xxs },
+  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xxs },
 });
 
 const genderStyles = StyleSheet.create({

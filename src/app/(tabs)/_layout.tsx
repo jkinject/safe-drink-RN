@@ -1,20 +1,17 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppColors } from '@/constants/colors';
+import { AppColors, tabBarShadow } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 import { BottomAdBanner } from '@/components/ad-banner';
 import { useAdsRemoved } from '@/state/purchaseStore';
 import { ADS_SUPPORTED } from '@/config/ads';
 
-/** 아이콘 + 라벨 한 줄의 높이 (탭바 높이를 여기에 맞춘다) */
-const TAB_CONTENT_HEIGHT = IconSize.lg + Space.xxs + Font.micro + 4;
-/** 하단 안전영역을 뺀 탭바 높이 — 광고 배너를 이 위에 올린다 */
-const TAB_BAR_BASE_HEIGHT = TAB_CONTENT_HEIGHT + Space.md * 2;
 
 function TabIcon({ focused, icon, label }: { focused: boolean; icon: IconName; label: string }) {
   return (
@@ -44,7 +41,7 @@ export default function TabsLayout() {
   // Android edge-to-edge: 시스템 네비게이션 바 높이만큼 하단 여백 확보
   const insets = useSafeAreaInsets();
   const adsRemoved = useAdsRemoved();
-  const tabBarHeight = TAB_BAR_BASE_HEIGHT + insets.bottom;
+  const tabBarHeight = TAB_BAR_HEIGHT + insets.bottom;
 
   return (
     <View style={styles.root}>
@@ -111,15 +108,11 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   banner: { position: 'absolute', left: 0, right: 0 },
   tabBar: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: AppColors.cardBg,
     borderTopWidth: 0,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     position: 'absolute',
-    shadowColor: '#6C63E0',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 8,
+    ...tabBarShadow,
   },
 });

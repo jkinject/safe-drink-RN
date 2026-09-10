@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
-  appBarSide: { width: 40 },
-  appTitle: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
+  appBarSide: { width: Space.xxxl, alignItems: 'flex-start' },
+  appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy, flex: 1, textAlign: 'center' },
   scrollContent: { padding: Space.lg, gap: Space.lg },
   hero: { alignItems: 'center', gap: Space.sm },
   heroDesc: {
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: Space.lg,
   },
   label: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: AppColors.bg,
   },
-  sexBtnActive: { borderColor: AppColors.accent, borderWidth: 2, backgroundColor: '#EAE8FF' },
+  sexBtnActive: { borderColor: AppColors.accent, borderWidth: 2, backgroundColor: AppColors.selectedBg },
   sexLabel: { fontSize: Font.body, color: AppColors.navy },
   sexLabelActive: { color: AppColors.accent, fontWeight: Weight.bold },
   saveBtn: {
@@ -252,5 +252,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
+  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
 });

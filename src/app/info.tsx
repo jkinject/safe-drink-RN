@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadow, cardShadowSm  } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
@@ -66,7 +66,7 @@ function FormulaBox({ title, children }: FormulaBoxProps) {
 
 const formulaStyles = StyleSheet.create({
   box: {
-    backgroundColor: '#F5F4FC',
+    backgroundColor: AppColors.panel,
     borderRadius: Radius.md,
     padding: Space.lg,
     marginBottom: Space.sm,
@@ -169,30 +169,30 @@ export default function InfoScreen() {
           <LawBox
             title={i18n.t('infoLaw1Title')}
             detail={i18n.t('infoLaw1Detail')}
-            titleColor="#7A4800"
-            borderColor="#FF9500"
-            bgColor="#FFF8F0"
+            titleColor={StatusColors.cautionText}
+            borderColor={StatusColors.caution}
+            bgColor={StatusColors.cautionBg}
           />
           <LawBox
             title={i18n.t('infoLaw2Title')}
             detail={i18n.t('infoLaw2Detail')}
-            titleColor="#8B1A1A"
-            borderColor="#FF3B30"
-            bgColor="#FFF0EF"
+            titleColor={StatusColors.dangerText}
+            borderColor={StatusColors.danger}
+            bgColor={StatusColors.dangerBg}
           />
           <LawBox
             title={i18n.t('infoLaw3Title')}
             detail={i18n.t('infoLaw3Detail')}
             titleColor={AppColors.navy}
-            borderColor="#AEA9D2"
-            bgColor="#F5F4FC"
+            borderColor={AppColors.borderStrong}
+            bgColor={AppColors.panel}
           />
           <Text style={styles.footnoteText}>{i18n.t('infoLawFootnote')}</Text>
         </SectionCard>
 
         {/* Card 3: Breastfeeding */}
-        <SectionCard icon="safe" title={i18n.t('infoCard3Title')} bgColor="#EFF6FF">
-          <Text style={[styles.introText, { color: '#1A4E8C' }]}>
+        <SectionCard icon="safe" title={i18n.t('infoCard3Title')} bgColor={StatusColors.infoCardBg}>
+          <Text style={[styles.introText, { color: StatusColors.infoCardText }]}>
             {i18n.t('infoCard3Content')}
           </Text>
         </SectionCard>
@@ -280,7 +280,6 @@ const styles = StyleSheet.create({
     paddingVertical: Space.lg,
     alignItems: 'center',
     ...cardShadow,
-    shadowOpacity: 0.20,
   },
-  closeBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
+  closeBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
 });

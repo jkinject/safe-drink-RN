@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
-import { AppColors } from '@/constants/colors';
+import { AppColors, StatusColors } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
-import { Font, IconSize, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
  * 설정 화면용 그룹 리스트.
@@ -12,7 +12,6 @@ import { Font, IconSize, Space, Weight } from '@/constants/tokens';
  * 섹션 제목 + 행 목록으로 평평하게 편다.
  */
 
-const DANGER = '#FF3B30';
 
 interface SectionProps {
   title: string;
@@ -77,7 +76,7 @@ export function SettingsRow({
         <Icon
           name="chevronRight"
           size={IconSize.sm}
-          color={danger ? DANGER : AppColors.sub}
+          color={danger ? StatusColors.danger : AppColors.sub}
           strokeWidth={2.2}
         />
       )}
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
   },
   rows: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     paddingHorizontal: Space.lg,
     overflow: 'hidden',
   },
@@ -122,9 +121,9 @@ const styles = StyleSheet.create({
     borderBottomColor: AppColors.border,
   },
   rowLast: { borderBottomWidth: 0 },
-  rowText: { flex: 1, gap: 2 },
+  rowText: { flex: 1, gap: Space.xxs },
   label: { fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.semibold },
-  labelDanger: { color: DANGER },
+  labelDanger: { color: StatusColors.danger },
   description: { fontSize: Font.caption, color: AppColors.sub, lineHeight: 18 },
   // 값은 라벨보다 한 톤 약하게 — 레퍼런스처럼 "라벨 좌 / 값 우"
   value: { fontSize: Font.body, color: AppColors.sub },

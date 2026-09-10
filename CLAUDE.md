@@ -85,6 +85,7 @@ src/
 ├── state/         # zustand 스토어 (session/profile/presets/locale/ad/purchase)
 ├── i18n/          # ko/en 딕셔너리 (i18n-js)
 ├── components/    # 공용 UI (character-image, bac-graph, ad-banner, floating-label-input, time-picker-sheet …)
+├── constants/     # tokens(간격·모서리·글자), colors(AppColors·StatusColors·그림자), layout(탭바 높이), appInfo
 ├── hooks/         # useOtaUpdates
 └── app/           # expo-router 라우트 (onboarding, (tabs)/{index,plan,settings}, add-drink, info)
 ```
@@ -119,3 +120,8 @@ src/
 ## 디자인 토큰
 
 `src/constants/colors.ts` — 배경 #EEEDF8, 액센트 #6C63E0, 네이비 #2D2B52, 보조 #9E9AC8, 흰 카드 radius 16~20 + 연보라 그림자. 이모지 대신 생성 캐릭터 이미지 우선.
+
+- 색은 `AppColors`(바탕·글자·선·panel·selectedBg·overlay·white) + `StatusColors`(warning 노랑 / caution 주황=면허 정지 / danger 빨강=면허 취소·삭제 / info 파랑) 두 벌뿐. **화면에 hex 리터럴을 쓰지 말 것** — 2026-09-11 전수 치환함. BAC 뱃지 색은 `bacBadgeColors(level)` (core 의 `getBacBadge` 는 level 만 돌려준다).
+- 그림자는 다섯 가지 토큰만: cardShadowSm / cardShadow / dialogShadow / fabShadow / tabBarShadow. `shadowOpacity` 를 화면에서 직접 쓰지 않는다.
+- 하단 여백·FAB 위치는 `@/constants/layout` 의 `TAB_BAR_HEIGHT` 로 계산 (눈대중 90 금지). 모달·상세 화면 앱바는 제목 h3 가운데 + 좌우 슬롯 `Space.xxxl`, 탭 화면 제목은 h2 + letterSpacing -0.3.
+- 디자인 캔버스(Claude Design 아티팩트 "Safedrink 디자인")는 코드에서 뽑은 문서다. 토큰이 바뀌면 캔버스를 다시 생성해 맞춘다.

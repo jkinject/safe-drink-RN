@@ -3,7 +3,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { AppColors, cardShadowSm } from '@/constants/colors';
+import { AppColors, cardShadow } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { alert, confirm } from '@/components/dialog';
 import { Text } from '@/components/typography';
@@ -22,6 +22,7 @@ import { i18n } from '@/i18n';
 import { useBottomBannerHeight } from '@/state/adStore';
 import { ADS_SUPPORTED } from '@/config/ads';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 
 /**
  * 언어 선택지.
@@ -282,7 +283,7 @@ export default function SettingsScreen() {
           {!!updateLabel && <Text style={styles.versionSub}>{updateLabel}</Text>}
         </View>
 
-        <View style={{ height: 90 + bannerHeight }} />
+        <View style={{ height: TAB_BAR_HEIGHT + Space.xxl + bannerHeight }} />
       </ScrollView>
 
       <SelectSheet
@@ -310,13 +311,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Space.lg,
     marginBottom: Space.xl,
-    ...cardShadowSm,
-    shadowColor: '#6C63E0',
-    shadowOpacity: 0.25,
+    ...cardShadow,
   },
   pressed: { opacity: 0.85 },
   greetingText: { flex: 1 },
-  greetingTitle: { color: '#fff', fontSize: Font.h2, fontWeight: Weight.bold },
+  greetingTitle: { color: AppColors.white, fontSize: Font.h2, fontWeight: Weight.bold },
   greetingSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: Font.bodySm, marginTop: Space.xxs },
   versionBox: { alignItems: 'center', gap: Space.xxs, marginTop: Space.sm },
   versionText: { fontSize: Font.caption, color: AppColors.sub },

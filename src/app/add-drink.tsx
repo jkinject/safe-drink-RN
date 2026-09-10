@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { AppColors, cardShadow, cardShadowSm, dialogShadow } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadow, cardShadowSm, dialogShadow  } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
@@ -65,7 +65,7 @@ function formatSimDelta(ms: number): string {
 const tpStyles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: AppColors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -101,7 +101,7 @@ const tpStyles = StyleSheet.create({
     flex: 1, paddingVertical: Space.md, alignItems: 'center', borderRadius: Radius.md,
     backgroundColor: AppColors.accent,
   },
-  confirmText: { color: '#fff', fontWeight: Weight.bold },
+  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
 });
 
 // ── Custom preset dialog ──────────────────────────────────────────────────────
@@ -236,13 +236,13 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
 
 const dlgStyles = StyleSheet.create({
   overlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)',
+    flex: 1, backgroundColor: AppColors.overlay,
     justifyContent: 'flex-end',
   },
   container: {
     backgroundColor: AppColors.cardBg,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: Radius.xxl,
+    borderTopRightRadius: Radius.xxl,
     padding: Space.xxl,
     gap: Space.sm,
     maxHeight: '85%',
@@ -267,8 +267,8 @@ const dlgStyles = StyleSheet.create({
     paddingHorizontal: Space.lg, paddingVertical: Space.md, fontSize: Font.body,
     color: AppColors.navy,
   },
-  inputError: { borderColor: '#FF3B30' },
-  errorText: { fontSize: Font.micro, color: '#FF3B30', marginTop: -4 },
+  inputError: { borderColor: StatusColors.danger },
+  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: -4 },
   actions: { flexDirection: 'row', gap: Space.md, marginTop: Space.sm },
   cancelBtn: {
     flex: 1, paddingVertical: Space.md, alignItems: 'center',
@@ -279,7 +279,7 @@ const dlgStyles = StyleSheet.create({
     flex: 1, paddingVertical: Space.md, alignItems: 'center',
     borderRadius: Radius.md, backgroundColor: AppColors.accent,
   },
-  saveText: { color: '#fff', fontWeight: Weight.bold },
+  saveText: { color: AppColors.white, fontWeight: Weight.bold },
 });
 
 // ── Preset card ───────────────────────────────────────────────────────────────
@@ -326,7 +326,7 @@ const pcStyles = StyleSheet.create({
   cardSelected: {
     borderColor: AppColors.accent,
     borderWidth: 2,
-    backgroundColor: '#EAE8FF',
+    backgroundColor: AppColors.selectedBg,
   },
   label: { fontSize: Font.micro, fontWeight: Weight.semibold, color: AppColors.navy, textAlign: 'center' },
   detail: { fontSize: Font.micro, color: AppColors.sub },
@@ -930,8 +930,8 @@ const styles = StyleSheet.create({
     color: AppColors.navy,
     fontWeight: Weight.regular,
   },
-  inputError: { borderColor: '#FF3B30' },
-  errorText: { fontSize: Font.micro, color: '#FF3B30', marginTop: Space.xs },
+  inputError: { borderColor: StatusColors.danger },
+  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xs },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -992,5 +992,5 @@ const styles = StyleSheet.create({
   },
   simSoberAt: { fontSize: Font.bodySm, color: AppColors.navy },
   submitBtnDisabled: { opacity: 0.6 },
-  submitBtnText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
+  submitBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
 });

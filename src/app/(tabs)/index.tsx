@@ -26,7 +26,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AppColors, cardShadow, cardShadowSm } from '@/constants/colors';
+import { AppColors, StatusColors, bacBadgeColors, cardShadowSm, fabShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { sessionStore } from '@/state/sessionStore';
 import { profileStore } from '@/state/profileStore';
@@ -49,6 +49,7 @@ import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
 import { calendarDayDiff, displayedMinuteDiff } from '@/core/dateUtils';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 
 // ── Animated character ───────────────────────────────────────────────────────
 
@@ -246,7 +247,7 @@ const countdownStyles = StyleSheet.create({
   progressBg: {
     width: '100%',
     height: 6,
-    backgroundColor: '#E8E6FF',
+    backgroundColor: AppColors.border,
     borderRadius: Radius.pill,
     overflow: 'hidden',
   },
@@ -262,7 +263,7 @@ const countdownStyles = StyleSheet.create({
     alignItems: 'center',
     gap: Space.xs,
     marginTop: Space.md,
-    backgroundColor: '#F1EFFF',
+    backgroundColor: AppColors.accentTint,
     paddingHorizontal: Space.md,
     paddingVertical: Space.sm,
     borderRadius: Radius.pill,
@@ -406,21 +407,21 @@ const tileStyles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Space.sm },
   iconCircle: {
     width: 40, height: 40, borderRadius: Radius.xl,
-    backgroundColor: '#EEEDF8', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: AppColors.bg, alignItems: 'center', justifyContent: 'center',
   },
   titleCol: { flex: 1, minWidth: 0 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
-  titleText: { fontSize: Font.body, fontWeight: Weight.semibold, color: '#2D2B52', flexShrink: 1 },
+  titleText: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy, flexShrink: 1 },
   spacer: { flex: 1 },
   drinkingBadge: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: StatusColors.warningBg,
     borderRadius: Radius.sm,
     paddingHorizontal: Space.sm,
     paddingVertical: Space.xs,
     borderWidth: 1,
-    borderColor: '#FFD97D',
+    borderColor: StatusColors.warningBorder,
   },
-  drinkingBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: '#B07B00' },
+  drinkingBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: StatusColors.warningTextStrong },
   abvBadge: {
     backgroundColor: AppColors.chipBg,
     borderRadius: Radius.sm,
@@ -436,7 +437,7 @@ const tileStyles = StyleSheet.create({
     paddingHorizontal: Space.md,
     paddingVertical: Space.xs,
   },
-  finishBtnText: { color: '#fff', fontWeight: Weight.semibold, fontSize: Font.caption },
+  finishBtnText: { color: AppColors.white, fontWeight: Weight.semibold, fontSize: Font.caption },
 });
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
@@ -453,6 +454,7 @@ function BacComparisonCard({
   soberWidmarkMs: number | null;
 }) {
   const statusBadge = getBacBadge(bacWatson);
+  const statusBadgeColors = statusBadge ? bacBadgeColors(statusBadge.level) : null;
   // 회복이 더 늦은 쪽이 "보수적" (시각이 없으면 BAC 비교로 fallback)
   const widmarkConservative =
     soberWatsonMs != null && soberWidmarkMs != null
@@ -465,8 +467,8 @@ function BacComparisonCard({
       <View style={compStyles.headerRow}>
         <Text style={compStyles.title}>{i18n.t('bacComparisonTitle')}</Text>
         {statusBadge && (
-          <View style={[compStyles.statusBadge, { backgroundColor: statusBadge.bg }]}>
-            <Text style={[compStyles.statusBadgeText, { color: statusBadge.color }]}>
+          <View style={[compStyles.statusBadge, { backgroundColor: statusBadgeColors!.bg }]}>
+            <Text style={[compStyles.statusBadgeText, { color: statusBadgeColors!.color }]}>
               {i18n.t(statusBadge.labelKey)}
             </Text>
           </View>
@@ -551,23 +553,23 @@ const compStyles = StyleSheet.create({
   panels: { flexDirection: 'row', gap: Space.md },
   panel: {
     flex: 1,
-    backgroundColor: '#F4F3FC',
+    backgroundColor: AppColors.panel,
     borderRadius: Radius.lg,
     padding: Space.md,
   },
   panelConservative: {
     borderWidth: 1.2,
-    borderColor: '#B3C7F7',
+    borderColor: StatusColors.infoBorder,
   },
   panelLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
   methodLabel: { fontSize: Font.caption, fontWeight: Weight.bold, color: AppColors.navy, flexShrink: 1 },
   consBadge: {
-    backgroundColor: '#E3F2FD',
+    backgroundColor: StatusColors.infoBg,
     borderRadius: Radius.sm,
     paddingHorizontal: Space.sm,
     paddingVertical: Space.xxs,
   },
-  consBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: '#1565C0' },
+  consBadgeText: { fontSize: Font.micro, fontWeight: Weight.semibold, color: StatusColors.infoText },
   methodDesc: { fontSize: Font.micro, color: AppColors.sub, marginTop: Space.xxs, minHeight: 26 },
   bacRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: Space.sm },
   bigBac: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.accent, letterSpacing: -0.5 },
@@ -609,7 +611,7 @@ const safeStyles = StyleSheet.create({
     alignItems: 'center',
     gap: Space.sm,
     borderWidth: 1,
-    borderColor: '#C9C4F0',
+    borderColor: AppColors.borderStrong,
     borderRadius: Radius.xxl,
     paddingHorizontal: Space.xl,
     paddingVertical: Space.md,
@@ -633,7 +635,7 @@ const tipStyles = StyleSheet.create({
     backgroundColor: AppColors.bg,
     borderRadius: Radius.lg,
     borderWidth: 1,
-    borderColor: '#D5D2F5',
+    borderColor: AppColors.borderStrong,
     paddingHorizontal: Space.lg,
     paddingVertical: Space.md,
     flexDirection: 'row',
@@ -911,13 +913,13 @@ export default function TimerScreen() {
           <TipBanner />
 
           {/* Bottom padding for tab bar */}
-          <View style={{ height: 90 + insets.bottom + bannerHeight }} />
+          <View style={{ height: TAB_BAR_HEIGHT + Space.xxl + insets.bottom + bannerHeight }} />
         </ScrollView>
       )}
 
       {/* FAB */}
       <TouchableOpacity
-        style={[styles.fab, { bottom: 84 + insets.bottom + bannerHeight }]}
+        style={[styles.fab, { bottom: TAB_BAR_HEIGHT + Space.xl + insets.bottom + bannerHeight }]}
         onPress={() => router.push('/add-drink')}
         activeOpacity={0.85}
       >
@@ -941,7 +943,7 @@ const styles = StyleSheet.create({
     fontSize: Font.h2,
     fontWeight: Weight.bold,
     color: AppColors.navy,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   lastSessionWrap: { marginTop: Space.xxl },
   emptyContent: {
@@ -949,7 +951,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Space.xxxl,
     paddingVertical: Space.xxl,
-    paddingBottom: 100,
+    paddingBottom: TAB_BAR_HEIGHT + Space.xxxl,
   },
   scrollContent: {
     padding: Space.lg,
@@ -958,14 +960,14 @@ const styles = StyleSheet.create({
   charWrapper: { alignItems: 'center' },
   drinkingOnlyBadge: {
     alignSelf: 'center',
-    backgroundColor: '#FFF8E1',
+    backgroundColor: StatusColors.warningBg,
     borderRadius: Radius.md,
     paddingHorizontal: Space.lg,
     paddingVertical: Space.sm,
     borderWidth: 1,
-    borderColor: '#FFD97D',
+    borderColor: StatusColors.warningBorder,
   },
-  drinkingOnlyText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: '#B07B00' },
+  drinkingOnlyText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: StatusColors.warningTextStrong },
   section: { gap: Space.sm },
   sectionHeader: {
     flexDirection: 'row',
@@ -976,19 +978,14 @@ const styles = StyleSheet.create({
   addBtn: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent },
   fab: {
     position: 'absolute',
-    bottom: 84,
-    right: 20,
+    right: Space.xl,
     width: 56,
     height: 56,
     borderRadius: Radius.xxl,
     backgroundColor: AppColors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#6C63E0',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
+    ...fabShadow,
   },
-  fabText: { color: '#fff', fontSize: Font.h1, fontWeight: Weight.regular, lineHeight: 32 },
+  fabText: { color: AppColors.white, fontSize: Font.h1, fontWeight: Weight.regular, lineHeight: 32 },
 });

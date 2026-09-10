@@ -21,6 +21,8 @@ export const Space = {
 
 /** 모서리 — 작은 칩부터 큰 카드까지 5단계 + 알약 */
 export const Radius = {
+  /** 시트 손잡이 같은 아주 작은 조각 */
+  xxs: 2,
   sm: 8,
   md: 12,
   lg: 16,
@@ -74,9 +76,15 @@ export const Weight = {
  * | 떠 있는 것 (모달·말풍선)| Radius.xl   | cardShadow    |
  * | 다이얼로그(오버레이 위) | Radius.xl   | dialogShadow  |
  *
- * 그림자는 `@/constants/colors` 의 세 가지만 쓴다 —
+ * | 탭바 / FAB              | Radius.xl/xxl| tabBarShadow / fabShadow |
+ *
+ * 그림자는 `@/constants/colors` 의 다섯 가지만 쓴다 —
  * cardShadowSm(화면 안 카드) / cardShadow(떠 있는 것) /
- * dialogShadow(어두운 오버레이 위 다이얼로그·모달).
+ * dialogShadow(어두운 오버레이 위 다이얼로그·모달) / fabShadow / tabBarShadow.
+ * 화면에서 shadowOpacity 를 직접 쓰지 말 것.
+ *
+ * 색은 AppColors(바탕·글자·선) + StatusColors(경고·주의·위험·안내) 두 벌뿐이다.
+ * 하단 여백은 `@/constants/layout` 의 TAB_BAR_HEIGHT 로 계산한다 (눈대중 90 금지).
  */
 
 /** 아이콘 크기 — 글자 크기와 짝을 맞춘다 */

@@ -22,6 +22,7 @@ import { profileStore } from '@/state/profileStore';
 import { bacCurve } from '@/core/bacCalculator';
 import { calendarDayDiff } from '@/core/dateUtils';
 import { getBacBadge } from '@/core/sessionUtils';
+import { bacBadgeColors } from '@/constants/colors';
 import { DrinkRecord, DrinkSession } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
@@ -223,6 +224,7 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
   }, [getSessionRecords, session.id]);
 
   const badge = getBacBadge(session.peakBac);
+  const badgeColors = badge ? bacBadgeColors(badge.level) : null;
 
   /**
    * 세션의 BAC 곡선.
@@ -285,7 +287,7 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
             icon={badge ? 'danger' : 'safe'}
             label={i18n.t('historyPeakBac')}
             value={`${session.peakBac.toFixed(3)}%`}
-            badge={badge && { label: i18n.t(badge.labelKey), color: badge.color, bg: badge.bg }}
+            badge={badge && badgeColors && { label: i18n.t(badge.labelKey), ...badgeColors }}
           />
           <Metric
             icon="timer"

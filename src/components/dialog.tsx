@@ -1,6 +1,6 @@
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { create } from 'zustand';
-import { AppColors, dialogShadow } from '@/constants/colors';
+import { AppColors, StatusColors, dialogShadow  } from '@/constants/colors';
 import { Font, Radius, Space, Weight } from '@/constants/tokens';
 import { Text } from '@/components/typography';
 
@@ -168,12 +168,11 @@ export function DialogHost() {
   );
 }
 
-const DANGER = '#FF3B30';
 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(45,43,82,0.45)',
+    backgroundColor: AppColors.overlay,
     justifyContent: 'center',
     padding: Space.xxl,
   },
@@ -206,8 +205,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     backgroundColor: AppColors.accent,
   },
-  dangerBtn: { backgroundColor: DANGER },
-  primaryText: { color: '#fff', fontWeight: Weight.bold, fontSize: Font.body },
+  dangerBtn: { backgroundColor: StatusColors.danger },
+  primaryText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
   cancelBtn: {
     paddingVertical: Space.md,
     alignItems: 'center',
@@ -224,6 +223,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.bg,
   },
   actionText: { color: AppColors.navy, fontWeight: Weight.semibold, fontSize: Font.body },
-  destructiveText: { color: DANGER },
+  destructiveText: { color: StatusColors.danger },
   cancelAction: { backgroundColor: 'transparent' },
 });

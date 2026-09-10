@@ -10,7 +10,7 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
-import { AppColors } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
@@ -149,7 +149,8 @@ export function BacGraph({
               y1={yRev}
               x2={PAD_LEFT + innerW}
               y2={yRev}
-              stroke="rgba(255,59,48,0.6)"
+              stroke={StatusColors.danger}
+              strokeOpacity="0.6"
               strokeWidth="1"
               strokeDasharray="4 3"
             />
@@ -157,7 +158,7 @@ export function BacGraph({
               x={PAD_LEFT + innerW + 6}
               y={yRev + 3}
               fontSize="10"
-              fill="rgba(230,50,40,0.9)"
+              fill={StatusColors.danger}
             >
               {i18n.t('bacChartDrivingLimitLabel')}
             </SvgText>
@@ -168,7 +169,8 @@ export function BacGraph({
               y1={ySus}
               x2={PAD_LEFT + innerW}
               y2={ySus}
-              stroke="rgba(255,149,0,0.6)"
+              stroke={StatusColors.caution}
+              strokeOpacity="0.6"
               strokeWidth="1"
               strokeDasharray="4 3"
             />
@@ -176,7 +178,7 @@ export function BacGraph({
               x={PAD_LEFT + innerW + 6}
               y={ySus + 3}
               fontSize="10"
-              fill="rgba(220,130,0,0.95)"
+              fill={StatusColors.caution}
             >
               {i18n.t('bacChartCautionLimitLabel')}
             </SvgText>
@@ -260,11 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
     padding: Space.lg,
-    shadowColor: '#6C63E0',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 4,
+    ...cardShadow,
   },
   title: {
     fontSize: Font.body,

@@ -98,7 +98,7 @@ export function TimePickerModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: AppColors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -134,5 +134,5 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     alignItems: 'center',
   },
-  confirmText: { color: '#fff', fontWeight: Weight.bold },
+  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
 });

@@ -16,7 +16,7 @@ import { Text } from '@/components/typography';
 import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
 import licenseData from '@/constants/licenses.json';
-import { Font, IconSize, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
  * 오픈소스 라이선스 고지 화면.
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     justifyContent: 'space-between',
   },
-  appBarSide: { width: 40 },
-  appTitle: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
+  appBarSide: { width: Space.xxxl, alignItems: 'flex-start' },
+  appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy, flex: 1, textAlign: 'center' },
   listContent: { paddingHorizontal: Space.lg, paddingBottom: Space.xxl },
   intro: { paddingVertical: Space.md, gap: Space.xs },
   introText: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: 20 },
@@ -155,20 +155,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Space.md,
     backgroundColor: AppColors.cardBg,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     paddingHorizontal: Space.lg,
     paddingVertical: Space.md,
     marginBottom: Space.xs,
   },
   rowPressed: { opacity: 0.6 },
-  rowText: { flex: 1, gap: 2 },
+  rowText: { flex: 1, gap: Space.xxs },
   pkgName: { fontSize: Font.bodySm, color: AppColors.navy, fontWeight: Weight.semibold },
   pkgMeta: { fontSize: Font.micro, color: AppColors.sub },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  overlay: { flex: 1, backgroundColor: AppColors.overlay, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: AppColors.cardBg,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: Radius.xxl,
+    borderTopRightRadius: Radius.xxl,
     paddingTop: Space.md,
     paddingHorizontal: Space.xl,
     maxHeight: '80%',
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: Radius.xxs,
     backgroundColor: AppColors.border,
     marginBottom: Space.lg,
   },

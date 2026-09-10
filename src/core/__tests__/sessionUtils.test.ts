@@ -175,14 +175,9 @@ describe('sessionUtils', () => {
       expect(getBacBadge(0.0)).toBeNull();
     });
 
-    test('뱃지 color/bg 색상 값이 정의됨', () => {
-      const revocation = getBacBadge(0.1)!;
-      expect(revocation.color).toBeTruthy();
-      expect(revocation.bg).toBeTruthy();
-
-      const suspension = getBacBadge(0.05)!;
-      expect(suspension.color).toBeTruthy();
-      expect(suspension.bg).toBeTruthy();
+    test('뱃지 level — 색은 UI 가 붙이므로 core 는 단계만 돌려준다', () => {
+      expect(getBacBadge(0.1)!.level).toBe('danger');
+      expect(getBacBadge(0.05)!.level).toBe('caution');
     });
   });
 });
