@@ -1,6 +1,6 @@
 import { forwardRef, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppColors, StatusColors, bacBadgeColors } from '@/constants/colors';
+import { AppColors, bacBadgeColors } from '@/constants/colors';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { Text } from '@/components/typography';
 import { CharacterImage } from '@/components/character-image';
@@ -111,7 +111,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
         </View>
       </View>
 
-      {/* 마신 술 — 무엇을 언제. 너무 많으면 앞 MAX_ROWS 잔만 보이고 나머지는 잔 수로 */}
+      {/* 마신 술 — 무엇을 얼마나. 너무 많으면 앞 MAX_ROWS 잔만 보이고 나머지는 잔 수로 */}
       <View style={styles.drinks}>
         {shownRecords.map((r, i) => (
           <View key={r.id ?? i} style={styles.drinkRow}>
@@ -122,7 +122,6 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
               {r.presetLabel ?? i18n.t('recordManualEntry')}
             </Text>
             <Text style={styles.drinkSpec}>{abvVolume(r)}</Text>
-            <Text style={styles.drinkTime}>{hm(r.consumedAt)}</Text>
           </View>
         ))}
         {hiddenCount > 0 && (
@@ -147,7 +146,6 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
         <Icon name="timer" size={16} color={AppColors.accent} strokeWidth={2.2} />
         <Text style={styles.footerBrand}>safedrink</Text>
       </View>
-      <Text style={styles.disclaimer}>{i18n.t('disclaimerText')}</Text>
     </View>
   );
 });
@@ -192,7 +190,6 @@ const styles = StyleSheet.create({
   },
   drinkName: { flex: 1, fontSize: Font.caption, fontWeight: Weight.semibold, color: AppColors.navy },
   drinkSpec: { fontSize: Font.micro, color: AppColors.sub },
-  drinkTime: { fontSize: Font.caption, color: AppColors.navy, minWidth: 40, textAlign: 'right' },
   drinkMore: { fontSize: Font.micro, color: AppColors.sub, textAlign: 'center' },
   footer: {
     flexDirection: 'row',
@@ -203,5 +200,4 @@ const styles = StyleSheet.create({
     paddingTop: Space.md,
   },
   footerBrand: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
-  disclaimer: { fontSize: Font.micro, color: StatusColors.warningText, textAlign: 'center' },
 });
