@@ -1,7 +1,8 @@
 /**
  * 평가 요청 판단 로직. 시트·스토어 열기는 목 처리하고 shouldPrompt 만 따진다.
  */
-jest.mock('@/components/dialog', () => ({ actionSheet: jest.fn(async () => 1) }));
+jest.mock('@/components/dialog', () => ({ actionSheet: jest.fn(async () => null) }));
+jest.mock('expo-store-review', () => ({ hasAction: jest.fn(async () => false), requestReview: jest.fn(async () => {}) }));
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(async () => null),
   setItem: jest.fn(async () => {}),
@@ -24,7 +25,7 @@ describe('shouldPrompt', () => {
     expect(shouldPrompt({ status: 'pending', lastPromptAt: 0 }, MIN_SESSIONS, now, 'android')).toBe(true);
   });
 
-  it('평가 완료·다시 묻지 않기는 영원히 묻지 않는다', () => {
+  it('칭찬하기를 누른 뒤에는 다시 묻지 않는다', () => {
     expect(shouldPrompt({ status: 'done', lastPromptAt: now - 100 * DAY }, 10, now, 'android')).toBe(false);
     expect(shouldPrompt({ status: 'never', lastPromptAt: now - 100 * DAY }, 10, now, 'android')).toBe(false);
   });

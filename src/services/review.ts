@@ -1,4 +1,5 @@
 import { Linking, Platform } from 'react-native';
+import * as StoreReview from 'expo-store-review';
 import { actionSheet } from '@/components/dialog';
 import { i18n } from '@/i18n';
 import { PLAY_MARKET_URL, PLAY_STORE_URL } from '@/constants/appInfo';
@@ -6,15 +7,17 @@ import * as reviewStorage from '@/storage/reviewStorage';
 import type { ReviewState } from '@/storage/reviewStorage';
 
 /**
- * 스토어 평가 요청.
+ * 스토어 평가 요청 — "칭찬하기 / 나중에 하기" 두 선택지.
  *
  * 묻는 시점: 술자리가 끝나 "지금 안전" 화면으로 돌아왔을 때 — 앱이 약속을 지킨 직후라
- * 만족도가 가장 높다. 그 화면이 뜰 때마다가 아니라, 닫힌 술자리가 MIN_SESSIONS 개 이상
- * 쌓였을 때 한 번, "나중에" 를 고르면 LATER_INTERVAL 뒤에 다시, "다시 묻지 않기"·평가 완료
- * 뒤에는 영원히 묻지 않는다. 앱 실행 한 번에 한 번만 시도한다.
+ * 만족도가 가장 높다. 닫힌 술자리가 MIN_SESSIONS 개 이상 쌓였을 때 한 번, "나중에" 를
+ * 고르면 LATER_INTERVAL 뒤에 다시, 칭찬하기를 누른 뒤에는 다시 묻지 않는다.
+ * 앱 실행 한 번에 한 번만 시도한다. 대놓고 "리뷰 써 달라" 고 하지 않는 게 방침이라
+ * 문구는 칭찬을 청하는 톤으로 두고, 실제 창은 Google 인앱 리뷰(별점 시트)가 뜬다.
  *
- * Google 의 인앱 리뷰 API(expo-store-review) 는 네이티브 모듈이라 새 바이너리가 필요해서
- * 지금은 Play 스토어 페이지를 여는 방식이다. 바이너리를 낼 때 openStore 만 바꾸면 된다.
+ * 인앱 리뷰 API 는 Google 이 노출 빈도를 제한하므로 안 뜰 수도 있다 — 그때는 Play
+ * 스토어 페이지로 보낸다. 사용자가 별점 창에서 뭘 했는지는 API 가 알려주지 않으므로
+ * 칭찬하기를 누른 것 자체를 done 으로 기록한다.
  */
 
 export const MIN_SESSIONS = 2;
@@ -36,7 +39,16 @@ export function shouldPrompt(
   return true;
 }
 
-export async function openStore(): Promise<void> {
+/** 인앱 리뷰 시트를 띄우고, 못 띄우면 스토어 페이지를 연다 */
+export async function openReview(): Promise<void> {
+  try {
+    if (await StoreReview.hasAction()) {
+      await StoreReview.requestReview();
+      return;
+    }
+  } catch {
+    // 아래 폴백
+  }
   try {
     await Linking.openURL(PLAY_MARKET_URL);
   } catch {
@@ -45,7 +57,7 @@ export async function openStore(): Promise<void> {
 }
 
 /**
- * 조건이 맞으면 평가 요청 시트를 띄운다. 조용히 실패한다 — 평가 요청이 앱을 방해하면 안 된다.
+ * 조건이 맞으면 요청 시트를 띄운다. 조용히 실패한다 — 평가 요청이 앱을 방해하면 안 된다.
  * @returns 실제로 시트를 띄웠는지
  */
 export async function maybePromptReview(closedSessions: number, nowMs = Date.now()): Promise<boolean> {
@@ -56,22 +68,14 @@ export async function maybePromptReview(closedSessions: number, nowMs = Date.now
 
   const choice = await actionSheet({
     title: i18n.t('reviewPromptTitle'),
-    actions: [
-      { label: i18n.t('reviewPromptRate') },
-      { label: i18n.t('reviewPromptLater') },
-      { label: i18n.t('reviewPromptNever') },
-    ],
-    cancelLabel: i18n.t('settingsCancel'),
+    actions: [{ label: i18n.t('reviewPromptRate') }],
+    cancelLabel: i18n.t('reviewPromptLater'),
   });
 
   const next: ReviewState =
-    choice === 0
-      ? { status: 'done', lastPromptAt: nowMs }
-      : choice === 2
-        ? { status: 'never', lastPromptAt: nowMs }
-        : { status: 'later', lastPromptAt: nowMs }; // 나중에·닫기 모두 다음 기회에
+    choice === 0 ? { status: 'done', lastPromptAt: nowMs } : { status: 'later', lastPromptAt: nowMs };
   await reviewStorage.saveReviewState(next).catch(() => {});
-  if (choice === 0) await openStore();
+  if (choice === 0) await openReview();
   return true;
 }
 

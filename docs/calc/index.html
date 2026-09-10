@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>술 깨는 시간 계산기 — 혈중알코올농도(BAC)로 운전 가능 시각 계산 | Safedrink</title>
+<title>술 깨는 시간 계산기 — 혈중알코올농도로 운전 가능 시각 계산 | Safedrink</title>
 <meta name="description" content="맥주·소주·와인 몇 잔을 마셨는지 입력하면 키·몸무게·성별에 맞춰 혈중알코올농도와 술이 완전히 깨는 시각을 계산합니다. 면허 정지 0.03%, 취소 0.08% 기준선 표시. 무료, 회원가입 없음.">
 <meta name="keywords" content="술 깨는 시간, 술 깨는 시간 계산기, 혈중알코올농도 계산기, 음주 후 운전 가능 시간, 숙취 운전, 위드마크 계산, 알코올 분해 시간, 소주 한병 깨는 시간">
 <link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/calc/">
@@ -25,7 +25,7 @@
       "applicationCategory": "UtilitiesApplication",
       "operatingSystem": "Any",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
-      "description": "혈중알코올농도(BAC)와 술이 완전히 깨는 시각을 키·몸무게·성별에 맞춰 계산하는 무료 웹 계산기"
+      "description": "혈중알코올농도와 술이 완전히 깨는 시각을 키·몸무게·성별에 맞춰 계산하는 무료 웹 계산기"
     },
     {
       "@type": "SoftwareApplication",
@@ -113,7 +113,7 @@
   </header>
 
   <h1 id="h1">술 깨는 시간 계산기</h1>
-  <p class="lead" id="lead">마신 술을 넣으면 내 키·몸무게·성별에 맞춰 혈중알코올농도(BAC)와 완전히 깨는 시각을 계산합니다. 회원가입도, 저장도 없습니다.</p>
+  <p class="lead" id="lead">마신 술을 넣으면 내 키·몸무게·성별에 맞춰 혈중알코올농도와 완전히 깨는 시각을 계산합니다. 회원가입도, 저장도 없습니다.</p>
   <div class="disclaimer" id="disc">이 계산기는 참고용이며 법적·의학적 판단 기준이 아닙니다. 술을 마셨다면 운전하지 마세요.</div>
 
   <section class="card">
@@ -153,8 +153,8 @@
     <div class="sober" id="r-sober"></div>
     <div style="margin-top:12px" id="r-badge"></div>
     <div class="metrics">
-      <div class="metric"><b id="m-bac">0.000%</b><span id="m-bac-l">현재 BAC</span></div>
-      <div class="metric"><b id="m-peak">0.000%</b><span id="m-peak-l">최고 BAC</span></div>
+      <div class="metric"><b id="m-bac">0.000%</b><span id="m-bac-l">현재 혈중알코올농도</span></div>
+      <div class="metric"><b id="m-peak">0.000%</b><span id="m-peak-l">최고 혈중알코올농도</span></div>
       <div class="metric"><b id="m-g">0g</b><span id="m-g-l">순수 알코올</span></div>
     </div>
   </section>
@@ -172,7 +172,7 @@
     <h3>0.03%와 0.08%는 무슨 기준인가요?</h3>
     <p>대한민국 도로교통법상 혈중알코올농도 0.03% 이상은 면허 정지, 0.08% 이상은 면허 취소 대상입니다. 결과에 두 기준선을 함께 표시합니다.</p>
     <h3>어떻게 계산하나요?</h3>
-    <p>위드마크(Widmark) 공식을 쓰되 체수분 비율 r을 Watson 공식으로 키·몸무게·성별·나이에 맞춰 개인화합니다. 알코올(g) = 용량 × 도수 ÷ 100 × 0.789, BAC(%) = 알코올 ÷ (체중 × r × 10), 분해 속도 0.015%/h. Safedrink 앱과 같은 코드로 계산합니다.</p>
+    <p>위드마크(Widmark) 공식을 쓰되 체수분 비율 r을 Watson 공식으로 키·몸무게·성별·나이에 맞춰 개인화합니다. 알코올(g) = 용량 × 도수 ÷ 100 × 0.789, 혈중알코올농도(%) = 알코올 ÷ (체중 × r × 10), 분해 속도 0.015%/h. Safedrink 앱과 같은 코드로 계산합니다.</p>
     <h3>결과를 믿고 운전해도 되나요?</h3>
     <p>아니요. 참고용 추정치이며 음식·컨디션·약물에 따라 실제 수치는 크게 달라집니다. 이 페이지는 의료기기가 아니고 음주운전 가능 여부를 판단하는 근거가 될 수 없습니다.</p>
   </section>
@@ -184,7 +184,7 @@
 import { currentBac, estimatedSoberAt, totalAlcoholGrams, bacAt } from './lib/bacCalculator.js';
 
 const KO = {
-  presets: [['맥주 500cc',4.5,500],['맥주 355ml',4.5,355],['소주 1잔',16.5,50],['소주 1병',16.5,360],['와인 1잔',12,150],['양주 1잔',40,30],['막걸리 1사발',6,300],['하이볼 1잔',8,300]],
+  presets: [['맥주 500cc',4.5,500,'beerMug'],['맥주 355ml',4.5,355,'beerCan'],['소주 1잔',16.5,50,'sojuGlass'],['소주 1병',16.5,360,'sojuBottle'],['와인 1잔',12,150,'wineGlass'],['양주 1잔',40,30,'whiskyGlass'],['막걸리 1사발',6,300,'makgeolliBowl'],['하이볼 1잔',8,300,'highball']],
   remaining:'완전히 깨기까지', soberAt:t=>`${t}에 완전히 깸`, nextDay:t=>`다음날 ${t}에 완전히 깸`, safe:'이미 완전히 깼어요', badge:{caution:'면허 정지 (0.03% 이상)', danger:'면허 취소 (0.08% 이상)'},
 };
 const EN = {
@@ -193,25 +193,25 @@ const EN = {
   drinks:'What you drank', abv:'ABV (%)', vol:'Volume (ml)', add:'Add', last:'Last drink finished at', now:'Current time', calc:'Calculate', remaining:'Time until fully sober',
   soberAt:t=>`Fully sober at ${t}`, nextDay:t=>`Fully sober tomorrow at ${t}`, safe:'You are already fully sober', bac:'Current BAC', peak:'Peak BAC', g:'Pure alcohol',
   badge:{caution:'Over 0.03% (license suspension in KR)', danger:'Over 0.08% (license revocation in KR)'}, stTitle:'Easier in the app', stDesc:'Log each drink as you go and watch the countdown from your notification shade.',
-  presets:[['Beer 500ml',4.5,500],['Beer can 355ml',4.5,355],['Wine glass',12,150],['Whisky shot',40,44],['Vodka shot',40,44],['Cocktail',12,200],['Highball',8,300],['Champagne',12,150]],
+  presets:[['Beer 500ml',4.5,500,'beerMug'],['Beer can 355ml',4.5,355,'beerCan'],['Wine glass',12,150,'wineGlass'],['Whisky shot',40,44,'whiskyGlass'],['Vodka shot',40,44,'sojuGlass'],['Cocktail',12,200,'cocktail'],['Highball',8,300,'highball'],['Champagne',12,150,'champagne']],
 };
 let T = KO, lang = 'ko';
 const $ = id => document.getElementById(id);
 const drinks = [];
 
 function renderPresets() {
-  $('presets').innerHTML = T.presets.map((p,i)=>`<button class="preset" data-i="${i}"><strong>${p[0]}</strong><small>${p[1]}% · ${p[2]}ml</small></button>`).join('');
-  $('presets').querySelectorAll('button').forEach(b => b.onclick = () => { const p = T.presets[+b.dataset.i]; drinks.push({label:p[0], abv:p[1], vol:p[2]}); renderDrinks(); });
+  $('presets').innerHTML = T.presets.map((p,i)=>`<button class="preset" data-i="${i}"><img src="./img/${p[3]}.png" alt="" width="36" height="36"><strong>${p[0]}</strong><small>${p[1]}% · ${p[2]}ml</small></button>`).join('');
+  $('presets').querySelectorAll('button').forEach(b => b.onclick = () => { const p = T.presets[+b.dataset.i]; drinks.push({label:p[0], abv:p[1], vol:p[2], icon:p[3]}); renderDrinks(); });
 }
 function renderDrinks() {
-  $('drinks').innerHTML = drinks.map((d,i)=>`<div class="drink"><span class="n">${d.label}</span><span class="chip">${d.abv}% · ${d.vol}ml</span><button data-i="${i}" aria-label="remove">×</button></div>`).join('');
+  $('drinks').innerHTML = drinks.map((d,i)=>`<div class="drink"><img src="./img/${d.icon||'cup'}.png" alt="" width="28" height="28"><span class="n">${d.label}</span><span class="chip">${d.abv}% · ${d.vol}ml</span><button data-i="${i}" aria-label="remove">×</button></div>`).join('');
   $('drinks').querySelectorAll('button').forEach(b => b.onclick = () => { drinks.splice(+b.dataset.i,1); renderDrinks(); });
   $('calc').disabled = drinks.length === 0;
 }
 $('addManual').onclick = () => {
   const abv = parseFloat($('abv').value), vol = parseFloat($('vol').value);
   if (!(abv > 0 && abv <= 100) || !(vol > 0)) return;
-  drinks.push({label: lang==='ko' ? `직접 입력` : 'Custom', abv, vol}); renderDrinks();
+  drinks.push({label: lang==='ko' ? `직접 입력` : 'Custom', abv, vol, icon:'cup'}); renderDrinks();
 };
 function hm(ms){ const d=new Date(ms); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
 function timeToMs(v, base){ const [h,m]=v.split(':').map(Number); const d=new Date(base); d.setHours(h,m,0,0); return d.getTime(); }
