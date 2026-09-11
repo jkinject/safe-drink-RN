@@ -1,11 +1,11 @@
 import { forwardRef, useMemo } from 'react';
+import { Image } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { AppColors, bacBadgeColors } from '@/constants/colors';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { Text } from '@/components/typography';
-import { CharacterImage } from '@/components/character-image';
+import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
-import { Icon } from '@/components/icon';
 import { DrinkIcon, isDrinkIconName, resolveDrinkIcon } from '@/components/drink-icon';
 import { presetsStore } from '@/state/presetsStore';
 import { i18n } from '@/i18n';
@@ -20,6 +20,19 @@ function hm(ms: number): string {
   const d = new Date(ms);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
+
+/**
+ * 최고 혈중알코올농도로 캐릭터 표정을 정한다. 법령 뱃지와 같은 구간 —
+ * 0.03% 미만은 멀쩡(greeting), 면허 정지 구간은 취기(drinking), 면허 취소 구간은 어지러움(dizzy).
+ * 홈 화면은 "지금" 수치로 같은 표정을 고르지만, 카드는 지난 술자리라 정점을 쓴다.
+ */
+function characterForPeak(peakBac: number): CharacterState {
+  if (peakBac >= 0.08) return 'dizzy';
+  if (peakBac >= 0.03) return 'drinking';
+  return 'greeting';
+}
+
+const APP_ICON = require('../../assets/images/app_icon.png');
 
 /** 이미지가 무한정 길어지지 않게 마신 술은 이만큼만 */
 const MAX_ROWS = 8;
@@ -77,7 +90,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
   return (
     <View ref={ref} collapsable={false} style={styles.card}>
       <View style={styles.header}>
-        <CharacterImage sex={profile.sex} state="greeting" size={56} />
+        <CharacterImage sex={profile.sex} state={characterForPeak(session.peakBac)} size={56} />
         <View style={styles.headerText}>
           <Text style={styles.date}>{date}</Text>
           <Text style={styles.range}>
@@ -113,6 +126,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
 
       {/* 마신 술 — 무엇을 얼마나. 너무 많으면 앞 MAX_ROWS 잔만 보이고 나머지는 잔 수로 */}
       <View style={styles.drinks}>
+        <Text style={styles.sectionTitle}>{i18n.t('shareCardDrinksTitle')}</Text>
         {shownRecords.map((r, i) => (
           <View key={r.id ?? i} style={styles.drinkRow}>
             <View style={styles.drinkIcon}>
@@ -130,21 +144,25 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
       </View>
 
       {curve.length > 1 && (
-        <BacGraph
-          curve={curve}
-          nowMs={null}
-          firstMs={session.startedAt}
-          soberMs={session.soberAt}
-          height={130}
-          variant="bare"
-          markMs={markMs}
-          soberLabel={`${i18n.t('historyChartSoberPrefix')} ${hm(session.soberAt)}`}
-        />
+        <View style={styles.chart}>
+          <Text style={styles.sectionTitle}>{i18n.t('shareCardChartTitle')}</Text>
+          <BacGraph
+            curve={curve}
+            nowMs={null}
+            firstMs={session.startedAt}
+            soberMs={session.soberAt}
+            height={130}
+            variant="bare"
+            markMs={markMs}
+            soberLabel={`${i18n.t('historyChartSoberPrefix')} ${hm(session.soberAt)}`}
+          />
+        </View>
       )}
 
       <View style={styles.footer}>
-        <Icon name="timer" size={16} color={AppColors.accent} strokeWidth={2.2} />
+        <Image source={APP_ICON} style={styles.footerIcon} />
         <Text style={styles.footerBrand}>safedrink</Text>
+        <Text style={styles.footerTagline}>{i18n.t('shareCardTagline')}</Text>
       </View>
     </View>
   );
@@ -178,7 +196,9 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
   badge: { paddingHorizontal: Space.xs, paddingVertical: Space.xxs, borderRadius: Radius.sm },
   badgeText: { fontSize: Font.micro, fontWeight: Weight.bold },
+  sectionTitle: { fontSize: Font.micro, fontWeight: Weight.semibold, color: AppColors.sub, letterSpacing: 0.2 },
   drinks: { gap: Space.sm },
+  chart: { gap: Space.xs },
   drinkRow: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
   drinkIcon: {
     width: 28,
@@ -199,5 +219,7 @@ const styles = StyleSheet.create({
     borderTopColor: AppColors.border,
     paddingTop: Space.md,
   },
+  footerIcon: { width: 24, height: 24, borderRadius: Radius.sm },
   footerBrand: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy, letterSpacing: -0.3 },
+  footerTagline: { flex: 1, fontSize: Font.caption, color: AppColors.sub, textAlign: 'right' },
 });
