@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { create } from 'zustand';
 import { captureRef } from 'react-native-view-shot';
@@ -57,25 +57,37 @@ async function nameShareFile(uri: string, startedAt: number): Promise<string> {
   }
 }
 
-/** 그래프(SVG)·이미지가 그려질 시간을 준 뒤 찍는다 */
-const SETTLE_MS = 350;
+/** 이미지가 전부 로드됐다는 신호 뒤에도 SVG 그래프가 그려질 한 프레임 여유 */
+const SETTLE_MS = 120;
+/** onLoad 가 끝내 안 오더라도(드문 디코딩 실패) 이 시간 뒤엔 그냥 찍는다 */
+const MAX_WAIT_MS = 2500;
 
 export function ShareCardHost() {
   const request = shareCardStore(s => s.request);
   const clear = shareCardStore(s => s.clear);
   const ref = useRef<View>(null);
 
+  const [ready, setReady] = useState(false);
+  const handleReady = useCallback(() => setReady(true), []);
+
+  // 요청이 바뀌면 준비 상태부터 초기화
+  useEffect(() => {
+    setReady(false);
+  }, [request]);
+
+  // 이미지가 다 로드되면(ready) 바로, 아니면 MAX_WAIT_MS 뒤에 찍는다
   useEffect(() => {
     if (!request) return;
+    const delay = ready ? SETTLE_MS : MAX_WAIT_MS;
     const timer = setTimeout(() => {
       captureRef(ref, { format: 'png', quality: 1, result: 'tmpfile' })
         .then(uri => nameShareFile(uri, request.session.startedAt))
         .then(uri => request.resolve(uri))
         .catch(e => request.reject(e))
         .finally(clear);
-    }, SETTLE_MS);
+    }, delay);
     return () => clearTimeout(timer);
-  }, [request, clear]);
+  }, [request, ready, clear]);
 
   if (!request) return null;
   return (
@@ -87,6 +99,7 @@ export function ShareCardHost() {
           records={request.records}
           profile={request.profile}
           locale={request.locale}
+          onReady={handleReady}
         />
       </View>
     </View>

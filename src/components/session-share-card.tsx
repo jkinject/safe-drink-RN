@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useCallback, useMemo, useRef } from 'react';
 import { Image } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { AppColors, bacBadgeColors } from '@/constants/colors';
@@ -32,7 +32,8 @@ function characterForPeak(peakBac: number): CharacterState {
   return 'greeting';
 }
 
-const APP_ICON = require('../../assets/images/app_icon.png');
+// 1254px 원본은 Android 에서 디코딩이 느려 캡처에 빠질 수 있어 96px 축소본을 쓴다
+const APP_ICON = require('../../assets/images/app_icon_96.png');
 
 /** 이미지가 무한정 길어지지 않게 마신 술은 이만큼만 */
 const MAX_ROWS = 8;
@@ -53,6 +54,8 @@ interface Props {
   records: DrinkRecord[];
   profile: UserProfile;
   locale: string;
+  /** 카드 안 이미지(캐릭터·앱 아이콘·술 아이콘)가 전부 디코딩되면 한 번 호출 */
+  onReady?: () => void;
 }
 
 /**
@@ -61,7 +64,7 @@ interface Props {
  * 색·간격·글자는 전부 토큰 — 이 이미지가 밖에서 앱을 대표한다.
  */
 export const SessionShareCard = forwardRef<View, Props>(function SessionShareCard(
-  { session, records, profile, locale },
+  { session, records, profile, locale, onReady },
   ref,
 ) {
   const curve = useMemo(() => bacCurve(records, profile), [records, profile]);
@@ -79,6 +82,14 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
   const sorted = useMemo(() => [...records].sort((a, b) => a.consumedAt - b.consumedAt), [records]);
   const shownRecords = sorted.slice(0, MAX_ROWS);
   const hiddenCount = sorted.length - shownRecords.length;
+  // 이미지가 덜 그려진 채 찍히면 아이콘 자리가 비거나 이전 아이콘이 남는다(Android 에서 실제로 겪음).
+  // 캐릭터 + 앱 아이콘 + 술 아이콘 수만큼 onLoad 를 세어 전부 오면 onReady.
+  const expectedImages = 2 + shownRecords.length;
+  const loadedRef = useRef(0);
+  const handleImageLoad = useCallback(() => {
+    loadedRef.current += 1;
+    if (loadedRef.current === expectedImages) onReady?.();
+  }, [expectedImages, onReady]);
   const badge = getBacBadge(session.peakBac);
   const badgeColors = badge ? bacBadgeColors(badge.level) : null;
   const date = new Date(session.startedAt).toLocaleDateString(locale, {
@@ -90,7 +101,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
   return (
     <View ref={ref} collapsable={false} style={styles.card}>
       <View style={styles.header}>
-        <CharacterImage sex={profile.sex} state={characterForPeak(session.peakBac)} size={56} />
+        <CharacterImage sex={profile.sex} state={characterForPeak(session.peakBac)} size={56} onLoad={handleImageLoad} />
         <View style={styles.headerText}>
           <Text style={styles.date}>{date}</Text>
           <Text style={styles.range}>
@@ -130,7 +141,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
         {shownRecords.map((r, i) => (
           <View key={r.id ?? i} style={styles.drinkRow}>
             <View style={styles.drinkIcon}>
-              <DrinkIcon name={iconFor(r)} size={IconSize.md} />
+              <DrinkIcon name={iconFor(r)} size={IconSize.md} onLoad={handleImageLoad} />
             </View>
             <Text style={styles.drinkName} numberOfLines={1}>
               {r.presetLabel ?? i18n.t('recordManualEntry')}
@@ -160,7 +171,7 @@ export const SessionShareCard = forwardRef<View, Props>(function SessionShareCar
       )}
 
       <View style={styles.footer}>
-        <Image source={APP_ICON} style={styles.footerIcon} />
+        <Image source={APP_ICON} style={styles.footerIcon} onLoad={handleImageLoad} />
         <Text style={styles.footerBrand}>safedrink</Text>
         <Text style={styles.footerTagline}>{i18n.t('shareCardTagline')}</Text>
       </View>

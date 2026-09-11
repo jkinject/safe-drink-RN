@@ -8,6 +8,8 @@ interface Props {
   state?: CharacterState;
   size?: number;
   style?: StyleProp<ImageStyle>;
+  /** 이미지 디코딩 완료 — 공유 카드 캡처 타이밍용 */
+  onLoad?: () => void;
 }
 
 const IMAGES: Record<string, Record<CharacterState, number>> = {
@@ -28,6 +30,7 @@ export function CharacterImage({
   state = 'greeting',
   size = 120,
   style,
+  onLoad,
 }: Props) {
   const sexKey = sex ?? 'male';
   const source = IMAGES[sexKey][state];
@@ -36,6 +39,7 @@ export function CharacterImage({
       source={source}
       style={[{ width: size, height: size }, style]}
       resizeMode="contain"
+      onLoad={onLoad}
     />
   );
 }

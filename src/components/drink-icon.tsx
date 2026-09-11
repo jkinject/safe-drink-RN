@@ -66,15 +66,20 @@ export function resolveDrinkIcon(preset: {
 interface DrinkIconProps {
   name: DrinkIconName;
   size?: number;
+  /** 이미지 디코딩 완료 — 공유 카드 캡처 타이밍용 */
+  onLoad?: () => void;
 }
 
-export function DrinkIcon({ name, size = 28 }: DrinkIconProps) {
+export function DrinkIcon({ name, size = 28, onLoad }: DrinkIconProps) {
   return (
     <Image
       source={SOURCES[name]}
       style={{ width: size, height: size }}
       contentFit="contain"
       transition={0}
+      // Android 에서 뷰가 재활용될 때 이전 술 아이콘이 잠깐 남는 것을 막는다
+      recyclingKey={name}
+      onLoad={onLoad}
     />
   );
 }

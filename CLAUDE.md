@@ -72,7 +72,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 
 - 한국어 `store/play-listing.md`, 영어 `store/play-listing-en.md`. 기능이 바뀌면 둘 다 고친다.
 - 스크린샷은 `store/compose_screenshots.py` 로 합성한다(원본 `store/raw/<lang>/`, 결과 `store/screenshots[/en]/`). 캡처는 `EXPO_PUBLIC_HIDE_ADS=1` 로 빌드한 APK 로 찍는다 — 절차는 `store/SUBMISSION.md` "스크린샷 다시 만들기".
-- **`EXPO_PUBLIC_*` 환경변수를 바꿔 다시 빌드할 때는 `android/app/build/generated/assets` 를 지울 것.** Gradle 번들 태스크가 환경변수를 입력으로 안 봐서 이전 번들을 재사용한다.
+- **`EXPO_PUBLIC_*` 환경변수를 바꾸거나 `assets/` 에 이미지를 새로 추가한 뒤 다시 빌드할 때는 `android/app/build/generated/assets` 와 `generated/res` 를 지울 것.** Gradle 번들 태스크가 이를 입력으로 안 봐서 이전 번들·임베디드 에셋 목록을 재사용한다. 새 `require()` 이미지가 빠지면 RN 이 "source.uri should not be an empty string" 을 찍고 빈 자리로 그려진다(공유 카드 앱 아이콘에서 실제로 겪음). `unzip -p APK assets/app.manifest` 로 에셋 이름이 들어갔는지 확인할 수 있다.
 - 기본 술 프리셋은 로케일별이다(`presetStorage.defaultPresets`). 영어는 소주·막걸리 없이 국제 세트. 언어를 바꿀 때 손대지 않은 기본 세트는 새 언어 세트로 교체된다.
 
 ## 구조
