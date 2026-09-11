@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { create } from 'zustand';
 import { captureRef } from 'react-native-view-shot';
+import { File, Paths } from 'expo-file-system';
 import { SessionShareCard, SHARE_CARD_WIDTH } from '@/components/session-share-card';
 import { AppColors } from '@/constants/colors';
 import { Space } from '@/constants/tokens';
@@ -39,6 +40,23 @@ export const shareCardStore = create<ShareCardState>((set) => ({
   clear: () => set({ request: null }),
 }));
 
+/**
+ * view-shot 은 UUID 파일명으로 저장하고 iOS 는 fileName 옵션을 무시한다.
+ * 공유 시트에 "safedrink-20260911.png" 처럼 보이도록 캐시로 옮겨 이름을 바꾼다.
+ * 옮기기에 실패하면 원래 파일로 공유한다 — 파일명은 부가 정보일 뿐이다.
+ */
+async function nameShareFile(uri: string, startedAt: number): Promise<string> {
+  try {
+    const d = new Date(startedAt);
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    const dest = new File(Paths.cache, `safedrink-${stamp}.png`);
+    await new File(uri).move(dest, { overwrite: true });
+    return dest.uri;
+  } catch {
+    return uri;
+  }
+}
+
 /** 그래프(SVG)·이미지가 그려질 시간을 준 뒤 찍는다 */
 const SETTLE_MS = 350;
 
@@ -51,6 +69,7 @@ export function ShareCardHost() {
     if (!request) return;
     const timer = setTimeout(() => {
       captureRef(ref, { format: 'png', quality: 1, result: 'tmpfile' })
+        .then(uri => nameShareFile(uri, request.session.startedAt))
         .then(uri => request.resolve(uri))
         .catch(e => request.reject(e))
         .finally(clear);
