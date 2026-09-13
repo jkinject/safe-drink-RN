@@ -1,5 +1,21 @@
 # Safedrink
 
+**English summary** (Korean below)
+
+An open-source Android app that estimates blood alcohol concentration (BAC) from the drinks you log and counts down to the moment it reaches zero. Free, no account, no server: body data and drink history stay on the device.
+
+- Logs drinks one by one; a drink still "in progress" is excluded until you mark it finished.
+- Personalizes the Widmark distribution factor *r* with Watson's total-body-water equation (sex, height, weight, age), with a constant-*r* Widmark estimate shown side by side.
+- Elimination model: drinks are accumulated in time order and the running BAC decays by a single 0.015 %/h term between events, clamped at zero. (Decaying each drink independently would overestimate clearance N-fold.)
+- Keeps counting in the notification shade after the app is closed (system chronometer), then sends a "safe now" notification.
+- Graph with 0.03 % / 0.08 % reference lines, session history, share card.
+
+Calculation core lives in [`src/core/`](src/core/) as pure TypeScript with 60+ unit tests; the same module is built into the [web calculator](https://jkinject.github.io/safe-drink-RN/calc/?lang=en). Play Store: <https://play.google.com/store/apps/details?id=com.safedrink.app>
+
+> ⚠️ Reference estimate only. Not a medical device and never a basis for deciding whether to drive.
+
+---
+
 음주 후 혈중알코올농도(BAC)가 0이 될 때까지 남은 시간을 계산해주는 React Native(Expo) 앱.
 
 > ⚠️ 이 앱은 참고용이며 법적·의학적 판단 기준이 아닙니다. 실제 알코올 분해 속도는 개인차가 크므로,
@@ -20,13 +36,13 @@
 
 Widmark 식을 기반으로 하되, 기본값은 개인 체수분량을 반영한 값을 사용합니다.
 
-- **BAC 계산** — 총량 기준 단순 분해: `현재 BAC = Σ(각 기록의 BAC) − 0.015 × (현재 − 첫 완료 시각)`, 0에서 클램프.
+- **BAC 계산** — 순차 누산 + 단일 β 소거: 완료 시각 순으로 훑으며 잔을 비울 때 기여분을 더하고, 구간 사이는 `0.015 %/h`로 깎아 0에서 클램프합니다. 기록별로 따로 분해하면 분해 속도가 N배가 되므로 쓰지 않습니다.
 - **분포계수 r** — Watson 공식의 총체수분량(TBW)을 체중의 0.8로 나눈 값(성별·키·몸무게·나이 반영).
   결과가 0.4~0.9 범위를 벗어나면 상수 fallback(남 0.68 / 여 0.55)을 씁니다.
 - **표준(Widmark) 비교값** — 성별 상수 r만 쓰는 보수적 추정치를 함께 표시해, 개인 맞춤 결과와 비교할 수 있습니다.
 - 아직 "마시는중"인 기록은 BAC·그래프·알림 계산에서 제외되며, 완료 기록의 기준 시각은 완료 시각입니다.
 
-계산 로직은 `src/core/`에 UI 의존성 없이 분리되어 있고, 61개의 단위 테스트로 검증합니다.
+계산 로직은 `src/core/`에 UI 의존성 없이 분리되어 있고, 60여 개의 단위 테스트로 검증합니다.
 
 ## 기술 스택
 
