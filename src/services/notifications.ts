@@ -3,6 +3,8 @@
  */
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import * as liveActivity from './liveActivity';
+import type { CountdownText } from './liveActivity';
 
 const SOBER_NOTIFICATION_ID = 'safedrink_sober';
 const CHANNEL_ID = 'safedrink_sober';
@@ -48,20 +50,20 @@ export async function initialize(): Promise<void> {
 }
 
 /**
- * 진행 중 카운트다운 알림을 띄운다 (Android 전용).
+ * 진행 중 카운트다운을 띄운다.
  *
- * 남은 시간을 문자열로 굽지 않고 목표 시각만 넘긴다 — 네이티브 패치가
- * setChronometerCountDown 으로 붙여 두면 시스템이 1초씩 직접 깎으므로
- * 앱 프로세스가 죽어도 알림의 숫자가 계속 정확하다.
- * (patches/expo-notifications+*.patch, data.chronometerAtMs)
- *
- * 이미 같은 식별자로 떠 있으면 교체된다.
+ * - Android: 알림창 크로노미터 알림. 남은 시간을 문자열로 굽지 않고 목표 시각만
+ *   넘긴다 — 네이티브 패치가 setChronometerCountDown 으로 붙여 두면 시스템이
+ *   1초씩 직접 깎으므로 앱 프로세스가 죽어도 숫자가 계속 정확하다.
+ *   (patches/expo-notifications+*.patch, data.chronometerAtMs)
+ *   이미 같은 식별자로 떠 있으면 교체된다.
+ * - iOS: 잠금화면·다이내믹 아일랜드 Live Activity (services/liveActivity). 같은
+ *   원리로 목표 시각만 넘기고, 문구도 같은 i18n 리소스를 쓴다.
  */
 export async function showTimerNotification(
   soberAtMs: number,
-  { title, subtitle }: { title: string; subtitle: string },
+  { title, subtitle, character }: CountdownText,
 ): Promise<void> {
-  if (Platform.OS !== 'android') return;
   // 이미 지난 시각이면 띄우지 않고 떠 있던 것도 내린다 —
   // 네이티브 크로노미터는 0 을 지나면 음수로 계속 세기 때문에
   // 지난 목표로 띄우면 처음부터 "-00:01" 로 보인다
@@ -69,6 +71,11 @@ export async function showTimerNotification(
     await dismissTimerNotification();
     return;
   }
+  if (Platform.OS === 'ios') {
+    await liveActivity.startCountdown(soberAtMs, { title, subtitle, character });
+    return;
+  }
+  if (Platform.OS !== 'android') return;
   await Notifications.scheduleNotificationAsync({
     identifier: TIMER_NOTIFICATION_ID,
     content: {
@@ -87,8 +94,12 @@ export async function showTimerNotification(
   });
 }
 
-/** 카운트다운 알림 내리기 — 분해 완료 알림은 건드리지 않는다 */
+/** 카운트다운 내리기 — 분해 완료 알림은 건드리지 않는다 */
 export async function dismissTimerNotification(): Promise<void> {
+  if (Platform.OS === 'ios') {
+    await liveActivity.endCountdown();
+    return;
+  }
   if (Platform.OS !== 'android') return;
   try {
     await Notifications.dismissNotificationAsync(TIMER_NOTIFICATION_ID);

@@ -75,7 +75,8 @@
         }
       ],
       "expo-iap",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-live-activity"
     ],
     "updates": {
       "enabled": true,

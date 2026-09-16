@@ -92,6 +92,8 @@ async function rescheduleNotification(records: DrinkRecord[]): Promise<void> {
         await notificationService.showTimerNotification(soberAtMs, {
           title: isKo ? '술 깨기까지' : 'Time until sober',
           subtitle: i18n.t('timerNotificationSoberAt', { time: hhmm }),
+          // iOS 잠금화면 카드의 캐릭터 (Android 는 무시)
+          character: profile.sex === 'female' ? 'female' : 'male',
         });
       } else {
         await notificationService.dismissTimerNotification();
