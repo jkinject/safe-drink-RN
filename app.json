@@ -9,7 +9,16 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.safedrink.app",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleLocalizations": [
+          "en",
+          "ko"
+        ],
+        "CFBundleDevelopmentRegion": "en"
+      },
+      "appleTeamId": "GZNYLNJY9P"
     },
     "android": {
       "package": "com.safedrink.app",
