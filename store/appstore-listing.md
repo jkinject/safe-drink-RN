@@ -210,3 +210,14 @@ How to test: complete onboarding (any height/weight/sex), tap + to add a drink (
    - 개인정보처리방침 URL 은 앱 정보가 아니라 "앱이 수집하는 개인정보" 섹션에 있다(EN·KO 둘 다 설정).
    - 가격 무료·175개국. Mac(Apple Silicon)·Vision Pro 사용 가능 체크는 해제(iPhone 전용, Live Activity 의존).
 4. `eas submit --platform ios --latest` 로 빌드 업로드 → 처리 완료(10~30분) 후 빌드 선택 → 심사 제출 — aside.
+
+## 제출 이력
+
+| 날짜 | 버전 | 내용 |
+|---|---|---|
+| 2026-09-18 | 1.2.2 (build 2) | **첫 iOS 심사 제출.** EAS 빌드 `745f5fa4`, 제출 `23813ecb`. 규제 대상 의료기기 신고 "아니요", 출시 방식 **자동**(승인 즉시 공개). 상태: 심사 대기 중. 심사 최대 48시간, 결과는 jkinject@gmail.com 으로. |
+
+### 다음 빌드를 올릴 때
+- 심사 대기 중에는 **새 빌드를 붙이려면 심사에서 버전을 먼저 제거**해야 한다(ASC 안내문).
+- `app.json` version 을 올리면 runtimeVersion(=appVersion)도 바뀌어 OTA 채널이 분리된다. iOS·Android 둘 다 새 바이너리가 필요해지므로, JS 만 고칠 때는 version 을 유지하고 OTA 로 내보낸다.
+- eas-cli 는 **24.7.0 이상**을 쓸 것 — 24.0.0 은 Apple 로그인이 "iTunes service key is empty" 로 실패한다.
