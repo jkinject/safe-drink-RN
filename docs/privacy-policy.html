@@ -49,18 +49,23 @@
 
 <div class="card">
   <h1>Safedrink 개인정보처리방침</h1>
-  <p class="meta">최종 수정일: 2026년 9월 9일 · 앱 버전 1.2.0</p>
+  <p class="meta">최종 수정일: 2026년 9월 28일 · 앱 버전 1.3.0</p>
 
   <div class="lead">
-    <strong>요약: 입력하신 신체 정보와 음주 기록은 기기 안에만 저장되며, 개발자를 포함한
-    누구도 이를 열람할 수 없습니다.</strong> 회원가입·로그인이 없습니다.
-    Android 앱 1.2.0부터 화면 하단에 <strong>Google AdMob 배너 광고</strong>가 표시되며, 이를 위해
-    Google의 광고 SDK가 광고 식별자 등 일부 기기 정보를 수집합니다(제3절 참고). 광고는
-    1회 인앱 결제로 영구히 제거할 수 있습니다.
+    <strong>요약: 회원가입 없이 앱을 사용할 수 있으며, 기본적으로 입력하신 신체 정보와 음주 기록은
+    기기 안에만 저장됩니다.</strong> 다만 설정 → 백업에서 <strong>Google 계정 연동 백업</strong>을
+    선택하면 기기의 데이터가 백업을 위해 당사가 처리를 위탁한 서버(Cloudflare)에 저장되며,
+    언제든 연동을 해제하고 백업을 삭제할 수 있습니다(제3절 참고). Android 앱 1.2.0부터 화면 하단에
+    <strong>Google AdMob 배너 광고</strong>가 표시되며, 이를 위해 Google의 광고 SDK가 광고 식별자 등
+    일부 기기 정보를 수집합니다(제4절 참고). 광고는 1회 인앱 결제로 영구히 제거할 수 있습니다.
   </div>
 
   <h2>1. 앱이 저장하는 정보</h2>
-  <p>아래 정보는 모두 이용자의 기기 내부 저장소에만 기록되며 외부로 전송되지 않습니다.</p>
+  <p>
+    아래 정보는 <strong>기본적으로</strong> 이용자의 기기 내부 저장소에만 기록되며 외부로 전송되지
+    않습니다. Google 계정 연동 백업을 사용하도록 선택한 경우에만 예외이며, 자세한 내용은
+    3절을 참고하십시오.
+  </p>
   <table>
     <tr><th>항목</th><th>내용</th><th>저장 위치</th></tr>
     <tr>
@@ -85,14 +90,73 @@
   </p>
 
   <h2>2. 개발자가 수집하지 않는 정보</h2>
+  <p>
+    아래는 Google 계정 연동 백업을 사용하지 않는 경우(기본값)에 해당합니다. 연동을 선택하면
+    3절의 내용이 예외로 적용됩니다.
+  </p>
   <ul>
-    <li>이름, 이메일, 전화번호 등 이용자를 식별할 수 있는 정보</li>
+    <li>이름, 전화번호 등 이용자를 식별할 수 있는 정보 (Google 계정을 연동한 경우 이메일 주소는 예외 — 3절 참고)</li>
     <li>정확한 위치 정보, 연락처, 사진, 통화·문자 기록</li>
-    <li>이용자가 입력한 신체 정보와 음주 기록 (기기 밖으로 나가지 않습니다)</li>
+    <li>이용자가 입력한 신체 정보와 음주 기록 (기기 밖으로 나가지 않습니다. Google 계정을 연동해 백업하도록 선택한 경우는 예외 — 3절 참고)</li>
   </ul>
-  <p>Safedrink에는 회원가입 기능이 없으며, 개발자는 이용자 데이터를 보관하는 서버를 운영하지 않습니다.</p>
+  <p>
+    Safedrink에는 별도의 회원가입 기능이 없으며, Google 계정 연동 백업을 선택하지 않는 한
+    개발자는 이용자 데이터를 보관하는 서버를 운영하지 않습니다.
+  </p>
 
-  <h2>3. 광고 (Google AdMob)</h2>
+  <h2>3. Google 계정 연동 백업 (선택)</h2>
+  <p>
+    설정 → 백업에서 Google 계정으로 로그인하면, 기기에 저장된 데이터가 자동으로 서버에
+    백업됩니다. <strong>로그인하지 않으면 이 절의 내용은 적용되지 않으며, 앱은 평소와 동일하게
+    기기에만 데이터를 저장합니다.</strong>
+  </p>
+  <table>
+    <tr><th>수집 항목</th><th>내용</th></tr>
+    <tr><td>Google 계정 식별자</td><td>Google 로그인 시 발급되는 계정 고유 식별자(<code>sub</code>)</td></tr>
+    <tr><td>이메일 주소</td><td>연동한 Google 계정의 이메일</td></tr>
+    <tr>
+      <td>백업 데이터</td>
+      <td>
+        음주 기록·술자리 요약, 자주 마시는 술(커스텀 프리셋), 프로필(성별·키·몸무게·출생연도),
+        언어 설정, 알림 설정을 하나의 스냅샷으로 저장합니다.
+        <strong>광고 제거 구매 여부는 백업하지 않습니다</strong>(Google Play가 별도로 보관·확인합니다).
+      </td>
+    </tr>
+  </table>
+  <p>
+    <strong>목적:</strong> 앱을 삭제하거나 기기를 바꾼 뒤에도 같은 Google 계정으로 로그인하면
+    술 기록과 설정을 그대로 복원하기 위한 용도로만 사용합니다.
+  </p>
+  <p>
+    <strong>저장 방식:</strong> 계정당 최신 백업 1개만 보관하며, 데이터가 바뀔 때마다 이전 백업을
+    덮어씁니다(여러 시점의 이력을 보관하지 않습니다).
+  </p>
+  <p>
+    <strong>처리 위탁:</strong> 백업 데이터는 Cloudflare, Inc.가 제공하는 서버(Cloudflare
+    Workers·D1)에 저장됩니다. Cloudflare는 당사의 위탁을 받아 데이터를 저장·전송하는
+    역할만 수행하며, 자체적인 목적으로 이용하지 않습니다. 전송 구간은 HTTPS로 암호화됩니다.
+  </p>
+  <p>
+    <strong>보관 기간:</strong> 연동을 해제하거나 삭제를 요청할 때까지 보관되며, 삭제 시
+    즉시 삭제됩니다.
+  </p>
+  <p><strong>삭제 방법:</strong></p>
+  <ul>
+    <li>
+      앱 안에서: 설정 → 백업 → <strong>"백업 삭제 및 연동 해제"</strong>를 누르면 서버의 백업이
+      즉시 삭제되고 연동이 해제됩니다(기기에 저장된 기록은 그대로 유지됩니다).
+    </li>
+    <li>
+      앱을 이미 삭제한 경우: <a href="delete-account.html">웹 삭제 요청 페이지</a>의 안내에 따라
+      요청할 수 있습니다.
+    </li>
+  </ul>
+  <p>
+    로그인에 사용한 Google 계정 자체는 Safedrink가 만들거나 삭제하지 않으며, Google이 별도로
+    관리합니다.
+  </p>
+
+  <h2>4. 광고 (Google AdMob)</h2>
   <p>
     Android 앱은 화면 하단에 Google AdMob 배너 광고를 표시합니다. 광고를 불러오기 위해
     Google Mobile Ads SDK가 다음 정보를 Google에 전송하며, Google은 이를 광고 게재·측정,
@@ -117,7 +181,7 @@
     않으며 광고 SDK가 광고를 요청하지 않습니다.
   </p>
 
-  <h2>4. 인앱 결제 (Google Play 결제)</h2>
+  <h2>5. 인앱 결제 (Google Play 결제)</h2>
   <p>
     "광고 제거"는 Google Play 결제 시스템을 통해 1회 결제하는 상품입니다. 결제 정보(카드,
     계좌 등)는 Google Play가 처리하며 <strong>앱과 개발자는 결제 수단 정보를 받지 않습니다.</strong>
@@ -125,10 +189,11 @@
     바꾼 경우 설정의 "구매 복원"으로 되찾을 수 있습니다.
   </p>
 
-  <h2>5. 앱이 사용하는 네트워크 통신</h2>
+  <h2>6. 앱이 사용하는 네트워크 통신</h2>
   <p>
     Safedrink가 인터넷에 연결하는 경우는 <strong>앱 업데이트 확인, 광고 요청, Google Play 결제</strong>
-    세 가지입니다. 업데이트 확인은 앱을 실행할 때 Expo(EAS Update) 서버(<code>u.expo.dev</code>)에
+    세 가지이며, <strong>Google 계정을 연동한 경우에는 백업 업로드·복원</strong>이 추가됩니다.
+    업데이트 확인은 앱을 실행할 때 Expo(EAS Update) 서버(<code>u.expo.dev</code>)에
     새 버전이 있는지 묻고, 있으면 앱 코드를 내려받습니다.
   </p>
   <p>
@@ -137,44 +202,56 @@
     Expo의 개인정보 처리에 관한 내용은
     <a href="https://expo.dev/privacy" target="_blank" rel="noopener">expo.dev/privacy</a>를 참고하십시오.
   </p>
+  <p>
+    Google 계정을 연동한 경우에는 3절에서 설명한 백업 데이터(신체 정보·음주 기록 포함)가
+    Cloudflare Workers 서버로 전송됩니다. 로그인하지 않으면 이 통신은 발생하지 않습니다.
+  </p>
 
-  <h2>6. 권한 사용 목적</h2>
+  <h2>7. 권한 사용 목적</h2>
   <table>
     <tr><th>권한</th><th>사용 목적</th></tr>
     <tr><td>알림</td><td>술이 깨는 예정 시각 알림, 알림창의 남은 시간 표시</td></tr>
     <tr><td>알람 및 리마인더</td><td>예정 시각에 알림이 정확히 도착하도록 예약 (허용하지 않아도 앱은 정상 동작하며, 알림이 다소 늦어질 수 있습니다)</td></tr>
     <tr><td>기기 부팅 완료 수신</td><td>기기를 다시 켰을 때 예약된 알림을 복원</td></tr>
-    <tr><td>인터넷</td><td>앱 업데이트 확인, 광고 요청, Google Play 결제</td></tr>
+    <tr><td>인터넷</td><td>앱 업데이트 확인, 광고 요청, Google Play 결제, (연동 시) 백업 업로드·복원</td></tr>
     <tr><td>광고 ID (AD_ID)</td><td>Google 광고 SDK가 광고 게재·측정에 사용 (Android 13 이상)</td></tr>
   </table>
 
-  <h2>7. 데이터 보관과 삭제</h2>
+  <h2>8. 데이터 보관과 삭제</h2>
   <p>
     기록은 이용자가 삭제하기 전까지 기기에 보관됩니다. 앱 안에서 술자리 기록을 개별 삭제하거나,
     설정에서 전체 기록을 삭제할 수 있습니다.
     <strong>앱을 삭제하면 저장된 모든 데이터가 기기에서 함께 삭제됩니다.</strong>
   </p>
   <p>
-    다만 Android의 자동 백업 기능이 켜져 있는 경우, 앱 데이터가 이용자 본인의 Google 계정
-    백업에 포함될 수 있습니다. 이는 Android 운영체제가 제공하는 기능이며, 해당 백업은
-    이용자 본인만 접근할 수 있고 개발자는 접근할 수 없습니다. 기기 설정에서 백업을 끄거나
-    백업 데이터를 삭제할 수 있습니다.
+    Google 계정 연동 백업을 사용한 경우, 서버에 저장된 백업은 설정 → 백업 →
+    <strong>"백업 삭제 및 연동 해제"</strong>로 즉시 삭제할 수 있습니다. 앱을 이미 삭제했다면
+    <a href="delete-account.html">웹 삭제 요청 페이지</a>를 이용해 주십시오. 자세한 내용은
+    3절을 참고하십시오.
   </p>
-
-  <h2>8. 제3자 제공</h2>
   <p>
-    개발자는 이용자의 데이터를 보유하지 않으므로, 개발자가 제3자에게 제공하거나 판매하는 일은
-    없습니다. 다만 제3절의 광고 관련 정보는 광고 SDK가 Google(및 Google의 광고 파트너)에
-    직접 전송합니다.
+    이와 별개로 Android 운영체제 자체의 자동 백업 기능이 켜져 있는 경우, 앱 데이터가 이용자
+    본인의 Google 계정 백업에 포함될 수 있습니다. 이는 Android 운영체제가 제공하는 기능이며,
+    해당 백업은 이용자 본인만 접근할 수 있고 개발자는 접근할 수 없습니다. 기기 설정에서
+    이 백업을 끄거나 백업 데이터를 삭제할 수 있습니다.
   </p>
 
-  <h2>9. 아동의 개인정보</h2>
+  <h2>9. 제3자 제공</h2>
+  <p>
+    Google 계정 연동 백업을 사용하지 않는 경우, 개발자는 이용자의 데이터를 보유하지 않으므로
+    제3자에게 제공하거나 판매하는 일이 없습니다. 백업을 사용하는 경우, 3절에서 설명한 데이터는
+    저장·전송 처리를 위해 <strong>Cloudflare, Inc.</strong>에 위탁되며, 그 외의 제3자에게는
+    제공하지 않습니다. 이와 별도로 4절의 광고 관련 정보는 광고 SDK가 Google(및 Google의
+    광고 파트너)에 직접 전송합니다.
+  </p>
+
+  <h2>10. 아동의 개인정보</h2>
   <p>
     Safedrink는 음주와 관련된 앱으로 성인 이용자를 대상으로 합니다.
     아동으로부터 의도적으로 개인정보를 수집하지 않습니다.
   </p>
 
-  <h2>10. 면책</h2>
+  <h2>11. 면책</h2>
   <p>
     Safedrink가 제시하는 혈중알코올농도와 회복 예정 시각은 공개된 계산식
     (Widmark 공식 및 Watson 총체수분량 공식)에 기반한 <strong>참고용 추정치</strong>입니다.
@@ -185,12 +262,12 @@
     술을 마신 뒤에는 절대 운전하지 마십시오.
   </p>
 
-  <h2>11. 방침 변경</h2>
+  <h2>12. 방침 변경</h2>
   <p>
     본 방침이 변경되는 경우 이 페이지에 수정된 내용과 최종 수정일을 게시합니다.
   </p>
 
-  <h2>12. 문의</h2>
+  <h2>13. 문의</h2>
   <p>
     개인정보 처리에 관한 문의는 아래로 연락해 주십시오.<br>
     이메일: <a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a>
@@ -201,18 +278,25 @@
 
 <div class="card" id="en">
   <h1>Safedrink Privacy Policy</h1>
-  <p class="meta">Last updated: September 9, 2026 · App version 1.2.0</p>
+  <p class="meta">Last updated: September 28, 2026 · App version 1.3.0</p>
 
   <div class="lead">
-    <strong>Summary: the body measurements and drink records you enter stay on your device only.
-    No one — including the developer — can access them.</strong> There is no account or sign-in.
-    Starting with Android version 1.2.0 the app shows a <strong>Google AdMob banner</strong>, and
-    Google's ads SDK collects some device information such as the advertising ID for that purpose
-    (see section 3). A one-time in-app purchase removes ads permanently.
+    <strong>Summary: you can use the app without an account, and by default the body
+    measurements and drink records you enter stay on your device only.</strong> If you choose to
+    turn on <strong>Google account backup</strong> in Settings → Backup, your device data is
+    stored on a server we have engaged (Cloudflare) to process it for backup, and you can unlink
+    and delete that backup at any time (see section 3). Starting with Android version 1.2.0 the
+    app shows a <strong>Google AdMob banner</strong>, and Google's ads SDK collects some device
+    information such as the advertising ID for that purpose (see section 4). A one-time in-app
+    purchase removes ads permanently.
   </div>
 
   <h2>1. Information stored by the app</h2>
-  <p>All of the following is written only to your device's local storage and is never transmitted.</p>
+  <p>
+    The following is stored <strong>by default</strong> only in your device's local storage and
+    is never transmitted, except when you turn on Google account backup — see section 3 for that
+    exception.
+  </p>
   <table>
     <tr><th>Category</th><th>Details</th><th>Where</th></tr>
     <tr><td>Body measurements</td><td>Height, weight, sex, birth year</td><td>Device local storage</td></tr>
@@ -225,14 +309,77 @@
   </p>
 
   <h2>2. Information the developer does not collect</h2>
+  <p>
+    The following applies when you have not turned on Google account backup (the default). If
+    you turn it on, the exceptions in section 3 apply.
+  </p>
   <ul>
-    <li>Name, email address, phone number, or any other identifying information</li>
+    <li>Name, phone number, or any other identifying information (except the email address of a linked Google account — see section 3)</li>
     <li>Precise location, contacts, photos, call or message logs</li>
-    <li>Your body measurements and drink records (they never leave the device)</li>
+    <li>Your body measurements and drink records (they never leave the device, except when you choose to back them up via a linked Google account — see section 3)</li>
   </ul>
-  <p>There is no account system, and the developer runs no server that stores user data.</p>
+  <p>
+    There is no separate account system, and unless you turn on Google account backup, the
+    developer runs no server that stores user data.
+  </p>
 
-  <h2>3. Advertising (Google AdMob)</h2>
+  <h2>3. Google account backup (optional)</h2>
+  <p>
+    If you sign in with a Google account in Settings → Backup, the data stored on your device is
+    automatically backed up to a server. <strong>If you do not sign in, this section does not
+    apply, and the app stores data on your device only, as usual.</strong>
+  </p>
+  <table>
+    <tr><th>Category</th><th>Details</th></tr>
+    <tr><td>Google account identifier</td><td>The account's unique identifier (<code>sub</code>) issued when you sign in with Google</td></tr>
+    <tr><td>Email address</td><td>The email address of the linked Google account</td></tr>
+    <tr>
+      <td>Backup data</td>
+      <td>
+        Drink records and session summaries, your custom drink presets, your profile (sex,
+        height, weight, birth year), language setting, and notification setting, stored as a
+        single snapshot. <strong>Whether you purchased Remove Ads is not backed up</strong>
+        (Google Play remains the source of truth for that).
+      </td>
+    </tr>
+  </table>
+  <p>
+    <strong>Purpose:</strong> solely to restore your drink history and settings if you uninstall
+    the app or switch devices and sign in again with the same Google account.
+  </p>
+  <p>
+    <strong>Storage approach:</strong> only the latest backup per account is kept; each change
+    overwrites the previous backup (no history of past versions is retained).
+  </p>
+  <p>
+    <strong>Processor:</strong> backup data is stored on infrastructure provided by
+    Cloudflare, Inc. (Cloudflare Workers and D1). Cloudflare acts solely as our processor,
+    storing and transmitting the data on our behalf, and does not use it for its own purposes.
+    Data is encrypted in transit (HTTPS).
+  </p>
+  <p>
+    <strong>Retention:</strong> kept until you unlink or request deletion, at which point it is
+    deleted immediately.
+  </p>
+  <p><strong>How to delete it:</strong></p>
+  <ul>
+    <li>
+      In the app: go to Settings → Backup → <strong>"Delete backup and unlink"</strong> to
+      delete the server-side backup immediately and unlink your account (your on-device records
+      are kept).
+    </li>
+    <li>
+      If you have already uninstalled the app: use the
+      <a href="delete-account.html">web deletion request page</a> and follow the instructions
+      there.
+    </li>
+  </ul>
+  <p>
+    Safedrink does not create or delete the Google account you sign in with; it remains managed
+    by Google.
+  </p>
+
+  <h2>4. Advertising (Google AdMob)</h2>
   <p>
     The Android app shows a Google AdMob banner at the bottom of the screen. To serve ads, the
     Google Mobile Ads SDK sends the following to Google, which processes it for ad delivery and
@@ -257,7 +404,7 @@
     in the app's settings hides the banner and stops ad requests.
   </p>
 
-  <h2>4. In-app purchase (Google Play Billing)</h2>
+  <h2>5. In-app purchase (Google Play Billing)</h2>
   <p>
     "Remove Ads" is a one-time purchase handled by Google Play's billing system. Payment details
     are processed by Google Play; <strong>the app and the developer never receive them.</strong>
@@ -265,10 +412,11 @@
     device. After reinstalling or switching devices, use "Restore Purchases" in Settings.
   </p>
 
-  <h2>5. Network usage</h2>
+  <h2>6. Network usage</h2>
   <p>
     Safedrink connects to the internet for three reasons: <strong>checking for app updates,
-    requesting ads, and Google Play billing</strong>. On launch it asks the Expo (EAS Update)
+    requesting ads, and Google Play billing</strong> — plus <strong>backup upload/restore if you
+    have linked a Google account</strong>. On launch it asks the Expo (EAS Update)
     server (<code>u.expo.dev</code>) whether a newer version of the app code exists and downloads it if so.
   </p>
   <p>
@@ -277,44 +425,57 @@
     See <a href="https://expo.dev/privacy" target="_blank" rel="noopener">expo.dev/privacy</a>
     for Expo's own privacy practices.
   </p>
+  <p>
+    If you have linked a Google account, the backup data described in section 3 (including body
+    measurements and drink records) is sent to our Cloudflare Workers server. If you have not
+    signed in, this communication never happens.
+  </p>
 
-  <h2>6. Permissions</h2>
+  <h2>7. Permissions</h2>
   <table>
     <tr><th>Permission</th><th>Purpose</th></tr>
     <tr><td>Notifications</td><td>Alert you when alcohol is estimated to have cleared; show the remaining time in the notification shade</td></tr>
     <tr><td>Alarms &amp; reminders</td><td>Deliver that alert at the estimated time. Optional — the app works without it, though the alert may arrive a few minutes late</td></tr>
     <tr><td>Boot completed</td><td>Restore scheduled notifications after the device restarts</td></tr>
-    <tr><td>Internet</td><td>Update checks, ad requests, Google Play billing</td></tr>
+    <tr><td>Internet</td><td>Update checks, ad requests, Google Play billing, and (if linked) backup upload/restore</td></tr>
     <tr><td>Advertising ID (AD_ID)</td><td>Used by Google's ads SDK for ad delivery and measurement (Android 13+)</td></tr>
   </table>
 
-  <h2>7. Retention and deletion</h2>
+  <h2>8. Retention and deletion</h2>
   <p>
     Records remain on your device until you delete them. You can delete individual sessions
     in the app, or clear all records from Settings.
     <strong>Uninstalling the app removes all stored data from your device.</strong>
   </p>
   <p>
-    If Android's automatic backup is enabled, app data may be included in your own Google
-    account backup. That backup is provided by the Android operating system, is accessible
-    only to you, and is not accessible to the developer. You can disable backup or delete
-    backed-up data in your device settings.
+    If you have turned on Google account backup, you can delete the server-side backup
+    immediately from Settings → Backup → <strong>"Delete backup and unlink"</strong>. If you have
+    already uninstalled the app, use the
+    <a href="delete-account.html">web deletion request page</a>. See section 3 for details.
   </p>
-
-  <h2>8. Sharing with third parties</h2>
   <p>
-    The developer holds none of your data, so the developer shares or sells nothing. The
-    advertising data described in section 3 is sent by the ads SDK directly to Google (and
-    Google's advertising partners).
+    Separately, if Android's own automatic backup feature is enabled on your device, app data may
+    be included in your own Google account backup. That backup is provided by the Android
+    operating system, is accessible only to you, and is not accessible to the developer. You can
+    disable that backup or delete its data in your device settings.
   </p>
 
-  <h2>9. Children's privacy</h2>
+  <h2>9. Sharing with third parties</h2>
+  <p>
+    If you have not turned on Google account backup, the developer holds none of your data, so
+    the developer shares or sells nothing. If you use backup, the data described in section 3 is
+    entrusted to <strong>Cloudflare, Inc.</strong> to store and transmit it, and is not shared
+    with any other third party. Separately, the advertising data described in section 4 is sent
+    by the ads SDK directly to Google (and Google's advertising partners).
+  </p>
+
+  <h2>10. Children's privacy</h2>
   <p>
     Safedrink concerns alcohol consumption and is intended for adults. We do not knowingly
     collect personal information from children.
   </p>
 
-  <h2>10. Disclaimer</h2>
+  <h2>11. Disclaimer</h2>
   <p>
     The blood alcohol concentration and sober-by time shown in Safedrink are
     <strong>reference estimates</strong> based on published formulas (the Widmark equation and
@@ -326,10 +487,10 @@
     to drive.</strong> Never drive after drinking.
   </p>
 
-  <h2>11. Changes to this policy</h2>
+  <h2>12. Changes to this policy</h2>
   <p>Any changes will be posted on this page along with a revised "last updated" date.</p>
 
-  <h2>12. Contact</h2>
+  <h2>13. Contact</h2>
   <p>
     Questions about privacy:
     <a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a>

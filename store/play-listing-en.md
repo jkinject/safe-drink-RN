@@ -41,8 +41,16 @@ On Android, the remaining time counts down in your notification shade and a "You
 ■ Look back on past nights
 When you sober up, the session is saved automatically: start and end time, total alcohol, peak BAC and the graph.
 
+■ Keep your data when you switch phones
+Sign in with Google in Settings and your drink history, custom drinks, and profile back up
+automatically. Reinstall the app or move to a new phone, sign in again, and everything comes
+back. Signing in is optional — every feature works without it.
+
 ■ Private by design
-No account, no sign-up. Your body data and drink history stay on your device and are never uploaded.
+No account is required. If you don't sign in, your body data and drink history stay on your
+device only and are never uploaded. If you turn on Google account backup, that data is sent over
+encrypted HTTPS and stored on Cloudflare servers, and you can delete the backup and unlink at any
+time in Settings.
 
 Safedrink is free and shows a small banner ad. A one-time in-app purchase removes ads permanently.
 
@@ -88,3 +96,39 @@ Regenerate the composites with `python3 store/compose_screenshots.py en` after d
 - 앱 이름 30자·짧은 설명 80자 한도를 넘긴 21개 언어는 aside 가 짧게 손봤다. 아랍어 앱 이름은 "중독 회복 타이머" 오역이라 수정함. 자세한 설명은 기계 번역 그대로 — 품질 검수는 안 했다.
 - **기본 언어를 ko-KR → en-US 로 변경**. 그래픽이 없는 언어는 이제 영어 스크린샷·피처 그래픽으로 폴백한다. 한국어 등록정보·그래픽은 번역 항목으로 그대로 유지. en-US 에 앱 아이콘을 따로 넣어야 했다(기본 언어는 아이콘 필수).
 - 번역·기본 언어 변경은 기존 검토(1.2.0 출시)와 합쳐져 다시 검토 중.
+
+---
+
+## Data safety form checklist (1.3.0 — Google account backup)
+
+1.3.0 adds optional Google account backup (see
+`.omc/specs/deep-interview-google-backup-d1.md`). Update the Play Console → App content →
+Data safety form accordingly (this is a checklist only — answer it directly in the console).
+
+- **Does the app collect data?** → **Yes** (adds to the existing 1.2.0 AdMob disclosure)
+- **Data collected**
+  - **Personal info > Email address** — stored when a Google account is linked
+  - **Personal info > User IDs** — the Google account identifier (`sub`)
+  - **App activity > Other user-generated content** or **App activity > Other actions** — drink
+    records and custom drink presets. Pick whichever Play category label is closest to "content
+    the user enters and stores in the app" at submission time.
+  - **Health and fitness > Health info** — the backed-up profile (height, weight, sex, birth
+    year). This could also be read as **Personal info > Other**, but **declaring it as Health
+    info is recommended** — given the app's context (estimating time to sober up), the more
+    conservative classification lowers review risk.
+  - (For reference) Advertising ID, approximate location, app interactions, and diagnostics stay
+    as already declared for AdMob in 1.2.0.
+- **Common answers for each item above**
+  - Optional? → **Yes, optional** (only collected if the user signs in; nothing is collected otherwise)
+  - Purpose → **App functionality** (backup/restore)
+  - Shared with third parties → **Not shared** (Cloudflare is a processor only — it does not sell
+    or use the data for its own purposes; if the category is ambiguous, choose "not shared,
+    provided only for processing")
+  - Encrypted in transit → **Yes**
+  - Users can request deletion → **Yes**
+- **Does the app allow users to create an account?** → **Yes**
+  - **Account deletion URL** → `https://jkinject.github.io/safe-drink-RN/delete-account.html`
+- **Third-party data processor disclosure** → add Cloudflare (Workers/D1, storing and
+  transmitting backups). Keep the existing Google Mobile Ads SDK disclosure as is.
+- Before submitting, confirm `docs/privacy-policy.html` section 3 (Google account backup) and
+  `docs/delete-account.html` are actually published (GitHub Pages, HTTP 200).

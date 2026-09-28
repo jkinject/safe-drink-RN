@@ -48,6 +48,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - EAS 프로젝트: `@jkinject/safe-drink-rn` (projectId `d4523f48-fc64-42d2-a324-64a6e6b6cee0`)
 - runtimeVersion 정책: `appVersion` (app.json `version`) — **네이티브 모듈 추가/변경 시 version 올리고 새 바이너리 배포 필수** (OTA는 JS/에셋만 전달)
 - **런타임 1.1.1 사용자에게 main 을 OTA 하지 말 것.** 1.2.0 부터 main 이 광고·결제 네이티브 모듈을 import 하므로, 1.1.1 바이너리에 그 번들이 가면 시작 시 죽는다. 1.1.1 사용자에게 꼭 필요한 수정은 `4fe17e9`(1.1.1 마지막 커밋) 기준 브랜치에서 따로 게시한다. 정상 게시는 런타임으로 자동 분리되니 그냥 `--channel production` 이면 된다.
+- **런타임 1.2.x 사용자에게도 main 을 OTA 하지 말 것.** 1.3.0 부터 main 이 google-signin 네이티브 모듈을 최상위 import 하므로(_layout → googleAuth) 1.2.x 바이너리(Android 프로덕션·iOS 1.2.2 심사 중)에 가면 시작 시 죽는다. 1.2.x 핫픽스는 `06c07d2`(1.2.2 마지막 커밋) 기준 브랜치에서 게시한다.
 - 채널: development / preview / production (eas.json)
 - 시작 시 자동 확인·즉시 적용: `src/hooks/useOtaUpdates.ts` (루트 레이아웃에서 호출)
 - 상세: `docs/OTA-UPDATE.md`
@@ -67,6 +68,17 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - `react-native-google-mobile-ads` 는 **16.3.0 고정**(광고 SDK 25.0.0). 16.4+ 가 무는 play-services-ads 25.4 는 Kotlin 2.3 으로 컴파일돼 RN 0.86(Kotlin 2.1) 에서 "incompatible version of Kotlin metadata" 로 Android 빌드가 깨진다. 올리려면 프로젝트 Kotlin 을 같이 올려야 한다.
 - 새 탭 화면은 하단 스페이서에 `useBottomBannerHeight()` 를 더해야 배너에 가려지지 않는다.
 - **광고 제거 인앱결제**(expo-iap, 상품 ID `remove_ads`, 비소모성)는 설정 탭 "광고" 섹션. 구매 여부는 `purchaseStore.adsRemoved` — 캐시(AsyncStorage)로 먼저 채우고 스토어 보유 조회로 덮어쓴다. 시뮬레이터에서 결제를 보려면 Xcode 스킴에 `storekit/Safedrink.storekit` 을 물려 Xcode 로 실행해야 한다(`expo run:ios` 로는 상품이 안 잡힌다).
+
+## Google 계정 연동 백업 (1.3.0+)
+
+- 선택적 Google 로그인 → 기록·세션·프리셋·프로필·언어·알림설정을 JSON 스냅샷 1개로 Cloudflare Worker + D1(무료 플랜)에 자동 백업. 재설치 시 온보딩에서 복원. 상세: `docs/BACKUP.md`, 서버 `server/backup-worker/`(**Node 22 필수**, `nvm use`).
+- `EXPO_PUBLIC_BACKUP_API_URL`·`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` 둘 다 있어야 `BACKUP_SUPPORTED` 가 켜진다(`src/config/backup.ts`). 비면 UI·SDK 초기화가 전부 꺼져 1.2.x 와 동일하게 동작.
+- 데이터 저장 성공 직후에는 반드시 `notifyBackupChange()` 를 부른다(스토어 add/update/delete/save 계열). `load()` 류에서는 부르지 않는다. 복원 중(`isApplyingSnapshot()`)에는 무시된다.
+- 복원은 로컬 전체 교체(병합 금지). `db.importAll` 이 단일 트랜잭션 + sqlite_sequence 보정. 스냅샷 필드를 추가하면 `SNAPSHOT_SCHEMA_VERSION` 을 올리고 `validateSnapshot` 의 마이그레이션에 구버전 변환을 넣는다.
+- Google 로그인은 `@react-native-google-signin/google-signin` **16.1.5 고정**(무료 Original 흐름). app.json plugin 항목 없음(Android 는 autolinking 만으로 됨; iOS 붙일 때 `iosUrlScheme` 필요). OAuth Android 클라이언트는 SHA-1 하나당 하나 — debug·Play 서명(신·구)·업로드 키 4개(`docs/BACKUP.md`).
+- 서버 401 = 재로그인(`reauth`), 503 = 재시도. `lastBackupAt` 은 서버 200 뒤에만 갱신.
+- **`expo prebuild` 는 `org.gradle.jvmargs` 도 되돌린다** → Metaspace 고갈로 assembleRelease 가 죽는다. prebuild 후 `-Xmx4g -XX:MaxMetaspaceSize=1g` 를 다시 넣을 것(위 prebuild 항목의 세 가지에 더해 네 번째).
+- 백업을 켜면 Play 데이터 안전 설문·개인정보처리방침·계정 삭제 URL(`docs/delete-account.html`)이 함께 바뀌어야 한다 — `store/play-listing.md` 하단 체크리스트.
 
 ## 스토어 등록정보·스크린샷
 
@@ -114,7 +126,7 @@ src/
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).
 - **jest 타입**: `jest-types.d.ts`로 고정 (expo가 expo-env.d.ts를 재생성하며 참조를 지움).
 - **expo 모듈은 기본적으로 프리빌트 AAR 로 링크된다** — `node_modules/<모듈>/local-maven-repo/` 에 .aar 가 있으면 Gradle 이 소스를 컴파일하지 않는다. patch-package 로 네이티브 소스를 고쳐도 **빌드에 반영되지 않는다**. 반영하려면 `package.json` 의 `expo.autolinking.android.buildFromSource` 에 모듈명을 넣어야 한다 (현재 expo-notifications 가 여기 등록돼 있다). 반영 여부는 `unzip -o APK 'classes*.dex'` 후 `strings -a` 로 패치 문자열을 찾아 확인할 것.
-- **`npx expo prebuild` 는 `android/local.properties`·`gradle.properties` 의 JDK 고정과 아래 OTA 채널 헤더를 모두 지운다.** prebuild 후에는 `sdk.dir`, `org.gradle.java.home`(JDK 17), `expo-channel-name` 을 반드시 다시 넣을 것.
+- **`npx expo prebuild` 는 `android/local.properties`·`gradle.properties` 의 JDK 고정과 아래 OTA 채널 헤더를 모두 지운다.** prebuild 후에는 `sdk.dir`, `org.gradle.java.home`(JDK 17), `expo-channel-name` 을 반드시 다시 넣을 것. `org.gradle.jvmargs`(-Xmx4g -XX:MaxMetaspaceSize=1g) 도 되돌리므로 네 번째로 복구한다. 반대로 **prebuild 없이 `app.json` version 만 올리면 `android/app/build.gradle` 의 `versionName` 과 `res/values/strings.xml` 의 `expo_runtime_version` 은 그대로라** 로컬 APK 가 옛 버전·옛 런타임으로 나온다 — 둘을 같이 고치거나 prebuild 를 다시 할 것(1.3.0 에서 실제로 겪음).
 - 알림 카운트다운은 `patches/expo-notifications+*.patch` 로 `setChronometerCountDown` 을 붙여 구현했다. JS 에서 `data.chronometerAtMs` 로 목표 시각만 넘기면 시스템이 직접 1초씩 깎으므로 앱이 죽어도 정확하다. 남은 시간을 문자열로 구워 보내지 말 것.
 - **iOS 카운트다운은 Live Activity**(`expo-live-activity` 0.4.2 고정, `src/services/liveActivity.ts`). 플러그인이 prebuild 때 `ios/LiveActivity` 위젯 타깃(번들 ID `.LiveActivity`, iOS 16.2+)을 생성하고 Info.plist 에 `NSSupportsLiveActivities` 를 넣는다. Android 와 같은 원칙으로 목표 시각(epoch ms)만 넘기고 문구는 같은 i18n 리소스를 쓴다. 활동 ID 는 AsyncStorage `live_activity_id` 에 보관해 재시작 후 이전 활동을 먼저 끝낸다(안 그러면 잠금화면에 두 개). **iOS 는 시작 후 8시간에 강제 종료**하므로 앱을 열 때마다 갱신 대신 재시작한다. 완료 알림은 별도 로컬 알림이라 무관. jest 는 루트 `__mocks__/expo-live-activity.ts` 로 자동 대체된다.
   - **잠금화면·다이내믹 아일랜드 디자인은 `patches/expo-live-activity+0.4.2.patch`**(`ios-files/LiveActivityView.swift`·`LiveActivityWidget.swift`, Codex 가 디자인). 캐릭터·아이콘은 `assets/liveActivity/*.png` — 플러그인이 prebuild 때 위젯 에셋 카탈로그(imageset)로 복사하므로 JS 는 파일명(확장자 제외)만 넘긴다. **캐릭터는 배경을 투명하게 뺀 RGBA** 여야 한다(카드·아일랜드 위에 스티커처럼 뜸). 재생성 파이프라인은 아래 '캐릭터 에셋' 항목과 같다(앱용 1024px 에서 `--height 320` 으로 한 번 더 뽑는다). prebuild 없이 반영하려면 `ios/LiveActivity/Assets.xcassets/<이름>.imageset/` 에 PNG 를 덮어쓰고 증분 빌드. `LiveActivityAttributes` 구조체는 앱 모듈(`ios/LiveActivityAttributes.swift`)과 바이트 단위로 같아야 한다 — 위젯 파일을 고칠 때 건드리지 말 것. 아일랜드는 항상 검은 배경이라 텍스트는 흰색 고정(titleColor 는 잠금화면용 네이비).
