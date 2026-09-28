@@ -1,0 +1,17 @@
+# Safedrink 백업 API — Workers Free + D1 Free 만 사용한다(유료 바인딩·Durable Objects·Queues 없음).
+name = "safedrink-backup"
+main = "src/index.ts"
+compatibility_date = "2026-09-26"
+# 무료 *.workers.dev 서브도메인으로 공개한다(커스텀 도메인 불필요).
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "safedrink-backup"
+# `npx wrangler d1 create safedrink-backup` 출력의 database_id 로 바꿀 것
+database_id = "ce7f8850-7bcb-46cc-a54c-9f27ecf095ad"
+
+[vars]
+# Google OAuth 클라이언트 ID(공개값이라 secret 이 아닌 vars 로 충분).
+# 토큰 aud 로 허용할 ID 를 쉼표로 여러 개 넣을 수 있다. 비워 두면 모든 요청이 401.
+GOOGLE_CLIENT_ID = "532458443458-5m5naofpqk5ko9a8h0usbv4jaki72dmt.apps.googleusercontent.com"

@@ -1,0 +1,22 @@
+{
+  "name": "safedrink-backup-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Safedrink Google 계정 연동 백업 API (Cloudflare Workers + D1, 무료 플랜)",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260928.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2",
+    "wrangler": "^4.142.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

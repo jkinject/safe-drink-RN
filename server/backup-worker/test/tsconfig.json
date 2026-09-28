@@ -1,0 +1,7 @@
+{
+  // 테스트는 따로 타입 검사한다. vitest 타입이 선택 의존성(jsdom)을 거쳐 DOM lib 를 끌고 오는데,
+  // 그러면 Workers 전용 전역(caches.default 등)과 충돌해 src/index.ts 가 깨진다.
+  // 그래서 루트 tsconfig 는 배포 코드(src)만, 이 설정은 테스트 + 테스트가 import 하는 src 만 본다.
+  "extends": "../tsconfig.json",
+  "include": [".", "../vitest.config.ts"]
+}
