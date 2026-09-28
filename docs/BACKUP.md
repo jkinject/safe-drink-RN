@@ -130,6 +130,14 @@ EAS 가 관리하는 키이므로 `npx eas-cli credentials -p android` → produ
 
 둘 중 하나라도 비면 `BACKUP_SUPPORTED=false` 로 백업 UI·SDK 초기화가 전부 꺼진다. `EXPO_PUBLIC_*` 는 JS 번들에 구워지므로 OTA 로도 바꿀 수 있다.
 
+**정본은 EAS 환경변수다(2026-09-29 등록, production/preview/development 세 환경 모두, plaintext·project 스코프).** `eas build` 와 `eas update --environment <env>` 가 같은 값을 자동으로 읽으므로 eas.json 이나 `.env` 를 따로 관리하지 않는다. 값을 바꾸려면:
+
+```bash
+npx eas-cli env:update --environment production --name EXPO_PUBLIC_BACKUP_API_URL --value <새 값>
+```
+
+(preview/development 도 같이). 로컬 빌드만 `.env.local` 을 쓴다(`.env.example` 참고).
+
 ## Google Cloud 실제 값 (2026-09-28 생성, 프로젝트 `safedrink`, 계정 jkinject@gmail.com)
 
 | 클라이언트 | ID |
