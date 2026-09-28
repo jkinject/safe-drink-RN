@@ -16,6 +16,11 @@ export async function loadLocale(): Promise<LocalePreference | null> {
   return null;
 }
 
+/** 백업 복원용 [키, 저장 문자열] — null 이면 키를 지운다(profileStorage.profileEntry 참고) */
+export function localeEntry(locale: LocalePreference | null): [string, string | null] {
+  return [LOCALE_KEY, locale];
+}
+
 /** 저장된 로케일 삭제 */
 export async function clearLocale(): Promise<void> {
   await AsyncStorage.removeItem(LOCALE_KEY);

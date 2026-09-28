@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { UserProfile } from '../core/types';
 import * as profileStorage from '../storage/profileStorage';
+import { notifyBackupChange } from '../services/backup/notifyChange';
 
 interface ProfileState {
   profile: UserProfile | null;
@@ -30,10 +31,12 @@ export const profileStore = create<ProfileState>((set) => ({
   save: async (profile: UserProfile) => {
     await profileStorage.saveProfile(profile);
     set({ profile });
+    notifyBackupChange();
   },
 
   clear: async () => {
     await profileStorage.clearProfile();
     set({ profile: null });
+    notifyBackupChange();
   },
 }));

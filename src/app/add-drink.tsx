@@ -841,7 +841,7 @@ export default function AddDrinkScreen() {
             activeOpacity={0.8}
           >
             {saving ? (
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={AppColors.white} size="small" />
             ) : (
               <Text style={styles.submitBtnText}>{submitLabel}</Text>
             )}

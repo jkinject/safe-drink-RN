@@ -38,6 +38,10 @@ interface RowProps {
   chevron?: boolean;
   /** 기록 삭제처럼 되돌릴 수 없는 동작 */
   danger?: boolean;
+  /** "지금 백업" 처럼 섹션의 주 동작 — 라벨만 accent 색 */
+  accent?: boolean;
+  /** 진행 중이라 지금은 누를 수 없는 행 — 옅게 그리고 터치를 막는다 */
+  disabled?: boolean;
   /** 우측에 스위치를 두는 행 */
   toggle?: { value: boolean; onValueChange: (v: boolean) => void };
   /** 섹션의 마지막 행은 구분선을 그리지 않는다 */
@@ -51,13 +55,17 @@ export function SettingsRow({
   onPress,
   chevron,
   danger,
+  accent,
+  disabled,
   toggle,
   last,
 }: RowProps) {
   const body = (
-    <View style={[styles.row, last && styles.rowLast]}>
+    <View style={[styles.row, last && styles.rowLast, disabled && styles.disabled]}>
       <View style={styles.rowText}>
-        <Text style={[styles.label, danger && styles.labelDanger]}>{label}</Text>
+        <Text style={[styles.label, accent && styles.labelAccent, danger && styles.labelDanger]}>
+          {label}
+        </Text>
         {!!description && <Text style={styles.description}>{description}</Text>}
       </View>
 
@@ -68,7 +76,7 @@ export function SettingsRow({
           value={toggle.value}
           onValueChange={toggle.onValueChange}
           trackColor={{ false: AppColors.border, true: AppColors.accent }}
-          thumbColor="#fff"
+          thumbColor={AppColors.white}
         />
       )}
 
@@ -87,6 +95,8 @@ export function SettingsRow({
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
+      accessibilityState={disabled ? { disabled: true } : undefined}
       // 눌린 동안만 옅게 — 리스트에서 어느 행을 눌렀는지 보이게 한다
       style={({ pressed }) => (pressed ? styles.pressed : undefined)}
       accessibilityRole="button"
@@ -123,9 +133,11 @@ const styles = StyleSheet.create({
   rowLast: { borderBottomWidth: 0 },
   rowText: { flex: 1, gap: Space.xxs },
   label: { fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.semibold },
+  labelAccent: { color: AppColors.accent },
   labelDanger: { color: StatusColors.danger },
   description: { fontSize: Font.caption, color: AppColors.sub, lineHeight: 18 },
   // 값은 라벨보다 한 톤 약하게 — 레퍼런스처럼 "라벨 좌 / 값 우"
   value: { fontSize: Font.body, color: AppColors.sub },
   pressed: { opacity: 0.55 },
+  disabled: { opacity: 0.5 },
 });

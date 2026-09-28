@@ -3,6 +3,7 @@ import * as Localization from 'expo-localization';
 import { i18n } from '../i18n';
 import * as localeStorage from '../storage/localeStorage';
 import type { LocalePreference } from '../storage/localeStorage';
+import { notifyBackupChange } from '../services/backup/notifyChange';
 
 export type LocaleCode = 'ko' | 'en';
 
@@ -40,6 +41,7 @@ export const localeStore = create<LocaleState>((set, get) => ({
       pref === 'system' ? resolveSystemLocale() : pref;
     i18n.locale = resolved;
     set({ locale: resolved });
+    notifyBackupChange();
     // 손대지 않은 기본 프리셋은 새 언어 기본으로 바꿔 준다.
     // presetsStore 가 이 파일을 import 하므로 순환을 피해 동적으로 가져온다.
     // 실패해도 언어 변경 자체는 이미 끝났으니 삼킨다.

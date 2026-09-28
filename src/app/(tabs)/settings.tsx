@@ -8,6 +8,7 @@ import { Icon } from '@/components/icon';
 import { alert, confirm } from '@/components/dialog';
 import { Text } from '@/components/typography';
 import { SettingsRow, SettingsSection } from '@/components/settings-list';
+import { BackupSection } from '@/components/backup-section';
 import { SelectOption, SelectSheet } from '@/components/select-field';
 import { CharacterImage } from '@/components/character-image';
 import { settingsStore } from '@/state/settingsStore';
@@ -189,6 +190,10 @@ export default function SettingsScreen() {
             last
           />
         </SettingsSection>
+
+        {/* Google 계정 백업 — 계정·프로필 가까이 두고, 위험 동작이 있는 기록 관리와는 떨어뜨린다.
+            빌드에 백업 설정이 없으면 섹션이 렌더되지 않는다 */}
+        <BackupSection />
 
         {/* 알림창 카운트다운은 Android 전용이라 iOS 에서는 섹션째 숨긴다 */}
         {Platform.OS === 'android' && (

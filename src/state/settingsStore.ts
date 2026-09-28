@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as settingsStorage from '../storage/settingsStorage';
+import { notifyBackupChange } from '../services/backup/notifyChange';
 
 interface SettingsState {
   /** 알림창 카운트다운 표시 (기본 ON) */
@@ -25,6 +26,7 @@ export const settingsStore = create<SettingsState>((set) => ({
     set({ timerNotificationEnabled: enabled });
     try {
       await settingsStorage.saveTimerNotificationEnabled(enabled);
+      notifyBackupChange();
     } catch {
       // 저장 실패해도 이번 세션 동안은 선택을 존중한다
     }

@@ -9,6 +9,8 @@ import {
   Copy,
   CircleAlert,
   Clock,
+  Cloud,
+  CloudCheck,
   Droplets,
   Globe,
   Info,
@@ -65,6 +67,10 @@ const ICONS = {
   birthYear: Cake,
   male: Mars,
   female: Venus,
+  /** 설정 → 백업 (미연동) */
+  cloud: Cloud,
+  /** 설정 → 백업 (연동됨) */
+  cloudCheck: CloudCheck,
 } as const;
 
 export type IconName = keyof typeof ICONS;

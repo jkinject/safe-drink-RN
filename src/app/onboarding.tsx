@@ -18,6 +18,8 @@ import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
 import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
+import { OnboardingRestoreCard } from '@/components/onboarding-restore-card';
+import { backupStore } from '@/state/backupStore';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
@@ -39,6 +41,9 @@ export default function OnboardingScreen() {
   const [sex, setSex] = useState<Sex>('male');
   const [errors, setErrors] = useState<FieldError>({});
   const [saving, setSaving] = useState(false);
+  // 백업 로그인·조회·복원 중에는 저장을 막는다 — 복원이 프로필을 통째로 바꾸므로 섞이면 안 된다
+  const backupBusy = backupStore(s => s.status !== 'idle');
+  const saveDisabled = saving || backupBusy;
 
   // Keep locale subscription alive so re-render happens on locale change
   void locale;
@@ -154,6 +159,9 @@ export default function OnboardingScreen() {
               error={errors.birthYear}
             />
           </View>
+
+          {/* 기존 백업 복원 — 백업이 꺼진 빌드에서는 렌더하지 않는다 */}
+          <OnboardingRestoreCard />
         </ScrollView>
 
         {/* Fixed bottom: gender + disclaimer + save */}
@@ -180,13 +188,13 @@ export default function OnboardingScreen() {
 
           <View style={styles.saveRow}>
             <TouchableOpacity
-              style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
+              style={[styles.saveBtn, saveDisabled && styles.saveBtnDisabled]}
               onPress={handleSave}
-              disabled={saving}
+              disabled={saveDisabled}
               activeOpacity={0.8}
             >
               {saving ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator color={AppColors.white} size="small" />
               ) : (
                 <Text style={styles.saveBtnText}>{i18n.t('onboardingSave')}</Text>
               )}

@@ -16,6 +16,12 @@ let mockProfile: UserProfile | null;
 
 // ── 모듈 mock ─────────────────────────────────────────────────────────────
 
+// checkAutoClose 가 지연 require 하는 모듈 — 기본은 복원 중이 아님
+let mockIsApplyingSnapshot = false;
+jest.mock('../../services/backup/snapshot', () => ({
+  isApplyingSnapshot: () => mockIsApplyingSnapshot,
+}));
+
 jest.mock('../../storage/db', () => ({
   getOpenSessionRecords: jest.fn(async () => []),
   getAllSessions: jest.fn(async () => []),
@@ -112,6 +118,7 @@ const closedSession: DrinkSession = {
 
 beforeEach(() => {
   mockProfile = maleProfile;
+  mockIsApplyingSnapshot = false;
   // 스토어 상태 초기화
   sessionStore.setState({ records: [], sessions: [], isLoading: false });
   // mock 반환값 초기화
@@ -194,6 +201,13 @@ describe('checkAutoClose', () => {
     expect(mockDb.closeSession).toHaveBeenCalledTimes(1);
     expect(sessionStore.getState().records).toHaveLength(0);
     expect(sessionStore.getState().sessions).toHaveLength(1);
+  });
+
+  test('복원(applySnapshot) 진행 중에는 BAC = 0 이어도 세션을 닫지 않는다', async () => {
+    mockIsApplyingSnapshot = true;
+    sessionStore.setState({ records: [staleRecord] });
+    await sessionStore.getState().checkAutoClose();
+    expect(mockDb.closeSession).not.toHaveBeenCalled();
   });
 
   test('BAC = 0 → closeSession 에 올바른 summary 전달', async () => {

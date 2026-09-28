@@ -292,6 +292,106 @@ export async function deleteAllData(): Promise<void> {
   await db.execAsync('DELETE FROM drink_sessions');
 }
 
+/**
+ * 백업용 전체 덤프 — 열린 세션·닫힌 세션 가리지 않고 두 테이블을 통째로 읽는다.
+ * id·sessionId 를 그대로 싣는 이유: 복원 후 기록↔세션 연결이 id 로만 이어지기 때문.
+ * 정렬은 id 순 — 스냅샷이 매번 같은 순서여야 비교·디버깅이 쉽다.
+ */
+export async function exportAll(): Promise<{
+  records: DrinkRecord[];
+  sessions: DrinkSession[];
+}> {
+  const db = await openDb();
+  let recordRows: DrinkRecordRow[] = [];
+  let sessionRows: DrinkSessionRow[] = [];
+  // 두 SELECT 를 한 읽기 트랜잭션으로 — 사이에 세션 닫기(closeSession)가 끼면 기록은 열린
+  // 상태인데 세션은 이미 있는 식으로 서로 어긋난 스냅샷이 나온다
+  await db.withTransactionAsync(async () => {
+    recordRows = await db.getAllAsync<DrinkRecordRow>(
+      'SELECT * FROM drink_records ORDER BY id ASC',
+    );
+    sessionRows = await db.getAllAsync<DrinkSessionRow>(
+      'SELECT * FROM drink_sessions ORDER BY id ASC',
+    );
+  });
+  return {
+    records: recordRows.map(rowToRecord),
+    sessions: sessionRows.map(rowToSession),
+  };
+}
+
+/**
+ * 백업 복원 — 두 테이블을 비우고 스냅샷 내용으로 통째로 교체한다.
+ *
+ * 한 exclusive 트랜잭션 안에서 DELETE → INSERT 를 모두 끝낸다. 중간에 하나라도
+ * 던지면 롤백되어 원본이 그대로 남는다(반쯤 지워진 DB 는 복원 실패보다 나쁘다).
+ *
+ * id·session_id 를 명시해서 넣는다 — 새 id 를 받으면 기록이 가리키는 세션이
+ * 엉뚱한 세션이 되거나 유령 기록이 된다. finishedAt/sessionId 는 메모리에선
+ * undefined, JSON 을 거치면 null 이라 둘 다 `?? null` 로 저장한다
+ * (null = 마시는중 / 열린 세션).
+ */
+export async function importAll(data: {
+  records: DrinkRecord[];
+  sessions: DrinkSession[];
+}): Promise<void> {
+  const db = await openDb();
+  await db.withExclusiveTransactionAsync(async txn => {
+    await txn.runAsync('DELETE FROM drink_records');
+    await txn.runAsync('DELETE FROM drink_sessions');
+
+    for (const s of data.sessions) {
+      await txn.runAsync(
+        `INSERT INTO drink_sessions
+           (id, started_at, last_finished_at, sober_at, total_alcohol_g, peak_bac, drink_count)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          s.id,
+          s.startedAt,
+          s.lastFinishedAt,
+          s.soberAt,
+          s.totalAlcoholG,
+          s.peakBac,
+          s.drinkCount,
+        ],
+      );
+    }
+
+    for (const r of data.records) {
+      await txn.runAsync(
+        `INSERT INTO drink_records
+           (id, consumed_at, abv_percent, volume_ml, preset_label, finished_at, session_id, icon)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          r.id ?? null,
+          r.consumedAt,
+          r.abvPercent,
+          r.volumeMl,
+          r.presetLabel ?? null,
+          r.finishedAt ?? null,
+          r.sessionId ?? null,
+          r.icon ?? null,
+        ],
+      );
+    }
+
+    // AUTOINCREMENT 카운터를 복원한 최대 id 이상으로 맞춘다.
+    // SQLite 는 명시 id 삽입 시 sqlite_sequence 를 올려 주지만, 그 동작에 기대지 않고
+    // 여기서 한 번 더 보장한다 — 카운터가 복원 id 보다 작으면 다음 addRecord 가
+    // UNIQUE 충돌로 죽는다. MAX(seq, …) 라 기존 카운터를 되돌리지는 않는다.
+    // (한 번도 삽입된 적 없는 테이블은 행이 없어 UPDATE 가 무시되는데, 그땐 복원 행도
+    // 없으므로 1 부터 시작해도 충돌이 없다.)
+    for (const table of ['drink_records', 'drink_sessions']) {
+      await txn.runAsync(
+        `UPDATE sqlite_sequence
+            SET seq = MAX(seq, (SELECT IFNULL(MAX(id), 0) FROM ${table}))
+          WHERE name = ?`,
+        [table],
+      );
+    }
+  });
+}
+
 /** DB 연결 닫기 (테스트/cleanup 용) */
 export async function closeDb(): Promise<void> {
   if (_db) {

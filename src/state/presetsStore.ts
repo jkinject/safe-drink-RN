@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DrinkPreset } from '../core/types';
 import * as presetStorage from '../storage/presetStorage';
+import { notifyBackupChange } from '../services/backup/notifyChange';
 import { localeStore, type LocaleCode } from './localeStore';
 
 interface PresetsState {
@@ -36,22 +37,28 @@ export const presetsStore = create<PresetsState>((set, get) => ({
   save: async (presets: DrinkPreset[]) => {
     await presetStorage.savePresets(presets);
     set({ presets });
+    notifyBackupChange();
   },
 
   updateAt: async (index: number, preset: DrinkPreset) => {
     await presetStorage.updatePresetAt(index, preset);
     const updated = get().presets.map((p, i) => (i === index ? preset : p));
     set({ presets: updated });
+    notifyBackupChange();
   },
 
   swapDefaultsForLocale: async (from, to) => {
     const swapped = await presetStorage.swapDefaultsForLocale(from, to);
-    if (swapped) set({ presets: swapped });
+    if (swapped) {
+      set({ presets: swapped });
+      notifyBackupChange();
+    }
   },
 
   restoreDefaults: async () => {
     const locale = localeStore.getState().locale;
     const restored = await presetStorage.restoreDefaults(locale);
     set({ presets: restored });
+    notifyBackupChange();
   },
 }));

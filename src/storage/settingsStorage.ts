@@ -16,5 +16,10 @@ export async function loadTimerNotificationEnabled(): Promise<boolean> {
 export async function saveTimerNotificationEnabled(
   enabled: boolean,
 ): Promise<void> {
-  await AsyncStorage.setItem(TIMER_NOTIFICATION_KEY, enabled ? 'true' : 'false');
+  await AsyncStorage.setItem(...timerNotificationEntry(enabled));
+}
+
+/** 백업 복원용 [키, 저장 문자열] (profileStorage.profileEntry 참고) */
+export function timerNotificationEntry(enabled: boolean): [string, string] {
+  return [TIMER_NOTIFICATION_KEY, enabled ? 'true' : 'false'];
 }

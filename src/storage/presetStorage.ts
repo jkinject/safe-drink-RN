@@ -160,6 +160,30 @@ export async function swapDefaultsForLocale(
   return next;
 }
 
+/** 기본 프리셋 시드 여부 (백업 스냅샷용) */
+export async function loadPresetsSeeded(): Promise<boolean> {
+  return (await AsyncStorage.getItem(SEED_KEY)) === 'true';
+}
+
+/**
+ * 시드 플래그를 그대로 되돌린다 (백업 복원용).
+ * false 면 키를 지운다 — 원래 상태가 "키 없음"이었으므로 'false' 를 써 두지 않는다.
+ */
+export async function savePresetsSeeded(seeded: boolean): Promise<void> {
+  if (seeded) await AsyncStorage.setItem(SEED_KEY, 'true');
+  else await AsyncStorage.removeItem(SEED_KEY);
+}
+
+/** 백업 복원용 [키, 저장 문자열] (profileStorage.profileEntry 참고) */
+export function presetsEntry(presets: DrinkPreset[]): [string, string] {
+  return [PRESETS_KEY, JSON.stringify(presets)];
+}
+
+/** 백업 복원용 — savePresetsSeeded 와 같은 규칙(false 면 키 삭제 = null) */
+export function presetsSeededEntry(seeded: boolean): [string, string | null] {
+  return [SEED_KEY, seeded ? 'true' : null];
+}
+
 /** 저장된 목록 초기화 */
 export async function clearPresets(): Promise<void> {
   await AsyncStorage.multiRemove([PRESETS_KEY, SEED_KEY]);

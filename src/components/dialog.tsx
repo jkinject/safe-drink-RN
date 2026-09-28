@@ -31,6 +31,7 @@ type Request =
   | {
       kind: 'actions';
       title?: string;
+      message?: string;
       actions: ActionItem[];
       cancelLabel: string;
     };
@@ -77,6 +78,8 @@ export function alert(options: {
 /** 동작 선택 — 고른 항목의 인덱스, 취소하면 null */
 export function actionSheet(options: {
   title?: string;
+  /** 고르기 전에 읽어야 할 설명(예: 찾은 백업의 계정·일시·개수) */
+  message?: string;
   actions: ActionItem[];
   cancelLabel: string;
 }): Promise<number | null> {
@@ -104,7 +107,7 @@ export function DialogHost() {
       <View style={styles.overlay}>
         <View style={styles.container}>
           {!!request.title && <Text style={styles.title}>{request.title}</Text>}
-          {request.kind !== 'actions' && !!request.message && (
+          {!!request.message && (
             <Text style={styles.message}>{request.message}</Text>
           )}
 

@@ -186,7 +186,7 @@ export default function ProfileScreen() {
             activeOpacity={0.8}
           >
             {saving ? (
-              <ActivityIndicator color="#fff" size="small" />
+              <ActivityIndicator color={AppColors.white} size="small" />
             ) : (
               <Text style={styles.saveBtnText}>{i18n.t('settingsSave')}</Text>
             )}

@@ -12,6 +12,7 @@ import { DrinkRecord, DrinkSession } from '../core/types';
 import { currentBac, estimatedSoberAt } from '../core/bacCalculator';
 import { computeSessionSummary } from '../core/sessionUtils';
 import * as db from '../storage/db';
+import { notifyBackupChange } from '../services/backup/notifyChange';
 import * as notificationService from '../services/notifications';
 import { profileStore } from './profileStore';
 import { localeStore } from './localeStore';
@@ -47,6 +48,14 @@ interface SessionState {
   getSessionRecords: (sessionId: number) => Promise<DrinkRecord[]>;
   /** 알림 재계산 — 설정 변경처럼 기록이 안 바뀐 경우에 쓴다 */
   refreshNotifications: () => Promise<void>;
+  /**
+   * 백업 복원 — DB 두 테이블을 통째로 교체하고 records·sessions 를 다시 읽는다.
+   * 다른 변이와 같은 직렬화 체인 안에서 돌려, 교체 도중 checkAutoClose 가 옛 records 로
+   * 새 DB 의 열린 기록을 닫아 버리는 경합을 막는다. 자동 종료 판정은 호출부가 프로필까지
+   * 재로드한 뒤 load() 로 한다(여기서 checkAutoClose 를 부르면 serialize 안에서 serialize 를
+   * 기다려 교착된다).
+   */
+  replaceAll: (data: { records: DrinkRecord[]; sessions: DrinkSession[] }) => Promise<void>;
 }
 
 // ── 직렬화 뮤텍스 ──────────────────────────────────────────────────────────────
@@ -59,6 +68,22 @@ function serialize(fn: () => Promise<void>): Promise<void> {
     // 에러가 발생해도 _pending 체인이 끊기지 않도록 보호
   });
   return next;
+}
+
+/**
+ * 백업 복원(applySnapshot) 진행 중인지 확인.
+ * snapshot.ts 가 sessionStore 를 import 하므로 최상단에서 직접 import 하면 순환 참조가
+ * 생긴다 — notifyChange.ts 와 같은 방식으로 호출 시점에 지연 require 한다.
+ */
+function isRestoringSnapshot(): boolean {
+  try {
+    return (
+      require('../services/backup/snapshot') as typeof import('../services/backup/snapshot')
+    ).isApplyingSnapshot();
+  } catch (e) {
+    console.warn('[Session] isApplyingSnapshot 확인 실패:', e);
+    return false;
+  }
 }
 
 // ── 알림 재예약 ────────────────────────────────────────────────────────────────
@@ -130,6 +155,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
   addRecord: (record) =>
     serialize(async () => {
       await db.insertRecord(record);
+      notifyBackupChange();
       const updated = await db.getOpenSessionRecords();
       set({ records: updated });
       await rescheduleNotification(updated);
@@ -138,6 +164,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
   updateRecord: (record) =>
     serialize(async () => {
       await db.updateRecord(record);
+      notifyBackupChange();
       const updated = await db.getOpenSessionRecords();
       set({ records: updated });
       await rescheduleNotification(updated);
@@ -146,6 +173,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
   deleteRecord: (id) =>
     serialize(async () => {
       await db.deleteRecord(id);
+      notifyBackupChange();
       const updated = await db.getOpenSessionRecords();
       set({ records: updated });
       await rescheduleNotification(updated);
@@ -158,6 +186,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
       if (!record) return;
       const finished: DrinkRecord = { ...record, finishedAt: Date.now() };
       await db.updateRecord(finished);
+      notifyBackupChange();
       const updated = await db.getOpenSessionRecords();
       set({ records: updated });
       await rescheduleNotification(updated);
@@ -166,6 +195,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
   clearAll: () =>
     serialize(async () => {
       await db.deleteAllData();
+      notifyBackupChange();
       await notificationService.cancelAll();
       // 기록을 다 지웠으니 카운트다운도 함께 내린다
       await notificationService.dismissTimerNotification();
@@ -173,6 +203,10 @@ export const sessionStore = create<SessionState>((set, get) => ({
     }),
 
   checkAutoClose: async () => {
+    // 복원 중에는 새 records + 옛 프로필처럼 일시적으로 어긋난 조합으로 계산할 수 있다 —
+    // 건너뛴다. 복원이 끝나면 applySnapshot 이 load() 를 다시 불러 판정한다.
+    if (isRestoringSnapshot()) return;
+
     const profile = profileStore.getState().profile;
     if (!profile) return;
 
@@ -202,6 +236,7 @@ export const sessionStore = create<SessionState>((set, get) => ({
         if (summary == null) return;
 
         const sessionId = await db.closeSession(summary);
+        notifyBackupChange();
         console.warn(
           `[Session] Closed session #${sessionId}, ${summary.drinkCount} records, peak BAC ${summary.peakBac.toFixed(5)}`,
         );
@@ -232,9 +267,21 @@ export const sessionStore = create<SessionState>((set, get) => ({
   deleteSession: (sessionId) =>
     serialize(async () => {
       await db.deleteSession(sessionId);
+      notifyBackupChange();
       const sessions = await db.getAllSessions();
       set({ sessions });
     }),
 
   getSessionRecords: (sessionId) => db.getSessionRecords(sessionId),
+
+  replaceAll: (data) =>
+    serialize(async () => {
+      // 복원이라 자동 백업 신호(notifyBackupChange)는 보내지 않는다
+      await db.importAll(data);
+      const [records, sessions] = await Promise.all([
+        db.getOpenSessionRecords(),
+        db.getAllSessions(),
+      ]);
+      set({ records, sessions });
+    }),
 }));

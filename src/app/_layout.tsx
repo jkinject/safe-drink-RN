@@ -12,9 +12,13 @@ import { localeStore } from '@/state/localeStore';
 import { sessionStore } from '@/state/sessionStore';
 import { settingsStore } from '@/state/settingsStore';
 import { purchaseStore } from '@/state/purchaseStore';
+import { backupStore } from '@/state/backupStore';
 import * as notificationService from '@/services/notifications';
 import * as adsService from '@/services/ads';
 import { ADS_SUPPORTED } from '@/config/ads';
+import { BACKUP_SUPPORTED } from '@/config/backup';
+import * as googleAuth from '@/services/googleAuth';
+import * as backupScheduler from '@/services/backup/scheduler';
 import { useOtaUpdates } from '@/hooks/useOtaUpdates';
 
 SplashScreen.preventAutoHideAsync();
@@ -65,6 +69,18 @@ export default function RootLayout() {
     };
   }, [loadPurchase, initializePurchase]);
 
+  // Google 로그인 SDK 초기화 — 백업이 꺼진 빌드에서는 네이티브 모듈을 건드리지 않는다
+  useEffect(() => {
+    if (BACKUP_SUPPORTED) googleAuth.configure();
+  }, []);
+
+  // 자동 백업: 연동 상태를 읽은 뒤(init 완료) AppState 구독·못 올린 변경 재시도를 시작한다
+  useEffect(() => {
+    if (!initialized || !BACKUP_SUPPORTED) return;
+    backupScheduler.start();
+    return () => backupScheduler.stop();
+  }, [initialized]);
+
   useEffect(() => {
     // 설정을 먼저 읽는다 — loadSession() 이 알림을 띄우므로, 설정보다 늦으면
     // 카운트다운을 꺼둔 사용자에게도 시작 직후 한 번 떴다 사라진다
@@ -77,6 +93,7 @@ export default function RootLayout() {
           loadSession(),
           loadSessions(),
           notificationService.initialize(),
+          backupStore.getState().load(),
         ]),
       )
       // 진행 중인 세션이 있으면 카운트다운을 다시 띄운다.
