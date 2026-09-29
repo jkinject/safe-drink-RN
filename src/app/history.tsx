@@ -443,6 +443,8 @@ export default function HistoryScreen() {
   const sessions = sessionStore(s => s.sessions);
   const deleteSession = sessionStore(s => s.deleteSession);
   const presets = presetsStore(s => s.presets);
+  // 빈 상태 캐릭터도 홈처럼 프로필 성별을 따른다
+  const profileSex = profileStore(s => s.profile?.sex);
 
   // 기록에 저장된 아이콘이 우선. v4 이전 기록은 icon 이 없으므로
   // 예전처럼 프리셋 라벨로 되짚는다. 홈 화면(index.tsx)의 iconFor 와 같은 경로.
@@ -502,7 +504,7 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <CharacterImage state="greeting" />
+            <CharacterImage sex={profileSex} state="greeting" />
             <Text style={styles.emptyTitle}>{i18n.t('historyEmpty')}</Text>
             <Text style={styles.emptyDesc}>{i18n.t('historyEmptyDesc')}</Text>
           </View>
