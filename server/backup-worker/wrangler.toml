@@ -15,3 +15,6 @@ database_id = "ce7f8850-7bcb-46cc-a54c-9f27ecf095ad"
 # Google OAuth 클라이언트 ID(공개값이라 secret 이 아닌 vars 로 충분).
 # 토큰 aud 로 허용할 ID 를 쉼표로 여러 개 넣을 수 있다. 비워 두면 모든 요청이 401.
 GOOGLE_CLIENT_ID = "532458443458-5m5naofpqk5ko9a8h0usbv4jaki72dmt.apps.googleusercontent.com"
+# Sign in with Apple identity token 의 aud 로 허용할 앱 번들 ID(공개값). 쉼표로 여러 개. 비우면 com.safedrink.app.
+APPLE_BUNDLE_ID = "com.safedrink.app"
+# SESSION_SECRET(세션 토큰 HS256 서명 키)은 여기 넣지 말 것 — `npx wrangler secret put SESSION_SECRET` 로 등록한다.

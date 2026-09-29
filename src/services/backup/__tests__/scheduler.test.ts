@@ -2,8 +2,8 @@
  * 자동 백업 스케줄러 — 디바운스·백그라운드 flush·재시도·직렬화.
  *
  * 목(mock) 전략:
- *   - googleAuth: GoogleAuthError 등은 실물, getIdToken/signIn/signOut 만 대체
- *   - api: BackupApiError 는 실물, 네트워크 함수만 대체
+ *   - auth/google: getIdToken/signIn/signOut 만 대체(auth/index·session 은 실물 — 세션 발급 경로 포함)
+ *   - api: BackupApiError 는 실물, 네트워크 함수(세션 발급 포함)만 대체
  *   - snapshot: build/apply 를 대체 (실제 스토어·DB 를 끌어오지 않도록)
  *   - AsyncStorage: 루트 __mocks__ 인메모리 구현 (backupStorage 는 실물)
  *   - 타이머: jest fake timers, AppState: 주입한 가짜 이미터
@@ -13,8 +13,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let mockApplying = false;
 
-jest.mock('../../googleAuth', () => ({
-  ...jest.requireActual('../../googleAuth'),
+jest.mock('../../auth/google', () => ({
+  configure: jest.fn(),
   getIdToken: jest.fn(async () => 'id-token'),
   signIn: jest.fn(async () => null),
   signOut: jest.fn(async () => {}),
@@ -25,6 +25,13 @@ jest.mock('../api', () => ({
   fetchBackup: jest.fn(async () => null),
   uploadBackup: jest.fn(async () => ({ updatedAt: 1000 })),
   deleteBackup: jest.fn(async () => {}),
+  createSession: jest.fn(async () => ({
+    sessionToken: 'session-token',
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    sub: 'sub-1',
+    email: null,
+    provider: 'google',
+  })),
 }));
 
 jest.mock('../snapshot', () => ({
@@ -72,7 +79,7 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-const ACCOUNT = { sub: 'sub-1', email: 'a@example.com' };
+const ACCOUNT = { sub: 'sub-1', email: 'a@example.com', provider: 'google' as const };
 
 function resetStore(linked: boolean) {
   backupStore.setState({

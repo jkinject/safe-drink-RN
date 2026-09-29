@@ -17,7 +17,7 @@ import * as notificationService from '@/services/notifications';
 import * as adsService from '@/services/ads';
 import { ADS_SUPPORTED } from '@/config/ads';
 import { BACKUP_SUPPORTED } from '@/config/backup';
-import * as googleAuth from '@/services/googleAuth';
+import * as auth from '@/services/auth';
 import * as backupScheduler from '@/services/backup/scheduler';
 import { useOtaUpdates } from '@/hooks/useOtaUpdates';
 
@@ -69,9 +69,9 @@ export default function RootLayout() {
     };
   }, [loadPurchase, initializePurchase]);
 
-  // Google 로그인 SDK 초기화 — 백업이 꺼진 빌드에서는 네이티브 모듈을 건드리지 않는다
+  // 백업 로그인 SDK 초기화(Google. Apple 은 초기화 불필요) — 백업이 꺼진 빌드에서는 네이티브 모듈을 건드리지 않는다
   useEffect(() => {
-    if (BACKUP_SUPPORTED) googleAuth.configure();
+    if (BACKUP_SUPPORTED) auth.configure();
   }, []);
 
   // 자동 백업: 연동 상태를 읽은 뒤(init 완료) AppState 구독·못 올린 변경 재시도를 시작한다

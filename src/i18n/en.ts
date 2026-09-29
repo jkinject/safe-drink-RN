@@ -75,7 +75,7 @@ const en = {
   onboardingWelcome: 'To use Safedrink,\nplease enter your basic info.',
   onboardingSave: 'Save & Start',
   onboardingTipText: 'Accurate basic info is where the calculation begins!',
-  onboardingPrivacyNote: 'By default, your data stays on this device.\nLink your Google Account to back it up to our server.',
+  onboardingPrivacyNote: 'By default, your data stays on this device.\nLink an account to back it up to our server.',
   onboardingHeightHint: 'e.g. 175',
   onboardingWeightHint: 'e.g. 70',
   onboardingBirthYearHint: 'e.g. 1990',
@@ -327,6 +327,13 @@ const en = {
   backupAccountMismatch: "That's a different account. Sign in with the linked account.",
   onboardingRestoreTitle: 'Have records from before?',
   onboardingRestoreSubtitle: 'Restore with your Google Account',
+  // ── Sign in with Apple (iOS) — the native Apple button uses system copy; appleContinue is the accessibility label
+  appleContinue: 'Continue with Apple',
+  backupAppleAccount: 'Apple account',
+  backupProviderNote: 'Google and Apple backups are kept separately.',
+  backupReauthApple: 'Reconnect your Apple account',
+  backupNoneLinkedApple: 'Your Apple account will stay linked.',
+  onboardingRestoreSubtitleApple: 'Restore with your Apple or Google account',
 };
 
 export default en;

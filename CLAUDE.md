@@ -48,7 +48,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - EAS 프로젝트: `@jkinject/safe-drink-rn` (projectId `d4523f48-fc64-42d2-a324-64a6e6b6cee0`)
 - runtimeVersion 정책: `appVersion` (app.json `version`) — **네이티브 모듈 추가/변경 시 version 올리고 새 바이너리 배포 필수** (OTA는 JS/에셋만 전달)
 - **런타임 1.1.1 사용자에게 main 을 OTA 하지 말 것.** 1.2.0 부터 main 이 광고·결제 네이티브 모듈을 import 하므로, 1.1.1 바이너리에 그 번들이 가면 시작 시 죽는다. 1.1.1 사용자에게 꼭 필요한 수정은 `4fe17e9`(1.1.1 마지막 커밋) 기준 브랜치에서 따로 게시한다. 정상 게시는 런타임으로 자동 분리되니 그냥 `--channel production` 이면 된다.
-- **런타임 1.2.x 사용자에게도 main 을 OTA 하지 말 것.** 1.3.0 부터 main 이 google-signin 네이티브 모듈을 최상위 import 하므로(_layout → googleAuth) 1.2.x 바이너리(Android 프로덕션·iOS 1.2.2 심사 중)에 가면 시작 시 죽는다. 1.2.x 핫픽스는 `06c07d2`(1.2.2 마지막 커밋) 기준 브랜치에서 게시한다.
+- **런타임 1.2.x 사용자에게도 main 을 OTA 하지 말 것.** 1.3.0 부터 main 이 google-signin 네이티브 모듈을 최상위 import 하므로(_layout → services/auth) 1.2.x 바이너리(Android 프로덕션·iOS 1.2.2 심사 중)에 가면 시작 시 죽는다. 1.2.x 핫픽스는 `06c07d2`(1.2.2 마지막 커밋) 기준 브랜치에서 게시한다.
 - 채널: development / preview / production (eas.json)
 - 시작 시 자동 확인·즉시 적용: `src/hooks/useOtaUpdates.ts` (루트 레이아웃에서 호출)
 - 상세: `docs/OTA-UPDATE.md`
@@ -76,6 +76,7 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - 데이터 저장 성공 직후에는 반드시 `notifyBackupChange()` 를 부른다(스토어 add/update/delete/save 계열). `load()` 류에서는 부르지 않는다. 복원 중(`isApplyingSnapshot()`)에는 무시된다.
 - 복원은 로컬 전체 교체(병합 금지). `db.importAll` 이 단일 트랜잭션 + sqlite_sequence 보정. 스냅샷 필드를 추가하면 `SNAPSHOT_SCHEMA_VERSION` 을 올리고 `validateSnapshot` 의 마이그레이션에 구버전 변환을 넣는다.
 - Google 로그인은 `@react-native-google-signin/google-signin` **16.1.5 고정**(무료 Original 흐름). app.json plugin 항목 없음(Android 는 autolinking 만으로 됨; iOS 붙일 때 `iosUrlScheme` 필요). OAuth Android 클라이언트는 SHA-1 하나당 하나 — debug·Play 서명(신·구)·업로드 키 4개(`docs/BACKUP.md`).
+- **iOS 는 Google·Apple 두 제공자.** App Store 지침 4.8 때문에 Google 옆에 `expo-apple-authentication` 로 Sign in with Apple 을 같이 제공한다(Apple `sub` 는 `apple:` 접두사로 저장, 두 제공자 백업은 서로 별개). Apple 로그인은 조용한 재인증이 없어 최초 로그인 때만 서버가 세션 토큰(180일)을 발급해 기기에 보관하고 이후 요청 인증에 쓴다. iOS 의 `BACKUP_SUPPORTED` 는 `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` 까지 있어야 켜진다(웹 클라이언트 ID 만으로는 부족). 상세: `docs/BACKUP.md` "iOS" 절.
 - 서버 401 = 재로그인(`reauth`), 503 = 재시도. `lastBackupAt` 은 서버 200 뒤에만 갱신.
 - **`expo prebuild` 는 `org.gradle.jvmargs` 도 되돌린다** → Metaspace 고갈로 assembleRelease 가 죽는다. prebuild 후 `-Xmx4g -XX:MaxMetaspaceSize=1g` 를 다시 넣을 것(위 prebuild 항목의 세 가지에 더해 네 번째).
 - 백업을 켜면 Play 데이터 안전 설문·개인정보처리방침·계정 삭제 URL(`docs/delete-account.html`)이 함께 바뀌어야 한다 — `store/play-listing.md` 하단 체크리스트.

@@ -11,7 +11,7 @@
 
 - 코드: `src/config/backup.ts`. 둘 중 하나라도 비면 `BACKUP_SUPPORTED=false` → 백업 UI·SDK 초기화 전부 건너뛰고 1.2.x 와 똑같이 동작한다.
 - 형식은 `.env.example` 참고. 값을 바꾼 뒤 로컬 릴리스 APK 를 다시 빌드할 땐 `android/app/build/generated/assets`·`generated/res` 를 지울 것(CLAUDE.md).
-- 앱 서비스: `src/services/googleAuth.ts` — `configure()` / `signIn()` / `getIdToken()` / `signOut()`, 에러는 `GoogleAuthError.code`(`cancelled | reauth | network | unknown`).
+- 앱 인증 계층: `src/services/auth/` — `google.ts`(Google, Android·iOS), `apple.ts`(Sign in with Apple, iOS), `session.ts`(서버 세션 토큰 교환), `index.ts` 의 `configure()` / `signIn(provider)` / `signOut(provider)` / `getAccessToken(account)` / `withAccessToken(account, fn)`. 에러는 `AuthError.code`(`cancelled | reauth | network | unavailable | unknown`).
   - `getIdToken()` 은 `getTokens()` 가 아니라 `signInSilently()` 로 받는다. Android `getTokens()` 는 마지막 로그인 때 캐시된 idToken(유효 1시간)을 그대로 돌려줘 만료돼 있을 수 있고, 쓰지 않는 액세스 토큰까지 따로 받는다.
   - `sub` 는 idToken payload 를 디코드해 읽기만 한다. 서명·`aud`·`iss`·`exp` 검증은 Worker 가 한다.
 - jest: 루트 `__mocks__/@react-native-google-signin/google-signin.ts` 가 자동으로 대체한다(기본 응답 = 로그인 안 됨).
@@ -30,7 +30,7 @@
 | prebuild 후 유지 | O — Android 는 autolinking 만으로 붙는다(아래 참고) | O |
 
 결론: 백그라운드 자동 백업에 "UI 없이 신선한 ID 토큰"이 필요해서 `signInSilently()` 가 있는 google-signin 이 맞다.
-Original Google Sign-In(`GoogleSignInClient`)은 Google 이 deprecated 로 표시했지만 동작은 유지되고 있다. 막히면 유료 판(Credential Manager)이나 Credential Manager 를 직접 감싼 로컬 Expo 모듈로 옮긴다 — 앱은 `googleAuth.ts` 만 바꾸면 된다.
+Original Google Sign-In(`GoogleSignInClient`)은 Google 이 deprecated 로 표시했지만 동작은 유지되고 있다. 막히면 유료 판(Credential Manager)이나 Credential Manager 를 직접 감싼 로컬 Expo 모듈로 옮긴다 — 앱은 `src/services/auth/google.ts` 만 바꾸면 된다.
 
 ### app.json config plugin 을 넣지 않은 이유
 
@@ -101,12 +101,50 @@ EAS 가 관리하는 키이므로 `npx eas-cli credentials -p android` → produ
 
 등록 후 반영까지 수 분~수십 분 걸릴 수 있다. `DEVELOPER_ERROR` 가 계속 나면 ① 패키지명 ② 설치된 APK 의 실제 서명(`apksigner verify --print-certs app.apk`) ③ webClientId 가 **웹** 클라이언트 ID 인지 ④ 테스트 사용자 등록 여부를 순서대로 확인.
 
+## iOS (Sign in with Apple)
+
+- **왜 필요한가(App Store 지침 4.8)**: 제3자 로그인(Google)을 제공하면서 계정을 만들지 않고는
+  앱의 핵심 기능을 쓸 수 없게 만드는 경우, Apple 은 동등한 **Sign in with Apple** 을 나란히
+  제공하도록 요구한다. Safedrink 는 로그인이 선택(백업 전용)이라 엄밀히는 예외 대상일 수 있지만,
+  안전하게 Google 옆에 Apple 로그인 버튼을 함께 놓는다.
+- **세션 토큰 흐름(`POST /auth/session`)**: Apple 에는 Google 의 `signInSilently()` 같은
+  무-UI 재인증이 없다 — `AppleAuthentication.signInAsync()` 는 호출할 때마다 시스템 시트를
+  띄운다. 백그라운드 자동 백업이 매번 UI 를 띄울 수 없으므로, **최초 로그인 시 한 번만** Apple의
+  identityToken 을 `POST /auth/session` 으로 서버에 보내 검증받고, 서버가 발급한 **세션
+  토큰(유효기간 180일)** 을 기기에 저장해 이후 백업 업로드·복원·삭제 요청에 Bearer 로 쓴다.
+  Google 경로는 기존과 동일하게 매 요청 `signInSilently()` 로 받은 ID 토큰을 그대로 쓴다(세션
+  토큰 없음).
+  - 서버는 Apple 의 `sub` 앞에 `apple:` 접두사를 붙여 저장한다(Google `sub` 와 네임스페이스
+    충돌 방지, 두 제공자의 백업이 서로 다른 행으로 분리되는 이유이기도 하다).
+  - 세션 토큰이 만료되거나 서버가 폐기하면 401 을 반환하며, 클라이언트는 Google 의 `reauth` 와
+    동일하게 재로그인 흐름으로 빠진다.
+- **필요한 설정**:
+  - `app.json` → `ios.usesAppleSignIn: true`
+  - `expo-apple-authentication` config plugin (plugins 배열에 추가)
+  - `@react-native-google-signin/google-signin` 의 `iosUrlScheme` — iOS Google OAuth 클라이언트
+    ID 앞부분을 역순 도메인으로(`com.googleusercontent.apps.<iOS 클라이언트 ID 앞부분>`)
+  - 환경변수 `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` — iOS 전용 Google OAuth 클라이언트 ID(웹
+    클라이언트와 별개. Android 클라이언트처럼 SHA-1 이 아니라 번들 ID 로 식별한다)
+  - Worker 환경변수: `APPLE_BUNDLE_ID`(`com.safedrink.app`, identityToken 의 `aud` 검증용),
+    `SESSION_SECRET`(세션 토큰 서명용 — `wrangler secret put SESSION_SECRET` 로 등록. plaintext
+    로 `wrangler.toml` 에 넣지 말 것)
+  - Apple Developer → App ID(`com.safedrink.app`)에 **"Sign In with Apple" capability** 추가 —
+    EAS 빌드가 프로비저닝 프로파일을 만들 때 자동으로 처리한다(수동 개입 불필요, 단 EAS 가 Apple
+    Developer 계정에 접근 권한을 갖고 있어야 한다)
+  - 시뮬레이터 테스트: Apple 로그인은 **시뮬레이터 자체 설정(설정 앱)에 Apple ID 로 로그인**되어
+    있어야 동작한다. 로그인 안 된 시뮬레이터에서는 버튼이 즉시 실패하거나 반응하지 않는다.
+- **`BACKUP_SUPPORTED` (iOS)**: iOS 에서 Google 로그인 버튼을 켜려면 `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+  까지 있어야 한다(웹 클라이언트 ID 만으로는 부족). Apple 로그인은 별도 환경변수가 필요 없고
+  `usesAppleSignIn` 플래그와 기기의 Apple 로그인 지원 여부로 노출이 결정된다. 자세한 조건은
+  `src/config/backup.ts`·CLAUDE.md 참고.
+
 ## 아키텍처
 
 ```
 앱 (Android)                          Cloudflare (무료 플랜)
 ┌──────────────────────────┐          ┌──────────────────────┐
-│ googleAuth (ID token)    │──Bearer─▶│ Worker safedrink-    │
+│ auth (Google/Apple →     │──Bearer─▶│ Worker safedrink-    │
+│   서버 세션 토큰)          │ session  │  · /auth/session      │
 │ backupStore / scheduler  │  PUT/GET │  backup              │
 │ snapshot (build/apply)   │  DELETE  │  · JWKS 서명 검증     │
 │ SQLite + AsyncStorage    │◀─JSON────│  · aud = 웹 클라이언트 │
@@ -114,7 +152,7 @@ EAS 가 관리하는 키이므로 `npx eas-cli credentials -p android` → produ
                                       └──────────────────────┘
 ```
 
-- 클라이언트: `src/services/backup/{snapshot,api,scheduler,notifyChange,format}.ts`, `src/state/backupStore.ts`, `src/storage/backupStorage.ts`, `src/services/googleAuth.ts`, UI `src/components/{google-signin-button,backup-section}.tsx`, 온보딩 `src/app/onboarding.tsx`.
+- 클라이언트: `src/services/backup/{snapshot,api,scheduler,notifyChange,format}.ts`, `src/state/backupStore.ts`, `src/storage/backupStorage.ts`, `src/services/auth/{google,apple,session,index}.ts`, UI `src/components/{google-signin-button,apple-signin-button,provider-signin-buttons,backup-section}.tsx`, 온보딩 `src/app/onboarding.tsx`.
 - 서버: `server/backup-worker/` (**Node 22 필수** — `nvm use` 후 작업). API·배포 절차는 그 안의 README.md.
 - 스냅샷 방식: 사용자당 최신본 1개. 복원 = 로컬 전체 교체(병합 없음). `schemaVersion` 으로 앞뒤 호환 판정.
 - 자동 백업: 데이터 변경 → `notifyBackupChange()` → 30초 디바운스 → 업로드. 앱이 백그라운드로 가면 즉시 flush. 업로드·복원·삭제는 mutex 로 직렬화. 로그인 안 한 사용자는 네트워크 호출 0.
@@ -183,7 +221,10 @@ KV 는 무료 쓰기가 1,000회/일(계정 전체)이라 자동 백업에 부�
 ## 알려진 제약
 
 - 스냅샷 1개: 여러 기기 동시 사용·병합 없음. 나중 백업이 이전 백업을 덮어쓴다.
-- iOS 미적용: `googleAuth` 는 Android 에서만 검증됐고 app.json 에 iOS 옵션(iosUrlScheme) 이 없다. iOS 에 붙일 때 `store/app-review-reply.md` 의 "no account" 문구도 고쳐야 한다.
+- **iOS 1.3.0 부터 적용**: Google 로그인(`iosUrlScheme`·`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`)과
+  Sign in with Apple(`expo-apple-authentication`, 세션 토큰) 을 함께 제공한다 — 위 "iOS" 절
+  참고. `store/app-review-reply.md` 상단 주의 블록에 1.2.2(계정 없음) 기준 회신을 1.3.0 제출
+  시 어떻게 갱신할지 적어 두었다.
 - 새 바이너리 필수: google-signin 은 네이티브 모듈이라 1.3.0 부터. 1.2.x 런타임에 이 번들을 OTA 하면 시작 시 죽는다(runtimeVersion=appVersion 이라 자동 분리됨).
 - 종단간 암호화 없음(전송 HTTPS, 저장 D1). 필요하면 후속.
 - Play 데이터 안전 설문·개인정보처리방침·계정 삭제 URL 은 `store/play-listing.md` 체크리스트와 `docs/delete-account.html` 참고.

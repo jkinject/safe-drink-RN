@@ -11,7 +11,7 @@
  * 호출 시점에 require 로 가져온다(로드 시점 순환 방지).
  */
 import { AppState, type AppStateStatus } from 'react-native';
-import { getIdToken, GoogleAuthError } from '../googleAuth';
+import { AuthError, withAccessToken } from '../auth';
 import * as backupStorage from '../../storage/backupStorage';
 import { BackupApiError, uploadBackup } from './api';
 import { buildSnapshot, isApplyingSnapshot, validateSnapshot } from './snapshot';
@@ -114,8 +114,8 @@ export function flush(): void {
 /** 예외를 lastError 코드로 바꾼다 */
 export function toBackupErrorCode(e: unknown): BackupErrorCode {
   if (e instanceof BackupApiError) return e.code;
-  if (e instanceof GoogleAuthError) {
-    // 네트워크 외 로그인 실패(권한 회수·Play 서비스·설정 오류)는 다시 로그인이 해법이다
+  if (e instanceof AuthError) {
+    // 네트워크 외 로그인 실패(권한 회수·세션 만료·Play 서비스·설정 오류)는 다시 로그인이 해법이다
     return e.code === 'network' ? 'network' : 'reauth';
   }
   return 'server';
@@ -130,11 +130,11 @@ export function upload(): Promise<boolean> {
   return runExclusive(async () => {
     const st = store();
     const s = st.getState();
+    const account = s.account;
     // 차례를 기다리는 동안 연동이 해제됐거나 복원/교체 선택을 기다리는 중
-    if (!s.account || s.awaitingDecision) return false;
+    if (!account || s.awaitingDecision) return false;
     st.setState({ status: 'backingUp' });
     try {
-      const idToken = await getIdToken();
       const seq = changeSeq;
       const snapshot = await buildSnapshot();
       // 복원할 때 거부될 스냅샷은 올리지 않는다 — 서버의 정상 백업을 못 푸는 백업으로 덮게 된다.
@@ -145,7 +145,9 @@ export function upload(): Promise<boolean> {
         st.setState({ lastError: 'invalid' });
         return false;
       }
-      const { updatedAt } = await uploadBackup(idToken, snapshot);
+      // 토큰(서버 세션)은 스냅샷을 만든 뒤에 받는다 — 세션 발급이 오래 걸려도 그 사이 변경은
+      // seq 뒤라 dirty 로 남는다
+      const { updatedAt } = await withAccessToken(account, token => uploadBackup(token, snapshot));
       // lastBackupAt 은 서버 200 뒤에만 바뀐다
       const dirty = seq !== changeSeq;
       st.setState({ lastBackupAt: updatedAt, dirty, lastError: null });

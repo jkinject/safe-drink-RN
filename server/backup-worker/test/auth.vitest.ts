@@ -1,6 +1,24 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { AuthError, parseClientIds, verifyGoogleIdToken } from '../src/auth';
-import { baseClaims, CLIENT_ID, makeKey, NOW_MS, NOW_SEC, signToken, stubJwks, type TestKey } from './helpers';
+import {
+  AuthError,
+  parseAppleBundleIds,
+  parseClientIds,
+  peekToken,
+  verifyAppleIdToken,
+  verifyGoogleIdToken,
+} from '../src/auth';
+import {
+  APPLE_BUNDLE_ID,
+  appleClaims,
+  baseClaims,
+  CLIENT_ID,
+  makeKey,
+  NOW_MS,
+  NOW_SEC,
+  signToken,
+  stubJwks,
+  type TestKey,
+} from './helpers';
 
 let key: TestKey;
 let otherKey: TestKey;
@@ -101,5 +119,62 @@ describe('verifyGoogleIdToken', () => {
     const jwks = stubJwks([key.jwk]);
     await verify(await signToken(key, baseClaims()), jwks);
     expect(jwks.calls).toEqual([false]);
+  });
+});
+
+describe('verifyAppleIdToken', () => {
+  function verifyApple(token: string, bundleIds = [APPLE_BUNDLE_ID]) {
+    return verifyAppleIdToken(token, { bundleIds, fetchJwks: stubJwks([key.jwk]), now: () => NOW_MS });
+  }
+
+  it('유효 토큰은 sub·email 을 돌려준다 (email_verified 가 문자열 "true" 여도)', async () => {
+    const token = await signToken(key, appleClaims());
+    await expect(verifyApple(token)).resolves.toEqual({
+      sub: '001234.abcdef0123456789.0123',
+      email: 'abc123@privaterelay.appleid.com',
+    });
+  });
+
+  it('email 이 없으면(두 번째 로그인부터) null', async () => {
+    const token = await signToken(key, appleClaims({ email: undefined, email_verified: undefined }));
+    await expect(verifyApple(token)).resolves.toMatchObject({ email: null });
+  });
+
+  it('aud 불일치는 거부', async () => {
+    const token = await signToken(key, appleClaims({ aud: 'com.other.app' }));
+    await expect(verifyApple(token)).rejects.toThrow('bad-aud');
+  });
+
+  it('iss 불일치(Google iss)는 거부', async () => {
+    const token = await signToken(key, appleClaims({ iss: 'https://accounts.google.com' }));
+    await expect(verifyApple(token)).rejects.toThrow('bad-iss');
+  });
+
+  it('Google 검증기는 Apple 토큰을 거부', async () => {
+    const token = await signToken(key, appleClaims({ aud: CLIENT_ID }));
+    await expect(verify(token)).rejects.toThrow('bad-iss');
+  });
+
+  it('만료(10분 수명 지남)는 거부', async () => {
+    const token = await signToken(key, appleClaims({ exp: NOW_SEC - 61 }));
+    await expect(verifyApple(token)).rejects.toThrow('expired');
+  });
+
+  it('APPLE_BUNDLE_ID 미설정이면 com.safedrink.app, 쉼표로 여러 개', () => {
+    expect(parseAppleBundleIds(undefined)).toEqual(['com.safedrink.app']);
+    expect(parseAppleBundleIds(' ')).toEqual(['com.safedrink.app']);
+    expect(parseAppleBundleIds('a.b, c.d')).toEqual(['a.b', 'c.d']);
+  });
+});
+
+describe('peekToken', () => {
+  it('서명 확인 없이 alg·iss 만 읽는다', async () => {
+    const token = await signToken(key, appleClaims());
+    expect(peekToken(token)).toEqual({ alg: 'RS256', iss: 'https://appleid.apple.com' });
+  });
+
+  it('형식이 깨지면 AuthError', () => {
+    expect(() => peekToken('a.b')).toThrow(AuthError);
+    expect(() => peekToken('a.b.c')).toThrow(AuthError);
   });
 });

@@ -1,0 +1,3 @@
+# `wrangler dev` 용 로컬 비밀값. 이 파일을 .dev.vars 로 복사해 채운다(.dev.vars 는 gitignore).
+# 생성: openssl rand -base64 48
+SESSION_SECRET=

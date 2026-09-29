@@ -7,15 +7,20 @@ import { Icon, type IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { SettingsRow, SettingsSection } from '@/components/settings-list';
 import { GoogleSignInButton } from '@/components/google-signin-button';
+import { AppleSignInButton, useAppleSignInAvailable } from '@/components/apple-signin-button';
+import { ProviderSignInButtons } from '@/components/provider-signin-buttons';
 import { actionSheet, alert, confirm } from '@/components/dialog';
 import { backupStore, type RemoteBackupInfo } from '@/state/backupStore';
+import type { BackupAccount } from '@/storage/backupStorage';
+import type { AuthProvider } from '@/services/auth';
 import { formatAbsolute, formatLastBackup } from '@/services/backup/format';
 import { i18n } from '@/i18n';
 
 /**
  * 설정 탭 "백업" 섹션 (시안 .omc/design/backup/04·05, 확인창 06·07).
  *
- * 미연동이면 설명 + Google 버튼 하나, 연동되면 계정·상태 블록 + 동작 행 3개.
+ * 미연동이면 설명 + 제공자 버튼(Android: Google / iOS: Apple 위·Google 아래),
+ * 연동되면 계정·상태 블록 + 동작 행 3개.
  * 모든 네트워크 동작은 backupStore 액션이 맡고(예외 없음, 결과값으로 알림),
  * 여기서는 결과에 맞는 확인창·알림만 띄운다.
  */
@@ -33,6 +38,16 @@ const RELATIVE_TICK_MS = 30_000;
 const ICON_CIRCLE = IconSize.lg + Space.md * 2;
 
 const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
+
+/**
+ * 계정 표시 문구 — 이메일이 있으면 이메일, Apple 이 이메일을 주지 않았으면(가리기·미제공) "Apple 계정".
+ * Google 은 이메일이 없으면 빈 값(상태 줄이 맨 위로 올라온다).
+ */
+function accountLabel(account: Pick<BackupAccount, 'email' | 'provider'> | null | undefined): string | null {
+  if (!account) return null;
+  if (account.email) return account.email;
+  return account.provider === 'apple' ? t('backupAppleAccount') : null;
+}
 
 function ok(message: string) {
   return alert({ message, confirmLabel: t('dialogOk') });
@@ -76,14 +91,14 @@ async function showRestoreResult(result: 'restored' | 'incompatible' | 'error') 
 }
 
 /**
- * 미연동 → Google 연결.
+ * 미연동 → 제공자(Google·Apple) 연결.
  * 서버에 이미 백업이 있으면 덮어쓰기 전에 반드시 고르게 한다(복원 / 이 기기로 교체 / 취소).
  * 취소하면 연동하지 않은 상태로 돌아간다 — 어느 쪽도 고르지 않았는데 자동 업로드가
  * 서버 백업을 지우면 안 되기 때문이다.
  */
-async function handleSignIn() {
+async function handleSignIn(provider: AuthProvider) {
   const store = backupStore.getState();
-  const result = await store.signInAndCheck();
+  const result = await store.signInAndCheck(provider);
 
   if (result === 'cancelled') return;
   if (result === 'error') {
@@ -108,7 +123,7 @@ async function handleSignIn() {
     // 내용을 복원하지 못하니 "프로필·언어도 복원해요" 안내는 뺀다(이메일+일시만)
     const overwrite = await confirm({
       title: t('backupFoundTitle'),
-      message: remoteLines(remote, account?.email).join('\n'),
+      message: remoteLines(remote, accountLabel(account)).join('\n'),
       confirmLabel: t('backupOverwriteRemote'),
       cancelLabel: t('settingsCancel'),
       destructive: true,
@@ -120,7 +135,7 @@ async function handleSignIn() {
 
   const choice = await actionSheet({
     title: t('backupFoundTitle'),
-    message: [...remoteLines(remote, account?.email), t('backupFoundIncludes')].join('\n'),
+    message: [...remoteLines(remote, accountLabel(account)), t('backupFoundIncludes')].join('\n'),
     actions: [
       { label: t('backupRestoreAction') },
       // 서버 백업을 이 기기 데이터로 덮는다 — 되돌릴 수 없으니 빨갛게
@@ -131,14 +146,14 @@ async function handleSignIn() {
 
   if (choice === 0) {
     // 설정 탭까지 온 기기에는 로컬 데이터가 있다 — 06 확인창을 한 번 더 거친다
-    if (!(await confirmReplace(remote, account?.email))) {
+    if (!(await confirmReplace(remote, accountLabel(account)))) {
       await backupStore.getState().unlinkLocal();
       return;
     }
     const result = await backupStore.getState().restoreFromRemote();
     await showRestoreResult(result);
     // 실패하면 선택 대기(awaitingDecision)가 남아 섹션이 스피너로 굳는다 — 미연동으로 되돌린다.
-    // 다시 시도하려면 Google 버튼을 한 번 더 누르면 된다(온보딩 카드와 같은 처리)
+    // 다시 시도하려면 로그인 버튼을 한 번 더 누르면 된다(온보딩 카드와 같은 처리)
     if (result !== 'restored') await backupStore.getState().unlinkLocal();
   } else if (choice === 1) {
     await backupStore.getState().backupNow();
@@ -183,7 +198,7 @@ async function handleRestore() {
     return;
   }
 
-  if (!(await confirmReplace(remote, account?.email))) return;
+  if (!(await confirmReplace(remote, accountLabel(account)))) return;
   await showRestoreResult(await backupStore.getState().restoreFromRemote());
 }
 
@@ -192,7 +207,7 @@ async function handleDelete() {
   const { account } = backupStore.getState();
   const confirmed = await confirm({
     title: t('backupDeleteTitle'),
-    message: [account?.email ?? '', t('backupDeleteBody'), t('backupDeleteResult')]
+    message: [accountLabel(account) ?? '', t('backupDeleteBody'), t('backupDeleteResult')]
       .filter(Boolean)
       .join('\n\n'),
     confirmLabel: t('backupDeleteAction'),
@@ -204,6 +219,7 @@ async function handleDelete() {
   await ok(t(deleted ? 'backupDeleted' : 'backupDeleteFailed'));
 }
 
+/** 재인증 — 연동 계정의 제공자로 다시 로그인한다(스토어가 account.provider 를 쓴다) */
 async function handleReconnect() {
   const result = await backupStore.getState().reconnect();
   if (result === 'mismatch') await ok(t('backupAccountMismatch'));
@@ -220,12 +236,14 @@ function BackupSectionBody() {
   const account = backupStore(s => s.account);
   const awaitingDecision = backupStore(s => s.awaitingDecision);
   const status = backupStore(s => s.status);
+  // Apple 버튼이 함께 보일 때만 "두 백업은 별개" 각주를 단다
+  const appleAvailable = useAppleSignInAvailable() === true;
 
   return (
     <SettingsSection title={t('backupSectionTitle')}>
       {/* 기존 백업을 찾아 선택을 기다리는 동안은 아직 연동 전이다 — 계정 블록을 미리 보이지 않는다 */}
       {account && !awaitingDecision ? (
-        <LinkedCard email={account.email} />
+        <LinkedCard account={account} />
       ) : (
         <View style={styles.introBlock}>
           <View style={styles.headRow}>
@@ -235,22 +253,26 @@ function BackupSectionBody() {
               <Text style={styles.introDesc}>{t('backupIntroDesc')}</Text>
             </View>
           </View>
-          <GoogleSignInButton
-            label={t('googleContinue')}
+          <ProviderSignInButtons
             loading={status === 'signingIn' || status === 'checking' || awaitingDecision}
-            onPress={() => {
-              void handleSignIn();
-            }}
+            onSignIn={handleSignIn}
           />
-          <Text style={styles.note}>{t('backupOptionalNote')}</Text>
+          <View style={styles.notes}>
+            <Text style={styles.note}>{t('backupOptionalNote')}</Text>
+            {appleAvailable && <Text style={styles.note}>{t('backupProviderNote')}</Text>}
+          </View>
         </View>
       )}
     </SettingsSection>
   );
 }
 
-/** email 은 Google 이 주지 않았을 수 있다(null) — 그땐 상태 줄이 맨 위로 올라온다 */
-function LinkedCard({ email }: { email: string | null }) {
+/**
+ * email 은 제공자가 주지 않았을 수 있다(null). Apple 이면 "Apple 계정" 으로 대신 보이고,
+ * Google 이면 상태 줄이 맨 위로 올라온다.
+ */
+function LinkedCard({ account }: { account: BackupAccount }) {
+  const label = accountLabel(account);
   const status = backupStore(s => s.status);
   const lastBackupAt = backupStore(s => s.lastBackupAt);
   const lastError = backupStore(s => s.lastError);
@@ -270,17 +292,17 @@ function LinkedCard({ email }: { email: string | null }) {
         <View style={styles.headRow}>
           <IconCircle name={lastError ? 'cloud' : 'cloudCheck'} />
           <View style={styles.headText}>
-            {!!email && (
+            {!!label && (
               <Text
                 style={styles.email}
                 numberOfLines={1}
                 ellipsizeMode="middle"
-                accessibilityLabel={email}
+                accessibilityLabel={label}
               >
-                {email}
+                {label}
               </Text>
             )}
-            <StatusLine />
+            <StatusLine provider={account.provider} />
             <Text style={styles.meta}>
               {formatLastBackup(lastBackupAt, now, t, i18n.locale)}
             </Text>
@@ -288,16 +310,24 @@ function LinkedCard({ email }: { email: string | null }) {
         </View>
         <Text style={styles.meta}>{t('backupScope')}</Text>
 
-        {lastError === 'reauth' && (
-          <GoogleSignInButton
-            label={t('googleContinue')}
-            loading={status === 'signingIn'}
-            disabled={busy && status !== 'signingIn'}
-            onPress={() => {
-              void handleReconnect();
-            }}
-          />
-        )}
+        {/* 재연결은 연동 계정의 제공자 버튼 하나만 — 다른 제공자로는 같은 백업에 닿을 수 없다 */}
+        {lastError === 'reauth' &&
+          (account.provider === 'apple' ? (
+            <AppleSignInButton
+              loading={status === 'signingIn'}
+              disabled={busy && status !== 'signingIn'}
+              onPress={handleReconnect}
+            />
+          ) : (
+            <GoogleSignInButton
+              label={t('googleContinue')}
+              loading={status === 'signingIn'}
+              disabled={busy && status !== 'signingIn'}
+              onPress={() => {
+                void handleReconnect();
+              }}
+            />
+          ))}
       </View>
 
       {/* 진행 중에는 세 동작을 모두 막는다 — 스토어도 idle 이 아니면 거절하므로
@@ -333,7 +363,7 @@ function LinkedCard({ email }: { email: string | null }) {
 }
 
 /** 이메일 아래 한 줄 — 진행 > 재인증 > 실패 > 대기 > 정상 순으로 하나만 */
-function StatusLine() {
+function StatusLine({ provider }: { provider: AuthProvider }) {
   const status = backupStore(s => s.status);
   const lastError = backupStore(s => s.lastError);
   const dirty = backupStore(s => s.dirty);
@@ -362,7 +392,11 @@ function StatusLine() {
   }
 
   if (lastError === 'reauth') {
-    return <Text style={[styles.status, styles.statusNavy]}>{t('backupReauth')}</Text>;
+    return (
+      <Text style={[styles.status, styles.statusNavy]}>
+        {t(provider === 'apple' ? 'backupReauthApple' : 'backupReauth')}
+      </Text>
+    );
   }
 
   if (lastError) {
@@ -431,6 +465,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   introDesc: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: 18 },
+  notes: { gap: Space.xxs },
   note: { fontSize: Font.caption, color: AppColors.sub, textAlign: 'center' },
   email: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },

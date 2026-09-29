@@ -18,7 +18,8 @@
         ],
         "CFBundleDevelopmentRegion": "en"
       },
-      "appleTeamId": "GZNYLNJY9P"
+      "appleTeamId": "GZNYLNJY9P",
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "com.safedrink.app",
@@ -85,7 +86,14 @@
       ],
       "expo-iap",
       "expo-sharing",
-      "expo-live-activity"
+      "expo-live-activity",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.532458443458-3c7l64e8elprbhklh1ffc0hkc5tglhas"
+        }
+      ]
     ],
     "updates": {
       "enabled": true,

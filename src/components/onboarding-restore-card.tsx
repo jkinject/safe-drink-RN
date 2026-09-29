@@ -1,5 +1,6 @@
 /**
- * 온보딩 "이전에 쓰던 기록이 있나요?" 카드 — Google 계정으로 기존 백업을 찾아 복원한다.
+ * 온보딩 "이전에 쓰던 기록이 있나요?" 카드 — Google(또는 iOS 의 Apple) 계정으로 기존 백업을 찾아 복원한다.
+ * 버튼 배치는 ProviderSignInButtons(iOS: Apple 위·Google 아래 / Android: Google 하나).
  *
  * 입력 검증 없이 바로 진입한다. 흐름:
  * - 백업 있음 → 확인창(이메일·일시·개수) → 복원. 프로필이 생기면 루트 레이아웃의
@@ -19,7 +20,10 @@ import { Space, Radius, Font, Weight } from '@/constants/tokens';
 import { BACKUP_SUPPORTED } from '@/config/backup';
 import { formatAbsolute } from '@/services/backup/format';
 import { alert, confirm } from '@/components/dialog';
-import { GoogleSignInButton } from '@/components/google-signin-button';
+import { ProviderSignInButtons } from '@/components/provider-signin-buttons';
+import { useAppleSignInAvailable } from '@/components/apple-signin-button';
+import type { AuthProvider } from '@/services/auth';
+import type { BackupAccount } from '@/storage/backupStorage';
 import { Text } from '@/components/typography';
 
 export function OnboardingRestoreCard() {
@@ -30,18 +34,19 @@ export function OnboardingRestoreCard() {
   // 확인창이 떠 있는 동안은 status 가 idle 이라 스토어 상태만으로는 막을 수 없다.
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  const appleAvailable = useAppleSignInAvailable() === true;
 
   if (!BACKUP_SUPPORTED) return null;
 
   const loading =
     busy || status === 'signingIn' || status === 'checking' || status === 'restoring';
 
-  async function handlePress() {
+  async function handleSignIn(provider: AuthProvider) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
     try {
-      await runRestoreFlow(locale);
+      await runRestoreFlow(provider, locale);
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -51,22 +56,30 @@ export function OnboardingRestoreCard() {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{i18n.t('onboardingRestoreTitle')}</Text>
-      <Text style={styles.subtitle}>{i18n.t('onboardingRestoreSubtitle')}</Text>
+      <Text style={styles.subtitle}>
+        {i18n.t(appleAvailable ? 'onboardingRestoreSubtitleApple' : 'onboardingRestoreSubtitle')}
+      </Text>
       <View style={styles.buttonWrap}>
-        <GoogleSignInButton
-          label={i18n.t('googleContinue')}
-          loading={loading}
-          onPress={handlePress}
-        />
+        <ProviderSignInButtons loading={loading} onSignIn={handleSignIn} />
       </View>
+      {appleAvailable && <Text style={styles.note}>{i18n.t('backupProviderNote')}</Text>}
     </View>
   );
 }
 
+/** 이메일이 없으면(Apple 이메일 가리기·미제공) "Apple 계정" 으로 대신 보인다 */
+function accountLabel(
+  email: string | null | undefined,
+  account: Pick<BackupAccount, 'provider'> | null | undefined,
+): string {
+  if (email) return email;
+  return account?.provider === 'apple' ? i18n.t('backupAppleAccount') : '';
+}
+
 /** 로그인 → 백업 조회 → 결과별 안내/복원. 스토어 액션은 throw 하지 않는다 */
-async function runRestoreFlow(locale: string): Promise<void> {
+async function runRestoreFlow(provider: AuthProvider, locale: string): Promise<void> {
   const store = backupStore.getState();
-  const result = await store.signInAndCheck();
+  const result = await store.signInAndCheck(provider);
 
   if (result === 'cancelled') return;
 
@@ -82,10 +95,14 @@ async function runRestoreFlow(locale: string): Promise<void> {
   if (result === 'none') {
     // 연동은 유지된다 — 입력을 마치고 저장하면 그때부터 자동 백업
     const { remote, account } = backupStore.getState();
-    const email = remote?.email ?? account?.email ?? '';
+    const email = accountLabel(remote?.email ?? account?.email, account);
     await alert({
       title: i18n.t('backupNoneTitle'),
-      message: [email, i18n.t('backupNoneDesc'), i18n.t('backupNoneLinked')]
+      message: [
+        email,
+        i18n.t('backupNoneDesc'),
+        i18n.t(account?.provider === 'apple' ? 'backupNoneLinkedApple' : 'backupNoneLinked'),
+      ]
         .filter(Boolean)
         .join('\n\n'),
       confirmLabel: i18n.t('dialogOk'),
@@ -116,7 +133,7 @@ async function runRestoreFlow(locale: string): Promise<void> {
     return;
   }
 
-  const email = remote.email ?? account?.email ?? '';
+  const email = accountLabel(remote.email ?? account?.email, account);
   const summary = [
     email,
     i18n.t('backupFoundLastAt', { date: formatAbsolute(remote.updatedAt, locale) }),
@@ -172,4 +189,11 @@ const styles = StyleSheet.create({
     marginTop: Space.xxs,
   },
   buttonWrap: { marginTop: Space.md },
+  // 미연동 설정 카드의 각주와 같은 모양(caption·sub·가운데)
+  note: {
+    fontSize: Font.caption,
+    color: AppColors.sub,
+    textAlign: 'center',
+    marginTop: Space.sm,
+  },
 });

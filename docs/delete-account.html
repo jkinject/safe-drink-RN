@@ -48,19 +48,21 @@
 
 <div class="card">
   <h1>Safedrink 계정 및 백업 데이터 삭제 요청</h1>
-  <p class="meta">최종 수정일: 2026년 9월 28일</p>
+  <p class="meta">최종 수정일: 2026년 9월 29일</p>
 
   <div class="lead">
     Safedrink는 로그인 없이도 모든 기능을 사용할 수 있습니다. 아래 삭제 요청은 <strong>설정에서
-    Google 계정 연동 백업을 사용한 경우</strong>에만 해당합니다. 자세한 내용은
+    Google 계정 연동 백업 또는 (iOS) Apple로 로그인해 백업을 사용한 경우</strong>에만 해당합니다.
+    두 제공자 모두 아래와 같은 동일한 절차로 삭제할 수 있습니다. 자세한 내용은
     <a href="privacy-policy.html">개인정보처리방침</a>을 참고하십시오.
   </div>
 
   <h2>① 앱이 설치되어 있는 경우 — 앱에서 직접 삭제</h2>
   <p>
     앱 → <strong>설정 → 백업 → "백업 삭제 및 연동 해제"</strong>를 누르면 서버에 저장된 백업이
-    즉시 삭제되고 Google 계정 연동이 해제됩니다. 기기에 저장된 음주 기록·프로필 등은 그대로
-    유지되며, 이 버튼은 서버의 백업만 삭제합니다.
+    즉시 삭제되고 계정 연동이 해제됩니다. Google로 로그인했든 Apple(iOS)로 로그인했든 동일하게
+    동작합니다. 기기에 저장된 음주 기록·프로필 등은 그대로 유지되며, 이 버튼은 서버의 백업만
+    삭제합니다.
   </p>
 
   <h2>② 앱을 이미 삭제한 경우 — 이메일로 요청</h2>
@@ -70,7 +72,15 @@
   <table>
     <tr><th>받는 사람</th><td><a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a></td></tr>
     <tr><th>제목</th><td>Safedrink 백업 삭제 요청</td></tr>
-    <tr><th>본문</th><td>Safedrink에 연동했던 <strong>Google 계정의 이메일 주소</strong>를 적어 주십시오.</td></tr>
+    <tr>
+      <th>본문</th>
+      <td>
+        Safedrink에 연동했던 <strong>계정(Google 또는 Apple)의 이메일 주소</strong>를 적어
+        주십시오. Apple 로그인에서 "이메일 가리기"를 사용했다면, 실제 이메일 대신 저장된
+        <strong>Apple 릴레이 주소</strong>(<code>@privaterelay.appleid.com</code> 형태)를
+        적어 주십시오.
+      </td>
+    </tr>
   </table>
   <p>
     본인 확인 후 <strong>7일 이내</strong>에 서버에 저장된 백업을 삭제합니다.
@@ -79,11 +89,13 @@
   <h2>③ 삭제되는 항목</h2>
   <ul>
     <li>서버에 저장된 백업 스냅샷 전체(음주 기록·술자리 요약, 자주 마시는 술, 프로필, 언어·알림 설정)</li>
-    <li>서버에 저장된 Google 계정 식별자(<code>sub</code>)와 이메일 주소</li>
+    <li>서버에 저장된 계정 식별자(Google <code>sub</code> 또는 <code>apple:</code> 접두사가 붙은 Apple 사용자 식별자)와 이메일(또는 Apple 릴레이) 주소</li>
+    <li>Apple로 로그인한 경우, 기기에 보관된 세션 토큰</li>
   </ul>
   <p>
-    <strong>Google 계정 자체는 삭제되지 않습니다.</strong> 이 삭제 요청은 Safedrink가 보관하던
-    백업과 계정 식별 정보만 지우며, 로그인에 사용한 Google 계정은 계속 이용하실 수 있습니다.
+    <strong>Google 또는 Apple 계정 자체는 삭제되지 않습니다.</strong> 이 삭제 요청은 Safedrink가
+    보관하던 백업과 계정 식별 정보만 지우며, 로그인에 사용한 Google 또는 Apple 계정은 계속
+    이용하실 수 있습니다.
   </p>
 
   <h2>④ 그 외에 보관되는 것</h2>
@@ -94,7 +106,8 @@
   </p>
 
   <h2>⑤ 개정일</h2>
-  <p>이 페이지는 2026년 9월 28일에 작성되었습니다. 변경 시 이 날짜를 갱신합니다.</p>
+  <p>이 페이지는 2026년 9월 28일에 작성되었으며, 2026년 9월 29일 Apple 로그인 관련 내용을
+  추가했습니다. 변경 시 이 날짜를 갱신합니다.</p>
 
   <p><a href="privacy-policy.html">← 개인정보처리방침으로 돌아가기</a></p>
 </div>
@@ -103,20 +116,21 @@
 
 <div class="card" id="en">
   <h1>Delete your Safedrink account and backup data</h1>
-  <p class="meta">Last updated: September 28, 2026</p>
+  <p class="meta">Last updated: September 29, 2026</p>
 
   <div class="lead">
     Safedrink works fully without signing in. This deletion request applies only if you turned on
-    <strong>Google account backup</strong> in Settings. See the
+    <strong>Google account backup</strong>, or (iOS) <strong>signed in with Apple to back up</strong>,
+    in Settings. Both providers use the same procedure below. See the
     <a href="privacy-policy.html">Privacy Policy</a> for details.
   </div>
 
   <h2>① If the app is still installed — delete it directly in the app</h2>
   <p>
     Go to <strong>Settings → Backup → "Delete backup and unlink"</strong> in the app. This
-    immediately deletes the backup stored on our server and unlinks your Google account. Your
-    on-device drink records, profile, and other data are kept — this button only deletes the
-    server-side backup.
+    immediately deletes the backup stored on our server and unlinks your account, whether you
+    signed in with Google or with Apple (iOS). Your on-device drink records, profile, and other
+    data are kept — this button only deletes the server-side backup.
   </p>
 
   <h2>② If you already uninstalled the app — request by email</h2>
@@ -126,7 +140,15 @@
   <table>
     <tr><th>To</th><td><a href="mailto:jkinject@gmail.com">jkinject@gmail.com</a></td></tr>
     <tr><th>Subject</th><td>Safedrink backup deletion request</td></tr>
-    <tr><th>Body</th><td>Please include the <strong>email address of the Google account</strong> you had linked to Safedrink.</td></tr>
+    <tr>
+      <th>Body</th>
+      <td>
+        Please include the <strong>email address of the account (Google or Apple)</strong> you
+        had linked to Safedrink. If you used Apple's "Hide My Email" when signing in with Apple,
+        please give us the <strong>Apple relay address</strong> we stored instead
+        (looks like <code>@privaterelay.appleid.com</code>).
+      </td>
+    </tr>
   </table>
   <p>
     After we confirm it's you, we will delete the server-side backup within <strong>7 days</strong>.
@@ -135,12 +157,13 @@
   <h2>③ What gets deleted</h2>
   <ul>
     <li>The entire backup snapshot on our server (drink records and session summaries, custom drink presets, profile, language and notification settings)</li>
-    <li>The Google account identifier (<code>sub</code>) and email address stored on our server</li>
+    <li>The account identifier stored on our server (a Google <code>sub</code>, or an Apple user identifier prefixed with <code>apple:</code>) and the email (or Apple relay) address</li>
+    <li>If you signed in with Apple, the session token stored on your device</li>
   </ul>
   <p>
-    <strong>Your Google account itself is not deleted.</strong> This request only removes the
-    backup and account-identifying information Safedrink stored; the Google account you signed
-    in with remains yours to use as normal.
+    <strong>Your Google or Apple account itself is not deleted.</strong> This request only removes
+    the backup and account-identifying information Safedrink stored; the Google or Apple account
+    you signed in with remains yours to use as normal.
   </p>
 
   <h2>④ What else is retained</h2>
@@ -151,7 +174,8 @@
   </p>
 
   <h2>⑤ Revision date</h2>
-  <p>This page was written on September 28, 2026. This date is updated whenever it changes.</p>
+  <p>This page was written on September 28, 2026, and updated on September 29, 2026 to add
+  Sign in with Apple. This date is updated whenever it changes.</p>
 
   <p><a href="privacy-policy.html">← Back to the Privacy Policy</a></p>
 </div>

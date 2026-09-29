@@ -75,7 +75,7 @@ const ko = {
   onboardingWelcome: 'Safedrink를 사용하려면\n기본 정보를 입력해주세요.',
   onboardingSave: '저장하고 시작하기',
   onboardingTipText: '정확한 기본 정보가 계산의 시작이에요!',
-  onboardingPrivacyNote: '기본은 이 기기에만 저장해요.\nGoogle 계정을 연동하면 서버에 백업해요.',
+  onboardingPrivacyNote: '기본은 이 기기에만 저장해요.\n계정을 연동하면 서버에 백업해요.',
   onboardingHeightHint: '예) 175',
   onboardingWeightHint: '예) 70',
   onboardingBirthYearHint: '예) 1990',
@@ -327,6 +327,13 @@ const ko = {
   backupAccountMismatch: '연동된 계정과 다른 계정이에요. 같은 계정으로 로그인해주세요.',
   onboardingRestoreTitle: '이전에 쓰던 기록이 있나요?',
   onboardingRestoreSubtitle: 'Google 계정으로 복원',
+  // ── Sign in with Apple (iOS) — Apple 네이티브 버튼은 시스템 문구를 쓰므로 appleContinue 는 접근성 라벨용
+  appleContinue: 'Apple로 계속하기',
+  backupAppleAccount: 'Apple 계정',
+  backupProviderNote: 'Google과 Apple 백업은 서로 별개예요.',
+  backupReauthApple: 'Apple 계정을 다시 연결해주세요',
+  backupNoneLinkedApple: 'Apple 계정 연동은 유지돼요.',
+  onboardingRestoreSubtitleApple: 'Apple 또는 Google 계정으로 복원',
 };
 
 export default ko;

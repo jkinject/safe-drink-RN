@@ -1,6 +1,8 @@
 import type { FetchJwks, Jwk } from '../src/auth';
 
 export const CLIENT_ID = 'test-client.apps.googleusercontent.com';
+export const APPLE_BUNDLE_ID = 'com.safedrink.app';
+export const SESSION_SECRET = 'test-session-secret-0123456789abcdefghijklmnopqrstuvwxyz';
 export const NOW_MS = Date.UTC(2026, 8, 28, 12, 0, 0);
 export const NOW_SEC = Math.floor(NOW_MS / 1000);
 
@@ -40,6 +42,21 @@ export function baseClaims(overrides: Record<string, unknown> = {}): Record<stri
     email: 'user@example.com',
     iat: NOW_SEC - 10,
     exp: NOW_SEC + 3600,
+    ...overrides,
+  };
+}
+
+// Apple identity token 모양. email_verified 는 실제로 문자열 "true" 로 오기도 한다.
+export function appleClaims(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    iss: 'https://appleid.apple.com',
+    aud: APPLE_BUNDLE_ID,
+    sub: '001234.abcdef0123456789.0123',
+    email: 'abc123@privaterelay.appleid.com',
+    email_verified: 'true',
+    is_private_email: 'true',
+    iat: NOW_SEC - 10,
+    exp: NOW_SEC + 600,
     ...overrides,
   };
 }

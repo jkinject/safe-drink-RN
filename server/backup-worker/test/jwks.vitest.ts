@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createJwksFetcher, GOOGLE_JWKS_URL } from '../src/jwks';
+import { APPLE_JWKS_URL, createJwksFetcher, GOOGLE_JWKS_URL } from '../src/jwks';
 
 const KEYS = { keys: [{ kid: 'a', kty: 'RSA', n: 'n', e: 'AQAB' }] };
 
@@ -100,5 +100,22 @@ describe('createJwksFetcher', () => {
     t = 60_000; // 정확히 60초 후
     await get(true);
     expect(fetch.calls).toHaveLength(3);
+  });
+
+  it('발급자별 페처는 Cache API 키와 강제 재조회 간격을 따로 쓴다', async () => {
+    const cache = memoryCache();
+    const fetch = countingFetch('max-age=100');
+    let t = 0;
+    const google = createJwksFetcher({ url: GOOGLE_JWKS_URL, fetch, cache, now: () => t });
+    const apple = createJwksFetcher({ url: APPLE_JWKS_URL, fetch, cache, now: () => t });
+    await google(false);
+    await apple(false);
+    expect(fetch.calls).toEqual([GOOGLE_JWKS_URL, APPLE_JWKS_URL]);
+    expect([...cache.store.keys()]).toEqual([GOOGLE_JWKS_URL, APPLE_JWKS_URL]);
+
+    await google(true); // Google 강제 재조회
+    t = 1_000;
+    await apple(true); // Google 의 60초 간격에 묶이지 않는다
+    expect(fetch.calls).toEqual([GOOGLE_JWKS_URL, APPLE_JWKS_URL, GOOGLE_JWKS_URL, APPLE_JWKS_URL]);
   });
 });

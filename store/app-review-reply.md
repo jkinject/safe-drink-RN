@@ -1,5 +1,12 @@
 # App Review 2.1 회신 — Safedrink (iOS 1.0 / build 1.2.2 (2))
 
+> **⚠️ 주의: 이 회신은 심사 중인 1.2.2(계정·로그인 없음) 기준이다.** 1.3.0 부터는 설정 →
+> 백업에서 선택적 Google/Apple 로그인(백업 전용)이 생기므로, **1.3.0 을 제출할 때는 아래
+> "3. How to set up and access the app's main features", "4. External services, tools, or
+> platforms used for core functionality", "6. Regulated industry or protected third-party
+> material" 세 항목의 문구를 갱신해야 한다.** 대체 문단 초안은 이 파일 맨 아래
+> "1.3.0 용 대체 문단 초안" 절 참고.
+
 Submission ID: `adecf76d-63a2-428d-b509-4525dcee7171`
 Apple 메시지: 2026-09-19 09:12 KST — Guideline 2.1 Information Needed (New App Submission)
 
@@ -166,3 +173,59 @@ Apple 요구: Resolution Center 메시지로 회신하고, **동일 내용을 Ap
 - `src/storage/presetStorage.ts:40-42` — `defaultPresets(locale)` 로케일별 기본 세트
 - `src/i18n/en.ts:109,223-228,233` — 면책 문구·한국 법령 기준 문구
 - `src/constants/appInfo.ts:18` — 개인정보처리방침 URL
+
+---
+
+## 1.3.0 용 대체 문단 초안 (영문)
+
+1.3.0 부터 설정 → 백업에 **선택적** Google/Apple 로그인이 추가된다. 아래는 위 "붙여넣을 영문
+본문" 중 3·4·6번 항목을 대체할 초안이다. 제출 시 실제 심사 노트에 옮겨 붙이고, 화면 녹화·"How
+to test" 안내도 백업 로그인 흐름을 포함하도록 함께 갱신할 것.
+
+> **3. How to set up and access the app's main features (1.3.0 draft)**
+>
+> No account or login is required to use any core feature of the app. Every feature described
+> above (profile setup, Home, adding drinks, Plan, History, Settings, notifications and Live
+> Activity) is reachable immediately after launch, with no sign-in of any kind.
+>
+> Starting with this version, Settings → Backup offers an **entirely optional** sign-in
+> (Google or Sign in with Apple) whose only purpose is to back up and restore the user's local
+> data (drink records, presets, profile, language and notification settings) if they reinstall
+> the app or switch devices. Declining to sign in has no effect on any other feature. We provide
+> **Sign in with Apple** alongside Google, in line with Guideline 4.8, since Google Sign-In is
+> offered as a third-party login option.
+>
+> To test the backup feature: complete onboarding, add a drink, then go to Settings → Backup and
+> tap either "Sign in with Google" or "Sign in with Apple." No demo account is needed — any
+> Google or Apple ID works. After signing in, the screen shows "Last backed up: just now."
+> Signing out ("Delete backup and unlink") removes the server-side backup only; on-device data is
+> unaffected.
+>
+> **4. External services, tools, or platforms used for core functionality (1.3.0 draft)**
+>
+> All core BAC calculation, timers, and notifications still run entirely on the device with no
+> network connection required, exactly as in the previous submission. The only new network
+> service in this version is:
+>
+> - **Backup server (ours, hosted on Cloudflare Workers + D1)** — used **only** if the user
+>   opts in via Settings → Backup. It stores the account identifier (Google `sub`, or an Apple
+>   user identifier), the account's email address (or, for Apple's "Hide My Email," the relay
+>   address Apple issues), and a single JSON snapshot of the user's local data. A user who signs
+>   in with Apple also receives a session token (valid 180 days) stored on the device, used to
+>   authenticate later backup requests without repeatedly prompting for sign-in. If the user
+>   never opens Settings → Backup or never signs in, this service is never contacted.
+> - **Sign in with Apple** and **Google Sign-In** — standard OAuth sign-in flows, used solely to
+>   authenticate the user for the backup feature above. No other data is requested or read from
+>   either provider.
+>
+> All other points from the previous submission are unchanged: no analytics, no crash reporting,
+> no advertising identifier collection on iOS, no AI service.
+>
+> **6. Regulated industry or protected third-party material (1.3.0 draft)**
+>
+> Unchanged from the previous submission, with one addition: account deletion. A user who signed
+> in for backup can permanently delete their server-side backup and account identifiers at any
+> time from Settings → Backup → "Delete backup and unlink," which takes effect immediately. A
+> user who has uninstalled the app can request the same deletion by email, per the in-app privacy
+> policy and the web deletion request page linked from it. No account or backup data is retained
+> beyond what the user explicitly enabled.

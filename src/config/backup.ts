@@ -1,7 +1,7 @@
 /**
  * Google 계정 연동 백업 설정.
  *
- * 두 값 모두 빌드 시 `EXPO_PUBLIC_*` 환경변수로 번들에 들어간다(`.env.example` 참고).
+ * 값은 모두 빌드 시 `EXPO_PUBLIC_*` 환경변수로 번들에 들어간다(`.env.example` 참고).
  * 웹 클라이언트 ID 는 공개값이라 번들에 있어도 되지만, 계정별로 다르고 아직 발급 전이라
  * 코드에 박지 않고 환경변수로 받는다. 서버 비밀값은 여기에 두지 않는다(Worker 쪽 secret).
  *
@@ -19,11 +19,23 @@ export const BACKUP_API_URL = process.env.EXPO_PUBLIC_BACKUP_API_URL ?? '';
 export const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
 
 /**
- * 두 값이 모두 있고 Android 일 때만 백업 UI·SDK 초기화를 켠다. 아니면 앱은 1.2.x 와 동일하게 동작.
+ * Google Cloud 의 **iOS** OAuth 클라이언트 ID(`….apps.googleusercontent.com`). iOS 에서만 쓴다.
+ * 이 값의 역순 스킴(`com.googleusercontent.apps.…`)이 app.json google-signin 플러그인의
+ * `iosUrlScheme` 이다 — 둘은 같은 클라이언트에서 나와야 한다.
+ * ID 토큰의 `aud` 는 여전히 웹 클라이언트 ID 다(configure 에 webClientId 를 같이 넘기므로).
+ */
+export const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
+
+/**
+ * 백업 UI·SDK 초기화를 켤지. 꺼지면 앱은 1.2.x 와 동일하게 동작.
  *
- * iOS 는 아직 끈다 — app.json 에 google-signin 플러그인의 iosUrlScheme 도, iosClientId 도 없어서
- * configure 가 reject 되고, App Store 심사 4.8(Google 로그인을 넣으면 Sign in with Apple 동등
- * 옵션 필요)과 2.1 회신("계정 기능 없음")과도 어긋난다. iOS 에 붙일 때 세 가지를 같이 푼다.
+ * - Android: API 주소 + 웹 클라이언트 ID.
+ * - iOS: 위 둘 + iOS 클라이언트 ID. iOS 는 Google 과 Sign in with Apple 을 함께 제공한다
+ *   (App Store 심사 4.8 — 제3자 로그인을 넣으면 동등한 Apple 로그인 옵션 필요).
+ *   Apple 로그인만으로 켜지 않는 이유: Google 을 뺀 반쪽 구성은 의도한 적이 없는 상태라
+ *   설정 누락을 조용히 넘기지 않도록 세 값이 다 있어야 켠다.
  */
 export const BACKUP_SUPPORTED =
-  Platform.OS === 'android' && BACKUP_API_URL !== '' && GOOGLE_WEB_CLIENT_ID !== '';
+  BACKUP_API_URL !== '' &&
+  GOOGLE_WEB_CLIENT_ID !== '' &&
+  (Platform.OS === 'android' || (Platform.OS === 'ios' && GOOGLE_IOS_CLIENT_ID !== ''));

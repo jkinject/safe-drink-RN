@@ -1,16 +1,22 @@
 /**
- * backupStore — 로그인·조회, 복원, 삭제·해제, 재인증 전파.
+ * backupStore — 로그인(Google·Apple)·세션 발급·조회, 복원, 삭제·해제, 재인증 전파.
  *
- * googleAuth·api·snapshot 은 목(에러 클래스는 실물), AsyncStorage 는 루트 인메모리 목.
+ * 제공자 모듈(auth/google·auth/apple)·api·snapshot 은 목(에러 클래스는 실물), auth/index·session 은
+ * 실물(세션 저장·만료·재발급 규칙을 그대로 확인한다). AsyncStorage 는 루트 인메모리 목.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-jest.mock('../../services/googleAuth', () => ({
-  ...jest.requireActual('../../services/googleAuth'),
+jest.mock('../../services/auth/google', () => ({
   configure: jest.fn(),
   signIn: jest.fn(),
   getIdToken: jest.fn(async () => 'fresh-token'),
   signOut: jest.fn(async () => {}),
+}));
+
+jest.mock('../../services/auth/apple', () => ({
+  isAvailable: jest.fn(async () => true),
+  signIn: jest.fn(async () => null),
+  isCredentialRevoked: jest.fn(async () => false),
 }));
 
 jest.mock('../../services/backup/api', () => ({
@@ -18,6 +24,7 @@ jest.mock('../../services/backup/api', () => ({
   fetchBackup: jest.fn(async () => null),
   uploadBackup: jest.fn(async () => ({ updatedAt: 5000 })),
   deleteBackup: jest.fn(async () => {}),
+  createSession: jest.fn(),
 }));
 
 // 실물 snapshot 을 requireActual 하면 스토어를 거쳐 expo-notifications 까지 로드된다 — 네이티브 경고 차단
@@ -36,8 +43,9 @@ jest.mock('../../services/backup/snapshot', () => {
 });
 
 import { backupStore } from '../backupStore';
-import * as googleAuth from '../../services/googleAuth';
-import { GoogleAuthError } from '../../services/googleAuth';
+import * as googleAuth from '../../services/auth/google';
+import * as appleAuth from '../../services/auth/apple';
+import { AuthError, SESSION_REFRESH_BEFORE_MS } from '../../services/auth';
 import * as api from '../../services/backup/api';
 import { BackupApiError } from '../../services/backup/api';
 import * as snapshot from '../../services/backup/snapshot';
@@ -46,13 +54,43 @@ import * as scheduler from '../../services/backup/scheduler';
 const signIn = googleAuth.signIn as jest.Mock;
 const getIdToken = googleAuth.getIdToken as jest.Mock;
 const signOut = googleAuth.signOut as jest.Mock;
+const appleSignIn = appleAuth.signIn as jest.Mock;
+const appleRevoked = appleAuth.isCredentialRevoked as jest.Mock;
 const fetchBackup = api.fetchBackup as jest.Mock;
 const uploadBackup = api.uploadBackup as jest.Mock;
 const deleteBackup = api.deleteBackup as jest.Mock;
+const createSession = api.createSession as jest.Mock;
 const applySnapshot = snapshot.applySnapshot as jest.Mock;
 
-const ACCOUNT = { sub: 'sub-1', email: 'a@example.com' };
+const ACCOUNT = { sub: 'sub-1', email: 'a@example.com', provider: 'google' as const };
 const SIGNED_IN = { ...ACCOUNT, idToken: 'signin-token' };
+const APPLE_ACCOUNT = { sub: 'apple-sub', email: 'x@privaterelay.appleid.com', provider: 'apple' as const };
+const APPLE_SIGNED_IN = { ...APPLE_ACCOUNT, idToken: 'apple-identity-token' };
+
+const DAY = 24 * 60 * 60 * 1000;
+/** 서버 세션 기본 수명(테스트용) — 30일 */
+const SESSION_TTL = 30 * DAY;
+
+/** 세션 발급 목 — 발급 순번을 토큰에 넣어 어떤 세션이 쓰였는지 구분한다 */
+let sessionSeq = 0;
+function defaultCreateSession(provider: 'google' | 'apple', idToken: string) {
+  sessionSeq += 1;
+  const sub = provider === 'apple' ? APPLE_ACCOUNT.sub : ACCOUNT.sub;
+  return Promise.resolve({
+    sessionToken: `session-${provider}-${sessionSeq}`,
+    expiresAt: Date.now() + SESSION_TTL,
+    sub,
+    email: null,
+    provider,
+    // 어떤 ID 토큰으로 발급했는지 확인용(실제 응답에는 없다)
+    _from: idToken,
+  });
+}
+
+async function storedSession() {
+  const v = await AsyncStorage.getItem('backup_session');
+  return v ? (JSON.parse(v) as { token: string; expiresAt: number; sub: string }) : null;
+}
 
 const validPayload = {
   schemaVersion: 1,
@@ -94,6 +132,10 @@ beforeEach(async () => {
   reset();
   signIn.mockResolvedValue(SIGNED_IN);
   getIdToken.mockResolvedValue('fresh-token');
+  appleSignIn.mockResolvedValue(null);
+  appleRevoked.mockResolvedValue(false);
+  sessionSeq = 0;
+  createSession.mockImplementation(defaultCreateSession);
   fetchBackup.mockResolvedValue(null);
   uploadBackup.mockResolvedValue({ updatedAt: 5000 });
   deleteBackup.mockResolvedValue(undefined);
@@ -150,8 +192,9 @@ describe('signInAndCheck', () => {
     });
     await expect(backupStore.getState().signInAndCheck()).resolves.toBe('found');
 
-    // 로그인 직후 받은 토큰으로 조회한다
-    expect(fetchBackup).toHaveBeenCalledWith('signin-token');
+    // 로그인 직후 받은 ID 토큰을 세션으로 바꿔 그 세션으로 조회한다
+    expect(createSession).toHaveBeenCalledWith('google', 'signin-token');
+    expect(fetchBackup).toHaveBeenCalledWith('session-google-1');
     const s = backupStore.getState();
     expect(s.account).toEqual(ACCOUNT);
     expect(s.awaitingDecision).toBe(true);
@@ -166,6 +209,8 @@ describe('signInAndCheck', () => {
     expect(s.remote?.snapshot).not.toBeNull();
     expect(uploadBackup).not.toHaveBeenCalled();
     expect(await AsyncStorage.getItem('backup_account')).toBeNull();
+    // 세션도 계정과 함께 확정 때 저장한다
+    expect(await storedSession()).toBeNull();
   });
 
   it('found — 새 스키마 백업이면 remoteIncompatible 이고 복원은 incompatible', async () => {
@@ -191,6 +236,7 @@ describe('signInAndCheck', () => {
       status: 'idle',
     });
     expect(JSON.parse((await AsyncStorage.getItem('backup_account'))!)).toEqual(ACCOUNT);
+    expect(await storedSession()).toMatchObject({ token: 'session-google-1', sub: ACCOUNT.sub });
     expect(uploadBackup).not.toHaveBeenCalled();
   });
 
@@ -215,7 +261,7 @@ describe('signInAndCheck', () => {
   });
 
   it('로그인 실패(네트워크) — lastError=network', async () => {
-    signIn.mockRejectedValue(new GoogleAuthError('network'));
+    signIn.mockRejectedValue(new AuthError('network'));
     await expect(backupStore.getState().signInAndCheck()).resolves.toBe('error');
     expect(backupStore.getState().lastError).toBe('network');
   });
@@ -266,11 +312,15 @@ describe('선택 확정', () => {
     await backupStore.getState().signInAndCheck();
     await expect(backupStore.getState().backupNow()).resolves.toBe(true);
     expect(uploadBackup).toHaveBeenCalledTimes(1);
+    // 로그인 때 받은 세션이 계정과 함께 저장돼 업로드에 쓰인다(재발급 없음)
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-google-1');
+    expect(getIdToken).not.toHaveBeenCalled();
     expect(backupStore.getState()).toMatchObject({
       lastBackupAt: 5000,
       awaitingDecision: false,
     });
     expect(await AsyncStorage.getItem('backup_account')).not.toBeNull();
+    expect(await storedSession()).toMatchObject({ token: 'session-google-1' });
   });
 
   it('unlinkLocal — 서버 호출 없이 로컬 연동만 해제한다', async () => {
@@ -295,7 +345,9 @@ describe('deleteAndUnlink', () => {
   it('서버 삭제 성공 후에만 로컬 연동을 해제한다', async () => {
     await linkedState();
     await expect(backupStore.getState().deleteAndUnlink()).resolves.toBe(true);
-    expect(deleteBackup).toHaveBeenCalledWith('fresh-token');
+    // 저장된 세션이 없으면(1.3.0 초기 연동) 조용히 받은 ID 토큰으로 세션을 발급받아 쓴다
+    expect(createSession).toHaveBeenCalledWith('google', 'fresh-token');
+    expect(deleteBackup).toHaveBeenCalledWith('session-google-1');
     expect(signOut).toHaveBeenCalled();
     expect(backupStore.getState()).toMatchObject({
       account: null,
@@ -325,7 +377,7 @@ describe('재인증 전파', () => {
   it('backupNow — getIdToken 이 reauth 면 lastError=reauth, dirty 유지', async () => {
     await linkedState();
     backupStore.setState({ dirty: true });
-    getIdToken.mockRejectedValue(new GoogleAuthError('reauth'));
+    getIdToken.mockRejectedValue(new AuthError('reauth'));
     await expect(backupStore.getState().backupNow()).resolves.toBe(false);
     expect(uploadBackup).not.toHaveBeenCalled();
     expect(backupStore.getState()).toMatchObject({ lastError: 'reauth', dirty: true, lastBackupAt: 1234 });
@@ -333,7 +385,7 @@ describe('재인증 전파', () => {
 
   it('deleteAndUnlink — reauth 면 연동 유지', async () => {
     await linkedState();
-    getIdToken.mockRejectedValue(new GoogleAuthError('reauth'));
+    getIdToken.mockRejectedValue(new AuthError('reauth'));
     await expect(backupStore.getState().deleteAndUnlink()).resolves.toBe(false);
     expect(deleteBackup).not.toHaveBeenCalled();
     expect(backupStore.getState()).toMatchObject({ account: ACCOUNT, lastError: 'reauth' });
@@ -370,5 +422,262 @@ describe('재인증 전파', () => {
     await expect(backupStore.getState().reconnect()).resolves.toBe('mismatch');
     expect(backupStore.getState()).toMatchObject({ account: ACCOUNT, lastError: 'reauth' });
     expect(signOut).toHaveBeenCalled();
+  });
+});
+
+describe('저장값 마이그레이션', () => {
+  it('provider 가 없는 1.3.0 초기 계정은 google 로 읽는다', async () => {
+    await AsyncStorage.setItem('backup_account', JSON.stringify({ sub: 'old', email: 'o@example.com' }));
+    await backupStore.getState().load();
+    expect(backupStore.getState().account).toEqual({
+      sub: 'old',
+      email: 'o@example.com',
+      provider: 'google',
+    });
+  });
+
+  it('세션 없이 연동된 google 계정은 첫 업로드 때 조용히 세션을 발급받아 저장한다', async () => {
+    await linkedState();
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(getIdToken).toHaveBeenCalledTimes(1);
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-google-1');
+    expect(await storedSession()).toMatchObject({ token: 'session-google-1', sub: ACCOUNT.sub });
+  });
+});
+
+describe('Apple 로그인', () => {
+  beforeEach(() => {
+    appleSignIn.mockResolvedValue(APPLE_SIGNED_IN);
+  });
+
+  it('none — identity token 을 세션으로 바꿔 조회하고 계정(provider=apple)·세션을 저장한다', async () => {
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('none');
+    expect(signIn).not.toHaveBeenCalled();
+    expect(createSession).toHaveBeenCalledWith('apple', 'apple-identity-token');
+    expect(fetchBackup).toHaveBeenCalledWith('session-apple-1');
+    expect(backupStore.getState()).toMatchObject({ account: APPLE_ACCOUNT, awaitingDecision: false });
+    expect(JSON.parse((await AsyncStorage.getItem('backup_account'))!)).toEqual(APPLE_ACCOUNT);
+    expect(await storedSession()).toMatchObject({ token: 'session-apple-1', sub: APPLE_ACCOUNT.sub });
+  });
+
+  it('found — 선택 대기 동안 계정·세션을 저장하지 않고, 교체(backupNow) 때 함께 저장해 그 세션으로 올린다', async () => {
+    fetchBackup.mockResolvedValue({
+      schemaVersion: 1,
+      updatedAt: 9000,
+      email: APPLE_ACCOUNT.email,
+      payload: validPayload,
+    });
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('found');
+    expect(backupStore.getState()).toMatchObject({ account: APPLE_ACCOUNT, awaitingDecision: true });
+    expect(await AsyncStorage.getItem('backup_account')).toBeNull();
+    expect(await storedSession()).toBeNull();
+
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-apple-1');
+    expect(await storedSession()).toMatchObject({ token: 'session-apple-1' });
+    expect(JSON.parse((await AsyncStorage.getItem('backup_account'))!)).toEqual(APPLE_ACCOUNT);
+  });
+
+  it('cancelled — 아무것도 바뀌지 않는다', async () => {
+    appleSignIn.mockResolvedValue(null);
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('cancelled');
+    expect(createSession).not.toHaveBeenCalled();
+    expect(backupStore.getState()).toMatchObject({ account: null, lastError: null, status: 'idle' });
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
+  });
+
+  it('세션 발급 401 — 연동하지 않고 reauth', async () => {
+    createSession.mockRejectedValue(new api.BackupApiError('reauth', 'x', 401));
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('error');
+    expect(fetchBackup).not.toHaveBeenCalled();
+    expect(backupStore.getState()).toMatchObject({ account: null, lastError: 'reauth' });
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
+  });
+
+  it('세션 발급 503 — Apple 은 대안 토큰이 없어 실패(server)', async () => {
+    createSession.mockRejectedValue(new api.BackupApiError('server', 'x', 503));
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('error');
+    expect(fetchBackup).not.toHaveBeenCalled();
+    expect(backupStore.getState()).toMatchObject({ account: null, lastError: 'server' });
+  });
+
+  it('서버 세션의 sub 가 로그인한 계정과 다르면 연동하지 않는다', async () => {
+    createSession.mockImplementation(async (provider: 'apple', t: string) => ({
+      ...(await defaultCreateSession(provider, t)),
+      sub: 'someone-else',
+    }));
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('error');
+    expect(fetchBackup).not.toHaveBeenCalled();
+    expect(backupStore.getState()).toMatchObject({ account: null, lastError: 'reauth' });
+  });
+
+  it('reconnect — 같은 Apple 계정으로 다시 로그인하면 새 세션을 저장하고 lastError 를 지운다', async () => {
+    await linkedApple({ expiresAt: Date.now() - 1000 });
+    backupStore.setState({ lastError: 'reauth' });
+    await expect(backupStore.getState().reconnect()).resolves.toBe('reconnected');
+    expect(appleSignIn).toHaveBeenCalledTimes(1);
+    expect(signIn).not.toHaveBeenCalled();
+    expect(backupStore.getState().lastError).toBeNull();
+    expect(await storedSession()).toMatchObject({ token: 'session-apple-1' });
+  });
+
+  it('load — 설정에서 Apple ID 사용을 중단했으면(REVOKED) 세션을 버리고 reauth', async () => {
+    await linkedApple({ expiresAt: Date.now() + SESSION_TTL });
+    backupStore.setState({ account: null });
+    appleRevoked.mockResolvedValue(true);
+    await backupStore.getState().load();
+    await new Promise(r => setTimeout(r, 0));
+    expect(appleRevoked).toHaveBeenCalledWith(APPLE_ACCOUNT.sub);
+    expect(backupStore.getState()).toMatchObject({ account: APPLE_ACCOUNT, lastError: 'reauth' });
+    expect(await storedSession()).toBeNull();
+  });
+
+  it('load — google 계정은 Apple 자격 상태를 조회하지 않는다', async () => {
+    await linkedState();
+    await backupStore.getState().load();
+    await new Promise(r => setTimeout(r, 0));
+    expect(appleRevoked).not.toHaveBeenCalled();
+  });
+});
+
+/** Apple 계정 연동 + 저장된 세션 */
+async function linkedApple(session: { expiresAt: number; token?: string }) {
+  backupStore.setState({ account: APPLE_ACCOUNT, lastBackupAt: 1234 });
+  await AsyncStorage.multiSet([
+    ['backup_account', JSON.stringify(APPLE_ACCOUNT)],
+    ['backup_last_at', '1234'],
+    [
+      'backup_session',
+      JSON.stringify({
+        token: session.token ?? 'stored-apple-session',
+        expiresAt: session.expiresAt,
+        sub: APPLE_ACCOUNT.sub,
+      }),
+    ],
+  ]);
+}
+
+async function saveGoogleSession(expiresAt: number, token = 'stored-google-session') {
+  await AsyncStorage.setItem(
+    'backup_session',
+    JSON.stringify({ token, expiresAt, sub: ACCOUNT.sub }),
+  );
+}
+
+describe('세션 만료·재발급', () => {
+  it('google — 만료까지 7일 이상 남은 세션은 그대로 쓴다(ID 토큰 요청 없음)', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() + SESSION_REFRESH_BEFORE_MS + DAY);
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(getIdToken).not.toHaveBeenCalled();
+    expect(createSession).not.toHaveBeenCalled();
+    expect(uploadBackup.mock.calls[0][0]).toBe('stored-google-session');
+  });
+
+  it('google — 만료 임박(7일 미만)이면 조용히 새 세션을 받아 저장하고 그걸로 올린다', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() + 2 * DAY);
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(getIdToken).toHaveBeenCalledTimes(1);
+    expect(createSession).toHaveBeenCalledWith('google', 'fresh-token');
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-google-1');
+    expect(await storedSession()).toMatchObject({ token: 'session-google-1' });
+    expect(backupStore.getState().lastError).toBeNull();
+  });
+
+  it('google — 만료된 세션도 조용히 재발급한다', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() - DAY);
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-google-1');
+  });
+
+  it('google — 임박한 세션의 재발급이 오프라인으로 실패하면 아직 유효한 세션으로 올린다', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() + 2 * DAY);
+    getIdToken.mockRejectedValue(new AuthError('network'));
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('stored-google-session');
+  });
+
+  it('google — 세션 발급이 서버 사정(503)이면 Google ID 토큰으로 직접 올린다', async () => {
+    await linkedState();
+    createSession.mockRejectedValue(new api.BackupApiError('server', 'x', 503));
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('fresh-token');
+    expect(await storedSession()).toBeNull();
+  });
+
+  it('google — 다른 계정의 세션이 남아 있으면 쓰지 않는다', async () => {
+    await linkedState();
+    await AsyncStorage.setItem(
+      'backup_session',
+      JSON.stringify({ token: 'other', expiresAt: Date.now() + SESSION_TTL, sub: 'other-sub' }),
+    );
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('session-google-1');
+  });
+
+  it('google — 서버가 세션을 401 로 거부하면 새 세션으로 한 번 더 시도한다', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() + SESSION_TTL);
+    uploadBackup.mockRejectedValueOnce(new api.BackupApiError('reauth', 'x', 401));
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls.map(c => c[0])).toEqual([
+      'stored-google-session',
+      'session-google-1',
+    ]);
+    expect(backupStore.getState().lastError).toBeNull();
+  });
+
+  it('apple — 만료된 세션이면 업로드하지 않고 reauth (ID 토큰 조용한 갱신 없음)', async () => {
+    await linkedApple({ expiresAt: Date.now() - 1000 });
+    backupStore.setState({ dirty: true });
+    await expect(backupStore.getState().backupNow()).resolves.toBe(false);
+    expect(uploadBackup).not.toHaveBeenCalled();
+    expect(getIdToken).not.toHaveBeenCalled();
+    expect(createSession).not.toHaveBeenCalled();
+    expect(backupStore.getState()).toMatchObject({ lastError: 'reauth', dirty: true });
+  });
+
+  it('apple — 세션이 없으면 reauth', async () => {
+    await linkedApple({ expiresAt: Date.now() + SESSION_TTL });
+    await AsyncStorage.removeItem('backup_session');
+    await expect(backupStore.getState().backupNow()).resolves.toBe(false);
+    expect(backupStore.getState().lastError).toBe('reauth');
+  });
+
+  it('apple — 만료가 임박했어도 아직 유효하면 만료 전까지 그대로 쓴다', async () => {
+    await linkedApple({ expiresAt: Date.now() + 2 * DAY });
+    await expect(backupStore.getState().backupNow()).resolves.toBe(true);
+    expect(uploadBackup.mock.calls[0][0]).toBe('stored-apple-session');
+  });
+
+  it('apple — 서버가 세션을 401 로 거부하면 세션을 지우고 reauth (재시도 없음)', async () => {
+    await linkedApple({ expiresAt: Date.now() + SESSION_TTL });
+    uploadBackup.mockRejectedValueOnce(new api.BackupApiError('reauth', 'x', 401));
+    await expect(backupStore.getState().backupNow()).resolves.toBe(false);
+    expect(uploadBackup).toHaveBeenCalledTimes(1);
+    expect(backupStore.getState().lastError).toBe('reauth');
+    expect(await storedSession()).toBeNull();
+  });
+
+  it('deleteAndUnlink — 세션까지 지운다', async () => {
+    await linkedApple({ expiresAt: Date.now() + SESSION_TTL });
+    await expect(backupStore.getState().deleteAndUnlink()).resolves.toBe(true);
+    expect(deleteBackup).toHaveBeenCalledWith('stored-apple-session');
+    // Apple 은 앱 쪽 로그아웃이 없다 — Google signOut 을 부르지 않는다
+    expect(signOut).not.toHaveBeenCalled();
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
+  });
+
+  it('다른 계정 로그인이 조회 실패로 되돌려지면 이전 계정의 세션을 그대로 둔다', async () => {
+    await linkedState();
+    await saveGoogleSession(Date.now() + SESSION_TTL);
+    appleSignIn.mockResolvedValue(APPLE_SIGNED_IN);
+    fetchBackup.mockRejectedValue(new api.BackupApiError('network'));
+    await expect(backupStore.getState().signInAndCheck('apple')).resolves.toBe('error');
+    expect(backupStore.getState().account).toEqual(ACCOUNT);
+    expect(await storedSession()).toMatchObject({ token: 'stored-google-session', sub: ACCOUNT.sub });
   });
 });

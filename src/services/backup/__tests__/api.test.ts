@@ -1,7 +1,7 @@
 /**
- * 백업 API 클라이언트 — 상태 코드 → 에러 코드 매핑, 404, 타임아웃.
+ * 백업 API 클라이언트 — 상태 코드 → 에러 코드 매핑, 404, 타임아웃, 세션 발급.
  */
-import { BackupApiError, deleteBackup, fetchBackup, uploadBackup } from '../api';
+import { BackupApiError, createSession, deleteBackup, fetchBackup, uploadBackup } from '../api';
 import type { BackupSnapshot } from '../snapshot';
 
 jest.mock('../snapshot', () => ({}));
@@ -108,5 +108,43 @@ describe('uploadBackup / deleteBackup', () => {
     await expect(deleteBackup('tok')).resolves.toBeUndefined();
     respond(401, { error: 'unauthorized' });
     await expect(codeOf(deleteBackup('tok'))).resolves.toBe('reauth');
+  });
+});
+
+describe('createSession', () => {
+  it('POST /auth/session — Authorization 없이 {provider, token} 을 보내고 세션을 돌려준다', async () => {
+    respond(200, {
+      sessionToken: 'sess',
+      expiresAt: 123,
+      sub: 's',
+      email: 'e@example.com',
+      provider: 'apple',
+    });
+    await expect(createSession('apple', 'apple-id-token')).resolves.toEqual({
+      sessionToken: 'sess',
+      expiresAt: 123,
+      sub: 's',
+      email: 'e@example.com',
+      provider: 'apple',
+    });
+    const [url, init] = (g.fetch as jest.Mock).mock.calls[0];
+    expect(String(url)).toMatch(/\/auth\/session$/);
+    expect(init.method).toBe('POST');
+    expect(init.headers.Authorization).toBeUndefined();
+    expect(JSON.parse(init.body)).toEqual({ provider: 'apple', token: 'apple-id-token' });
+  });
+
+  it.each([
+    [401, 'reauth'],
+    [503, 'server'],
+    [400, 'invalid'],
+  ])('%i → %s', async (status, code) => {
+    respond(status, { error: 'x' });
+    await expect(codeOf(createSession('google', 't'))).resolves.toBe(code);
+  });
+
+  it('응답에 sessionToken 이 없으면 server', async () => {
+    respond(200, { expiresAt: 1, sub: 's' });
+    await expect(codeOf(createSession('google', 't'))).resolves.toBe('server');
   });
 });

@@ -1,11 +1,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import type { AuthProvider } from '../services/auth/types';
+
 const ACCOUNT_KEY = 'backup_account';
 const LAST_AT_KEY = 'backup_last_at';
 const DIRTY_KEY = 'backup_dirty';
+const SESSION_KEY = 'backup_session';
 
-/** 연동된 Google 계정. sub 가 서버 백업 행의 키, email 은 표시용 */
-export type BackupAccount = { sub: string; email: string | null };
+/**
+ * 연동된 계정. (provider, sub) 가 서버 백업 행의 키, email 은 표시용.
+ * 1.3.0 초기(Android 전용)에 저장된 값에는 provider 가 없다 — 읽을 때 'google' 로 본다.
+ */
+export type BackupAccount = { sub: string; email: string | null; provider: AuthProvider };
+
+/**
+ * 서버 세션(`POST /auth/session` 결과). sub 는 발급받은 계정 — 연동 계정과 다르면 쓰지 않는다
+ * (다른 계정 로그인이 되돌려졌을 때 남은 세션으로 엉뚱한 백업 행을 덮어쓰지 않도록).
+ */
+export type StoredSession = { token: string; expiresAt: number; sub: string };
 
 export type StoredBackupState = {
   account: BackupAccount | null;
@@ -38,16 +50,23 @@ export async function loadBackupState(): Promise<StoredBackupState> {
 function parseAccount(v: string | null | undefined): BackupAccount | null {
   if (!v) return null;
   try {
-    const o = JSON.parse(v) as { sub?: unknown; email?: unknown };
+    const o = JSON.parse(v) as { sub?: unknown; email?: unknown; provider?: unknown };
     if (typeof o.sub !== 'string' || o.sub === '') return null;
-    return { sub: o.sub, email: typeof o.email === 'string' ? o.email : null };
+    return {
+      sub: o.sub,
+      email: typeof o.email === 'string' ? o.email : null,
+      provider: o.provider === 'apple' ? 'apple' : 'google',
+    };
   } catch {
     return null;
   }
 }
 
 export async function saveAccount(account: BackupAccount): Promise<void> {
-  await AsyncStorage.setItem(ACCOUNT_KEY, JSON.stringify({ sub: account.sub, email: account.email }));
+  await AsyncStorage.setItem(
+    ACCOUNT_KEY,
+    JSON.stringify({ sub: account.sub, email: account.email, provider: account.provider }),
+  );
 }
 
 export async function saveLastBackupAt(at: number): Promise<void> {
@@ -60,7 +79,32 @@ export async function saveDirty(dirty: boolean): Promise<void> {
   else await AsyncStorage.removeItem(DIRTY_KEY);
 }
 
-/** 연동 해제 — 세 키를 모두 지운다 */
+export async function loadSession(): Promise<StoredSession | null> {
+  const v = await AsyncStorage.getItem(SESSION_KEY);
+  if (!v) return null;
+  try {
+    const o = JSON.parse(v) as { token?: unknown; expiresAt?: unknown; sub?: unknown };
+    if (typeof o.token !== 'string' || o.token === '') return null;
+    if (typeof o.expiresAt !== 'number' || !Number.isFinite(o.expiresAt)) return null;
+    if (typeof o.sub !== 'string' || o.sub === '') return null;
+    return { token: o.token, expiresAt: o.expiresAt, sub: o.sub };
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSession(session: StoredSession): Promise<void> {
+  await AsyncStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({ token: session.token, expiresAt: session.expiresAt, sub: session.sub }),
+  );
+}
+
+export async function clearSession(): Promise<void> {
+  await AsyncStorage.removeItem(SESSION_KEY);
+}
+
+/** 연동 해제 — 계정·시각·대기 변경·세션 네 키를 모두 지운다 */
 export async function clearBackupState(): Promise<void> {
-  await AsyncStorage.multiRemove([ACCOUNT_KEY, LAST_AT_KEY, DIRTY_KEY]);
+  await AsyncStorage.multiRemove([ACCOUNT_KEY, LAST_AT_KEY, DIRTY_KEY, SESSION_KEY]);
 }

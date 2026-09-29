@@ -9,6 +9,7 @@
  *   - fetch 실패·15초 타임아웃 → 'network'
  */
 import { BACKUP_API_URL } from '../../config/backup';
+import type { AuthProvider } from '../auth/types';
 import type { BackupSnapshot } from './snapshot';
 
 export type BackupApiErrorCode = 'reauth' | 'network' | 'server' | 'invalid';
@@ -44,16 +45,19 @@ function codeForStatus(status: number): BackupApiErrorCode {
 }
 
 async function request(
-  method: 'GET' | 'PUT' | 'DELETE',
-  idToken: string,
+  method: 'GET' | 'PUT' | 'DELETE' | 'POST',
+  path: '/backup' | '/auth/session',
+  /** Bearer 토큰. null 이면 Authorization 헤더 없이 보낸다(/auth/session) */
+  token: string | null,
   body?: unknown,
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const headers: Record<string, string> = { Authorization: `Bearer ${idToken}` };
+    const headers: Record<string, string> = {};
+    if (token != null) headers.Authorization = `Bearer ${token}`;
     if (body !== undefined) headers['Content-Type'] = 'application/json';
-    return await fetch(`${BACKUP_API_URL}/backup`, {
+    return await fetch(`${BACKUP_API_URL}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -82,7 +86,7 @@ async function readJson(res: Response): Promise<Record<string, unknown>> {
 
 /** 저장된 백업을 받는다. 서버에 백업이 없으면(404) null */
 export async function fetchBackup(idToken: string): Promise<RemoteBackup | null> {
-  const res = await request('GET', idToken);
+  const res = await request('GET', '/backup', idToken);
   if (res.status === 404) return null;
   if (res.status !== 200) {
     throw new BackupApiError(codeForStatus(res.status), `GET /backup ${res.status}`, res.status);
@@ -104,7 +108,7 @@ export async function uploadBackup(
   idToken: string,
   snapshot: BackupSnapshot,
 ): Promise<{ updatedAt: number }> {
-  const res = await request('PUT', idToken, {
+  const res = await request('PUT', '/backup', idToken, {
     schemaVersion: snapshot.schemaVersion,
     payload: snapshot,
   });
@@ -120,8 +124,55 @@ export async function uploadBackup(
 
 /** 서버 백업을 지운다. 행이 없어도 204 */
 export async function deleteBackup(idToken: string): Promise<void> {
-  const res = await request('DELETE', idToken);
+  const res = await request('DELETE', '/backup', idToken);
   if (res.status !== 204 && res.status !== 200) {
     throw new BackupApiError(codeForStatus(res.status), `DELETE /backup ${res.status}`, res.status);
   }
+}
+
+/** POST /auth/session 200 응답 */
+export type SessionResponse = {
+  sessionToken: string;
+  /** 세션 만료 시각(ms) */
+  expiresAt: number;
+  /** 제공자 계정 고유 ID — 로그인한 계정과 같아야 한다 */
+  sub: string;
+  email: string | null;
+  provider: AuthProvider;
+};
+
+/**
+ * 제공자 ID 토큰(Google ID 토큰·Apple identity token)을 서버 세션 토큰으로 바꾼다.
+ * Apple identity token 은 10분짜리라 그대로는 자동 백업에 못 쓴다 — 두 제공자 모두 이 경로를 탄다.
+ * 401 = 토큰 검증 실패(reauth), 503 = 일시 장애(server).
+ */
+export async function createSession(
+  provider: AuthProvider,
+  idToken: string,
+): Promise<SessionResponse> {
+  const res = await request('POST', '/auth/session', null, { provider, token: idToken });
+  if (res.status !== 200) {
+    throw new BackupApiError(
+      codeForStatus(res.status),
+      `POST /auth/session ${res.status}`,
+      res.status,
+    );
+  }
+  const data = await readJson(res);
+  if (
+    typeof data.sessionToken !== 'string' ||
+    data.sessionToken === '' ||
+    typeof data.expiresAt !== 'number' ||
+    typeof data.sub !== 'string' ||
+    data.sub === ''
+  ) {
+    throw new BackupApiError('server', 'Malformed POST /auth/session response', res.status);
+  }
+  return {
+    sessionToken: data.sessionToken,
+    expiresAt: data.expiresAt,
+    sub: data.sub,
+    email: typeof data.email === 'string' ? data.email : null,
+    provider: data.provider === 'apple' ? 'apple' : 'google',
+  };
 }

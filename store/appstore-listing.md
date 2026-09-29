@@ -20,7 +20,7 @@ App Store Connect 계정: EPSOFT(이피소프트) 법인, 판매자 표시 이�
 | 마케팅 URL | (비움) |
 | 저작권 | 2026 EPSOFT |
 | 연령 등급 | 아래 설문 참조 (주류 언급 → 17+/18+ 급으로 나옴) |
-| 앱 개인정보 (App Privacy) | **데이터를 수집하지 않음** — 광고 SDK 를 초기화하지 않고, 서버·계정·분석 없음. 유일한 외부 통신은 EAS Update(u.expo.dev) 번들 확인이며 사용자 데이터 없음 |
+| 앱 개인정보 (App Privacy) | 1.2.2 기준(계정 없음): **데이터를 수집하지 않음** — 광고 SDK 를 초기화하지 않고, 서버·계정·분석 없음. 유일한 외부 통신은 EAS Update(u.expo.dev) 번들 확인이며 사용자 데이터 없음. **1.3.0 부터는 선택적 백업 로그인이 생겨 이 답변이 바뀐다 — 아래 "App Privacy 체크리스트 (1.3.0)" 참고** |
 | 수출 규정 | 표준 암호화만 사용 (`ITSAppUsesNonExemptEncryption=false`, app.json 에 넣음) |
 
 ---
@@ -75,7 +75,7 @@ Safedrink — 술 깨는 시간 계산
 술이 깨면 그날의 기록이 자동으로 정리되어 보관됩니다. 몇 시부터 몇 시까지 마셨는지, 몇 시에 깼는지, 총 알코올 섭취량과 최고 혈중알코올농도를 그래프와 함께 다시 볼 수 있고, 카드 이미지로 공유할 수 있습니다.
 
 ■ 개인정보를 수집하지 않습니다
-회원가입이 없습니다. 입력하신 신체 정보와 음주 기록은 기기 안에만 저장되며 서버로 전송되지 않습니다.
+회원가입이 없습니다. 입력하신 신체 정보와 음주 기록은 기기 안에만 저장되며 서버로 전송되지 않습니다. 원하신다면 설정에서 Google 또는 Apple 계정으로 로그인해 기록을 백업하고 다른 기기에서 복원할 수 있습니다(완전히 선택 사항입니다).
 
 무료이며 광고가 없습니다. 한국어와 영어를 지원합니다.
 
@@ -148,7 +148,7 @@ The remaining time counts down on your Lock Screen and in the Dynamic Island as 
 When you sober up, the session is saved automatically: start and end time, total alcohol, peak BAC and the graph — and you can share it as a card image.
 
 ■ Private by design
-No account, no sign-up. Your body data and drink history stay on your device and are never uploaded.
+No account, no sign-up. Your body data and drink history stay on your device and are never uploaded. If you'd like, you can sign in with Google or Apple in Settings to back up your data and restore it on another device — this is entirely optional.
 
 Safedrink is free, with no ads. Available in English and Korean.
 
@@ -198,6 +198,27 @@ How to test: complete onboarding (any height/weight/sex), tap + to add a drink (
 | 무제한 웹 접근 | 없음 |
 | 사용자 생성 콘텐츠·소셜 | 없음 |
 | 경쟁/도박 시뮬레이션 | 없음 |
+
+## App Privacy 체크리스트 (1.3.0, 백업 로그인 켤 때)
+
+1.2.2 는 "데이터를 수집하지 않음"으로 답했지만, 1.3.0 부터 설정 → 백업에서 선택적 Google/Apple
+로그인을 켜면 App Store Connect → 앱 개인정보(App Privacy) 설문을 아래와 같이 갱신해야 한다.
+백업을 쓰지 않는 사용자에게는 아무 것도 수집되지 않지만, Apple 설문은 "가능성이 있으면" 기준으로
+답해야 하므로 백업 기능이 존재하는 이상 수집함으로 신고한다.
+
+| 데이터 유형 (Apple 카테고리) | 구체적 항목 | 수집 목적 | 사용자에게 연결됨 | 추적(Tracking)에 사용 |
+|---|---|---|---|---|
+| Contact Info → Email Address | 연동한 Google/Apple 계정 이메일(Apple 은 릴레이 주소일 수 있음) | 앱 기능(백업 계정 식별) | 예 | 아니요 |
+| Identifiers → User ID | Google `sub` 또는 `apple:` 접두사가 붙은 Apple 사용자 식별자 | 앱 기능(백업 계정 식별) | 예 | 아니요 |
+| Health & Fitness → Health | 프로필(키·몸무게·성별·출생연도) — BAC 계산용 입력값을 백업 스냅샷에 포함 | 앱 기능(백업·복원) | 예 | 아니요 |
+| User Content → Other User Content | 음주 기록·술자리 요약, 커스텀 프리셋, 언어·알림 설정 | 앱 기능(백업·복원) | 예 | 아니요 |
+
+- 모든 항목 "Used for Tracking" 은 아니요, "Third-Party Advertising"·"Analytics" 목적 없음.
+- 세션 토큰(Apple 로그인, 180일)은 Apple 설문의 별도 데이터 유형이 아니라 위 User ID/인증 흐름의
+  일부로 취급한다(토큰 자체는 개인 식별 정보를 담지 않음).
+- Android 광고(AdMob)는 iOS 에는 적용되지 않으므로(iOS 는 광고 없음, `docs/ADMOB.md` 참고) 이
+  설문에 포함하지 않는다.
+- 설문 갱신 후 `docs/privacy-policy.html` 3절과 내용이 일치하는지 다시 확인할 것.
 
 ## 제출 순서
 
