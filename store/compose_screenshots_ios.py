@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""App Store 스크린샷 합성 — 헤드라인 + 서브 + 둥근 기기 프레임 (6.9인치, 1320×2868).
+"""App Store 스크린샷 합성 — 헤드라인 + 서브 + 둥근 기기 프레임 (6.9인치 1320×2868 / iPad 13인치 2064×2752).
 
 사용법:
-  python3 store/compose_screenshots_ios.py ko   # store/raw/ios/ko/NN-*.png → store/screenshots/ios/ko/
+  python3 store/compose_screenshots_ios.py ko          # store/raw/ios/ko/NN-*.png → store/screenshots/ios/ko/
   python3 store/compose_screenshots_ios.py en
+  python3 store/compose_screenshots_ios.py ko ipad13   # store/raw/ios/ipad13/ → store/screenshots/ios/ipad13/ (ko 캡션)
 
-원본 캡처는 iPhone 17 Pro Max 시뮬레이터(1320×2868, `xcrun simctl io <udid> screenshot`).
+원본 캡처는 iPhone 17 Pro Max 시뮬레이터(1320×2868, `xcrun simctl io <udid> screenshot`),
+iPad 는 iPad Pro 13-inch 시뮬레이터(2064×2752). iPad 원본 폴더는 언어와 무관하게 `raw/ios/ipad13/` 하나다.
 Play 판(`compose_screenshots.py`)과 같은 스타일이고 크기·캡션(05 = Live Activity)만 다르다.
 캡처는 Metro 를 `EXPO_PUBLIC_HIDE_ADS=1` 로 띄워 배너 없이 찍는다(디버그 빌드는 테스트 광고가 뜬다).
 """
@@ -17,12 +19,14 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 FONT_DIR = os.path.join(ROOT, '..', 'assets', 'fonts')
-W, H = 1320, 2868
+# 기기별 캔버스: (W, H, FRAME_W, FRAME_Y, RADIUS, 헤드라인 크기, 서브 크기)
+DEVICES = {
+    'iphone': (1320, 2868, 1000, 420, 90, 84, 48),
+    'ipad13': (2064, 2752, 1560, 480, 60, 110, 60),
+}
+W, H, FRAME_W, FRAME_Y, RADIUS, HEAD_PT, SUB_PT = DEVICES['iphone']
 NAVY = (45, 43, 82)
 SUB = (110, 107, 150)
-FRAME_W = 1000            # 기기 프레임 폭
-FRAME_Y = 420
-RADIUS = 90               # iPhone 화면 모서리 (1320 폭 기준)
 HOME_BAR_PX = 0           # iOS 는 홈 인디케이터를 잘라내지 않는다 (배경과 어우러짐)
 
 CAPTIONS = {
@@ -32,7 +36,7 @@ CAPTIONS = {
         '03': ('한 번의 탭으로 기록', '맥주·소주·와인·하이볼, 그리고 나만의 술'),
         '04': ('지난 술자리 다시 보기', '최고 농도·총 섭취량·그래프까지'),
         '05': ('앱을 켜지 않아도', '잠금화면과 다이내믹 아일랜드에서 카운트다운'),
-        '06': ('개인정보를 수집하지 않습니다', '회원가입 없음, 기록은 기기 안에만'),
+        '06': ('개인정보를 수집하지 않습니다', '회원가입 없이 사용, 백업은 원할 때만'),
     },
     'en': {
         '01': ("Time until you're sober", 'Calculated for your height, weight and sex'),
@@ -40,7 +44,7 @@ CAPTIONS = {
         '03': ('Log a drink in one tap', 'Beer, wine, whisky, cocktails — or your own'),
         '04': ('Look back on past nights', 'Peak BAC, total alcohol and the graph'),
         '05': ('Counts down with the app closed', 'On your Lock Screen and Dynamic Island'),
-        '06': ('Private by design', 'No account. Everything stays on your device'),
+        '06': ('Private by design', 'No account needed. Backup only if you want it'),
     },
 }
 
@@ -84,21 +88,25 @@ def compose(raw_path, headline, sub, out_path):
     mask = rounded(shot, round(RADIUS * FRAME_W / W * 1.3))
     canvas = background()
     d = ImageDraw.Draw(canvas)
-    hf = font('Pretendard-Bold.ttf', 84)
-    sf = font('Pretendard-Regular.ttf', 48)
+    hf = font('Pretendard-Bold.ttf', HEAD_PT)
+    sf = font('Pretendard-Regular.ttf', SUB_PT)
     hw = d.textlength(headline, font=hf)
-    d.text(((W - hw) / 2, 120), headline, font=hf, fill=NAVY)
+    d.text(((W - hw) / 2, FRAME_Y * 120 // 420), headline, font=hf, fill=NAVY)
     sw = d.textlength(sub, font=sf)
-    d.text(((W - sw) / 2, 240), sub, font=sf, fill=SUB)
+    d.text(((W - sw) / 2, FRAME_Y * 240 // 420), sub, font=sf, fill=SUB)
     paste_with_shadow(canvas, shot, mask, (W - FRAME_W) // 2, FRAME_Y)
     canvas.save(out_path, optimize=True)
     print(out_path)
 
 
 def main():
+    global W, H, FRAME_W, FRAME_Y, RADIUS, HEAD_PT, SUB_PT
     lang = sys.argv[1] if len(sys.argv) > 1 else 'ko'
-    raw_dir = os.path.join(ROOT, 'raw', 'ios', lang)
-    out_dir = os.path.join(ROOT, 'screenshots', 'ios', lang)
+    device = sys.argv[2] if len(sys.argv) > 2 else 'iphone'
+    W, H, FRAME_W, FRAME_Y, RADIUS, HEAD_PT, SUB_PT = DEVICES[device]
+    sub_dir = lang if device == 'iphone' else device
+    raw_dir = os.path.join(ROOT, 'raw', 'ios', sub_dir)
+    out_dir = os.path.join(ROOT, 'screenshots', 'ios', sub_dir)
     os.makedirs(out_dir, exist_ok=True)
     for raw in sorted(glob.glob(os.path.join(raw_dir, '*.png'))):
         num = os.path.basename(raw)[:2]

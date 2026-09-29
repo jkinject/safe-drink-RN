@@ -227,6 +227,8 @@ How to test: complete onboarding (any height/weight/sex), tap + to add a drink (
 3. 등록정보 입력(en 기본 → ko 현지화), 스크린샷 6.9인치 업로드, 앱 개인정보 "수집 안 함", 연령 등급, 심사 노트 — **aside 완료 2026-09-17.**
    - 연령 등급 결과: **18+**(173개국), **대한민국 19+**, iOS 26 이전 OS 17+. 라이프스타일 카테고리 + 주류로 리비아·모로코·몰디브·사우디·UAE 등 일부 국가는 판매 불가(Apple 정책).
    - 6.9인치 스크린샷은 버전 페이지가 아니라 **미디어 관리**에서 올린다(일괄 업로드는 순서가 섞여 한 장씩). 6.5인치 슬롯은 6.9 를 그대로 쓴다.
+   - **iPad 13인치(2064×2752) 스크린샷은 1.3.0 부터 필수**(supportsTablet). 원본은 iPad Pro 13-inch 시뮬레이터에서 `xcrun simctl io <udid> screenshot` 으로 `store/raw/ios/ipad13/`(ko 5장: 01·02·03·04·06, Live Activity 는 iPad 에 없어 05 없음) → `python3 store/compose_screenshots_ios.py ko ipad13` → `store/screenshots/ios/ipad13/`. 영어 현지화에는 iPad 스크린샷을 따로 올리지 않는다(없으면 기본 언어 것이 보인다).
+   - 06 설정 스크린샷은 1.3.0 백업 섹션(Apple/Google 버튼)이 보이는 것으로 교체했고 캡션도 "회원가입 없이 사용, 백업은 원할 때만" 으로 바꿨다. Apple 버튼 문구는 **시뮬레이터 시스템 언어**를 따르므로 ko 캡처 전에 `simctl spawn <udid> defaults write .GlobalPreferences AppleLanguages -array ko` 후 재부팅.
    - 심사 연락처 전화번호가 필수라 Apple 개발자 계정의 회사 번호(+82 2 6951 5406)를 넣었다 — 바꾸려면 앱 심사 정보에서 수정.
    - 개인정보처리방침 URL 은 앱 정보가 아니라 "앱이 수집하는 개인정보" 섹션에 있다(EN·KO 둘 다 설정).
    - 가격 무료·175개국. Mac(Apple Silicon)·Vision Pro 사용 가능 체크는 해제(iPhone 전용, Live Activity 의존).
