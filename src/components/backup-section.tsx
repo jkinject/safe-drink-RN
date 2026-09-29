@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { AppColors, StatusColors } from '@/constants/colors';
-import { Font, IconSize, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, LineHeight, Space, Weight } from '@/constants/tokens';
 import { BACKUP_SUPPORTED } from '@/config/backup';
 import { Icon, type IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
@@ -437,7 +437,6 @@ function IconCircle({ name }: { name: IconName }) {
   );
 }
 
-// lineHeight 는 토큰이 없어 settings-list.tsx description(lineHeight 18) 과 같은 방식으로 숫자를 쓴다
 const styles = StyleSheet.create({
   // SettingsSection 의 rows 카드가 좌우 여백(Space.lg)을 이미 준다 — 위아래만 더한다
   introBlock: { paddingVertical: Space.lg, gap: Space.md },
@@ -462,9 +461,9 @@ const styles = StyleSheet.create({
     fontSize: Font.h4,
     fontWeight: Weight.bold,
     color: AppColors.navy,
-    lineHeight: 22,
+    lineHeight: LineHeight.h4,
   },
-  introDesc: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: 18 },
+  introDesc: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: LineHeight.bodySm },
   notes: { gap: Space.xxs },
   note: { fontSize: Font.caption, color: AppColors.sub, textAlign: 'center' },
   email: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
@@ -476,5 +475,5 @@ const styles = StyleSheet.create({
   statusNavy: { color: AppColors.navy, fontWeight: Weight.semibold },
   statusSub: { color: AppColors.sub },
   failBlock: { gap: Space.xxs },
-  meta: { fontSize: Font.caption, color: AppColors.sub, lineHeight: 18 },
+  meta: { fontSize: Font.caption, color: AppColors.sub, lineHeight: LineHeight.caption },
 });

@@ -13,13 +13,14 @@ import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
+import { PrimaryButton } from '@/components/primary-button';
 import { profileStore } from '@/state/profileStore';
 import { sessionStore } from '@/state/sessionStore';
 import { localeStore } from '@/state/localeStore';
 import { useBottomBannerHeight } from '@/state/adStore';
 import { calculate as planCalculate } from '@/core/planCalculator';
 import { PlanResult } from '@/core/types';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 import { TAB_BAR_HEIGHT } from '@/constants/layout';
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -149,19 +150,16 @@ export default function PlanScreen() {
             label={i18n.t('planAbvLabel')}
             value={abvText}
             onChangeText={v => { setAbvText(v); setAbvError(''); }}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             error={abvError || null}
           />
 
           <View style={styles.fieldGap} />
-          <TouchableOpacity
-            style={[styles.calcBtn, !profile && styles.calcBtnDisabled]}
+          <PrimaryButton
+            label={i18n.t('planCalculate')}
             onPress={handleCalculate}
             disabled={!profile}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.calcBtnText}>{i18n.t('planCalculate')}</Text>
-          </TouchableOpacity>
+          />
         </View>
 
         {/* Error message */}
@@ -220,7 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: Space.sm,
   },
-  warningText: { flex: 1, fontSize: Font.bodySm, color: StatusColors.warningText, lineHeight: 18 },
+  warningText: { flex: 1, fontSize: Font.bodySm, color: StatusColors.warningText, lineHeight: LineHeight.bodySm },
   card: {
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
@@ -240,14 +238,6 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
   },
   timeBtnText: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
-  calcBtn: {
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-  },
-  calcBtnDisabled: { opacity: 0.5 },
-  calcBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
   errorCard: {
     backgroundColor: StatusColors.dangerBg,
     borderRadius: Radius.xl,

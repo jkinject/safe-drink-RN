@@ -1,15 +1,10 @@
 import { useEffect, useState } from 'react';
-import {
-  Modal,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, Platform, StyleSheet, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppColors, dialogShadow } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
 
 interface TimePickerModalProps {
@@ -79,15 +74,19 @@ export function TimePickerModal({
             style={styles.spinner}
           />
           <View style={styles.actions}>
-            <TouchableOpacity onPress={onCancel} style={styles.cancelBtn}>
-              <Text style={styles.cancelText}>{i18n.t('settingsCancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            <PrimaryButton
+              size="row"
+              variant="outline"
+              label={i18n.t('settingsCancel')}
+              onPress={onCancel}
+              style={styles.actionItem}
+            />
+            <PrimaryButton
+              size="row"
+              label={i18n.t('settingsSave')}
               onPress={() => onConfirm(value.getHours(), value.getMinutes())}
-              style={styles.confirmBtn}
-            >
-              <Text style={styles.confirmText}>{i18n.t('settingsSave')}</Text>
-            </TouchableOpacity>
+              style={styles.actionItem}
+            />
           </View>
         </View>
       </View>
@@ -117,21 +116,5 @@ const styles = StyleSheet.create({
   },
   spinner: { alignSelf: 'center' },
   actions: { flexDirection: 'row', gap: Space.md, marginTop: Space.sm },
-  cancelBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    paddingVertical: Space.md,
-    alignItems: 'center',
-  },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold, fontSize: Font.body },
-  confirmBtn: {
-    flex: 1,
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.md,
-    alignItems: 'center',
-  },
-  confirmText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  actionItem: { flex: 1 },
 });

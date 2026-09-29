@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   ScrollView,
@@ -25,6 +24,8 @@ import {
 import { DrinkIconPicker } from '@/components/drink-icon-picker';
 import { DrinkIconSelect } from '@/components/drink-icon-select';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
+import { SectionTitle } from '@/components/section-title';
 import { sessionStore } from '@/state/sessionStore';
 import { presetsStore } from '@/state/presetsStore';
 import { localeStore } from '@/state/localeStore';
@@ -160,7 +161,7 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
               label={i18n.t('addDrinkAbvLabel')}
               value={abv}
               onChangeText={setAbv}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               error={abvErr || null}
             />
             {/* Volume */}
@@ -168,18 +169,25 @@ function PresetDialog({ visible, initial, onSave, onCancel, title }: PresetDialo
               label={i18n.t('addDrinkVolumeLabel')}
               value={vol}
               onChangeText={setVol}
-              keyboardType="numeric"
+              keyboardType="number-pad"
               error={volErr || null}
             />
           </ScrollView>
           {/* Actions — 키보드가 올라와도 항상 보이도록 스크롤 밖에 고정 */}
           <View style={dlgStyles.actions}>
-            <TouchableOpacity onPress={onCancel} style={dlgStyles.cancelBtn}>
-              <Text style={dlgStyles.cancelText}>{i18n.t('customPresetCancel')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSave} style={dlgStyles.saveBtn}>
-              <Text style={dlgStyles.saveText}>{i18n.t('customPresetSave')}</Text>
-            </TouchableOpacity>
+            <PrimaryButton
+              size="row"
+              variant="outline"
+              label={i18n.t('customPresetCancel')}
+              onPress={onCancel}
+              style={dlgStyles.actionItem}
+            />
+            <PrimaryButton
+              size="row"
+              label={i18n.t('customPresetSave')}
+              onPress={handleSave}
+              style={dlgStyles.actionItem}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -207,16 +215,7 @@ const dlgStyles = StyleSheet.create({
   title: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy, marginBottom: Space.sm },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Space.sm, marginBottom: Space.sm },
   actions: { flexDirection: 'row', gap: Space.md, marginTop: Space.sm },
-  cancelBtn: {
-    flex: 1, paddingVertical: Space.md, alignItems: 'center',
-    borderRadius: Radius.md, borderWidth: 1, borderColor: AppColors.border,
-  },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold, fontSize: Font.body },
-  saveBtn: {
-    flex: 1, paddingVertical: Space.md, alignItems: 'center',
-    borderRadius: Radius.md, backgroundColor: AppColors.accent,
-  },
-  saveText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  actionItem: { flex: 1 },
 });
 
 // ── Preset card ───────────────────────────────────────────────────────────────
@@ -627,7 +626,7 @@ export default function AddDrinkScreen() {
         {/* Preset grid (add mode only) */}
         {!isEdit && (
           <>
-            <Text style={styles.sectionTitle}>{i18n.t('addDrinkQuickSelect')}</Text>
+            <SectionTitle>{i18n.t('addDrinkQuickSelect')}</SectionTitle>
             {/* 셀 폭은 퍼센트가 아니라 실측으로 계산한다 — 31%×3 + gap 이면
                 딱 떨어지지 않아 오른쪽에만 여백이 남았다 */}
             <View
@@ -679,7 +678,7 @@ export default function AddDrinkScreen() {
             value={abvText}
             onChangeText={v => { setAbvText(v); setAbvErr(''); }}
             onFocus={scrollToForm}
-            keyboardType="numeric"
+            keyboardType="decimal-pad"
             error={abvErr || null}
           />
 
@@ -689,7 +688,7 @@ export default function AddDrinkScreen() {
             value={volText}
             onChangeText={v => { setVolText(v); setVolErr(''); }}
             onFocus={scrollToForm}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             error={volErr || null}
           />
 
@@ -771,18 +770,7 @@ export default function AddDrinkScreen() {
           )}
 
           {/* Submit */}
-          <TouchableOpacity
-            style={[styles.submitBtn, saving && styles.submitBtnDisabled]}
-            onPress={handleSubmit}
-            disabled={saving}
-            activeOpacity={0.8}
-          >
-            {saving ? (
-              <ActivityIndicator color={AppColors.white} size="small" />
-            ) : (
-              <Text style={styles.submitBtnText}>{submitLabel}</Text>
-            )}
-          </TouchableOpacity>
+          <PrimaryButton label={submitLabel} onPress={handleSubmit} loading={saving} />
         </View>
 
         <View style={{ height: FORM_BOTTOM_GAP }} />
@@ -832,7 +820,6 @@ const styles = StyleSheet.create({
   appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
   flex: { flex: 1 },
   scrollContent: { padding: Space.lg, gap: Space.md },
-  sectionTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy },
   presetGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -888,12 +875,6 @@ const styles = StyleSheet.create({
     paddingVertical: Space.xs,
   },
   nowBtnText: { fontSize: Font.caption, color: AppColors.accent, fontWeight: Weight.semibold },
-  submitBtn: {
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-  },
   // 흰 카드 안이라 그림자 대신 연보라 채움으로 구분한다
   simCard: {
     backgroundColor: AppColors.panel,
@@ -910,6 +891,4 @@ const styles = StyleSheet.create({
     color: AppColors.accent,
   },
   simSoberAt: { fontSize: Font.bodySm, color: AppColors.navy },
-  submitBtnDisabled: { opacity: 0.5 },
-  submitBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

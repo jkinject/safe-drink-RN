@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Space.sm,
-    // Apple 버튼과 같은 높이 (iOS 44 / Android 48)
+    // Apple 버튼과 같은 높이 (44, 플랫폼 공통)
     minHeight: SIGN_IN_BUTTON_HEIGHT,
     paddingHorizontal: Space.lg,
     borderRadius: Radius.md,

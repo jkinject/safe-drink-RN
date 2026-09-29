@@ -17,6 +17,8 @@ import {
   resolveDrinkIcon,
 } from '@/components/drink-icon';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
+import { SectionTitle } from '@/components/section-title';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -48,7 +50,7 @@ import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { CharacterImage, CharacterState } from '@/components/character-image';
 import { BacGraph } from '@/components/bac-graph';
 import { calendarDayDiff, displayedMinuteDiff } from '@/core/dateUtils';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 import { TAB_BAR_HEIGHT } from '@/constants/layout';
 import { maybePromptReview } from '@/services/review';
 
@@ -395,15 +397,12 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete, onDuplicat
       {/* Row 3: 다마심 — 술자리 중 가장 자주, 가장 안 좋은 조건(한 손·어두움·취함)에서 누르는 버튼.
           카드 폭 전체·48dp 로 키우고, 복제·삭제와는 두 줄 떨어뜨려 오탭을 막는다 (사용자 피드백) */}
       {isDrinking && (
-        <TouchableOpacity
-          style={tileStyles.finishBtn}
+        <PrimaryButton
+          label={i18n.t('finishedButton')}
           onPress={onFinish}
-          activeOpacity={0.8}
-          accessibilityRole="button"
           accessibilityLabel={`${title} · ${i18n.t('finishedButton')}`}
-        >
-          <Text style={tileStyles.finishBtnText}>{i18n.t('finishedButton')}</Text>
-        </TouchableOpacity>
+          style={tileStyles.finishBtn}
+        />
       )}
     </TouchableOpacity>
   );
@@ -419,9 +418,10 @@ const tileStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 화면 안 카드 규칙(Radius.xl + cardShadowSm)
   container: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     padding: Space.md,
     ...cardShadowSm,
   },
@@ -450,15 +450,7 @@ const tileStyles = StyleSheet.create({
   },
   badgeText: { fontSize: Font.micro, color: AppColors.accent, fontWeight: Weight.regular },
   finishedText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, flex: 1 },
-  finishBtn: {
-    marginTop: Space.md,
-    minHeight: Space.xxl * 2,
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  finishBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
+  finishBtn: { marginTop: Space.md },
 });
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
@@ -597,7 +589,7 @@ const compStyles = StyleSheet.create({
   bigBacUnit: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent, marginLeft: 1 },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, marginTop: Space.xs },
   timeText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.navy },
-  footnote: { fontSize: Font.micro, color: AppColors.sub, lineHeight: 16 },
+  footnote: { fontSize: Font.micro, color: AppColors.sub, lineHeight: LineHeight.micro },
 });
 
 // ── Safe status display ───────────────────────────────────────────────────────
@@ -614,10 +606,12 @@ function SafeStatusDisplay({
       <CharacterImage sex={sex} state="greeting" size={160} />
       <Text style={safeStyles.title}>{i18n.t('safeStatus')}</Text>
       <Text style={safeStyles.subtitle}>{i18n.t('safeStatusSubtitle')}</Text>
-      <TouchableOpacity style={safeStyles.infoBtn} onPress={onInfoPress} activeOpacity={0.8}>
-        <Icon name="guide" size={IconSize.sm} color={AppColors.accent} strokeWidth={2} />
-        <Text style={safeStyles.infoBtnText}>{i18n.t('infoScreenTitle')}</Text>
-      </TouchableOpacity>
+      <PrimaryButton
+        variant="outline"
+        icon="guide"
+        label={i18n.t('infoScreenTitle')}
+        onPress={onInfoPress}
+      />
     </View>
   );
 }
@@ -626,17 +620,6 @@ const safeStyles = StyleSheet.create({
   container: { alignItems: 'center', gap: Space.md, paddingVertical: Space.xxl },
   title: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.navy },
   subtitle: { fontSize: Font.bodySm, color: AppColors.sub, textAlign: 'center' },
-  infoBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Space.sm,
-    borderWidth: 1,
-    borderColor: AppColors.borderStrong,
-    borderRadius: Radius.xxl,
-    paddingHorizontal: Space.xl,
-    paddingVertical: Space.md,
-  },
-  infoBtnText: { color: AppColors.accent, fontWeight: Weight.semibold, fontSize: Font.bodySm },
 });
 
 // ── Tip banner ────────────────────────────────────────────────────────────────
@@ -893,12 +876,15 @@ export default function TimerScreen() {
 
           {/* Records section */}
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{i18n.t('todayRecordsTitle')}</Text>
-              <TouchableOpacity onPress={() => router.push('/add-drink')}>
-                <Text style={styles.addBtn}>{i18n.t('addRecordButton')}</Text>
-              </TouchableOpacity>
-            </View>
+            <SectionTitle
+              right={
+                <TouchableOpacity onPress={() => router.push('/add-drink')}>
+                  <Text style={styles.addBtn}>{i18n.t('addRecordButton')}</Text>
+                </TouchableOpacity>
+              }
+            >
+              {i18n.t('todayRecordsTitle')}
+            </SectionTitle>
             {/* 최근에 추가한 잔이 위로 온다. 방금 넣은 기록을 바로 확인·수정하려면
                 맨 아래까지 스크롤해야 했다.
                 store 의 records 는 BAC 계산이 쓰는 배열이라 정렬을 건드리지 않고
@@ -996,12 +982,6 @@ const styles = StyleSheet.create({
   },
   drinkingOnlyText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: StatusColors.warningTextStrong },
   section: { gap: Space.sm },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
   addBtn: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent },
   fab: {
     position: 'absolute',
@@ -1014,5 +994,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...fabShadow,
   },
-  fabText: { color: AppColors.white, fontSize: Font.h1, fontWeight: Weight.regular, lineHeight: 32 },
+  fabText: { color: AppColors.white, fontSize: Font.h1, fontWeight: Weight.regular, lineHeight: LineHeight.h1 },
 });

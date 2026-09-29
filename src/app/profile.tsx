@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,6 +14,7 @@ import { Icon } from '@/components/icon';
 import { alert } from '@/components/dialog';
 import { Text } from '@/components/typography';
 import { FloatingLabelInput } from '@/components/floating-label-input';
+import { PrimaryButton } from '@/components/primary-button';
 import { CharacterImage } from '@/components/character-image';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
@@ -135,21 +135,21 @@ export default function ProfileScreen() {
               label={i18n.t('settingsHeightLabel')}
               value={height}
               onChangeText={v => { setHeight(v); setErrors(e => ({ ...e, height: undefined })); }}
-              keyboardType="numeric"
+              keyboardType="number-pad"
               error={errors.height ?? null}
             />
             <FloatingLabelInput
               label={i18n.t('settingsWeightLabel')}
               value={weight}
               onChangeText={v => { setWeight(v); setErrors(e => ({ ...e, weight: undefined })); }}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               error={errors.weight ?? null}
             />
             <FloatingLabelInput
               label={i18n.t('settingsBirthYearLabel')}
               value={birthYear}
               onChangeText={v => { setBirthYear(v); setErrors(e => ({ ...e, birthYear: undefined })); }}
-              keyboardType="numeric"
+              keyboardType="number-pad"
               error={errors.birthYear ?? null}
             />
 
@@ -179,18 +179,7 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
-            onPress={handleSave}
-            disabled={saving}
-            activeOpacity={0.8}
-          >
-            {saving ? (
-              <ActivityIndicator color={AppColors.white} size="small" />
-            ) : (
-              <Text style={styles.saveBtnText}>{i18n.t('settingsSave')}</Text>
-            )}
-          </TouchableOpacity>
+          <PrimaryButton label={i18n.t('settingsSave')} onPress={handleSave} loading={saving} />
 
           <View style={{ height: FORM_BOTTOM_GAP }} />
         </ScrollView>
@@ -245,12 +234,4 @@ const styles = StyleSheet.create({
   sexBtnActive: { borderColor: AppColors.accent, borderWidth: 2, backgroundColor: AppColors.selectedBg },
   sexLabel: { fontSize: Font.body, color: AppColors.navy },
   sexLabelActive: { color: AppColors.accent, fontWeight: Weight.bold },
-  saveBtn: {
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

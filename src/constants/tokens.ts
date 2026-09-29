@@ -57,6 +57,23 @@ export const Font = {
   micro: 11,
 } as const;
 
+/**
+ * 줄 높이 — Font 와 같은 이름으로 짝을 맞춘다 (`fontSize: Font.body` 면 `lineHeight: LineHeight.body`).
+ * 같은 크기에 18·20·21 이 섞여 문단마다 행간이 달라 보이던 것을 하나로 묶었다.
+ * 여러 줄로 흐를 수 있는 본문·설명에만 붙이고, 한 줄 라벨에는 굳이 주지 않는다.
+ */
+export const LineHeight = {
+  display: 52,
+  h1: 36,
+  h2: 30,
+  h3: 26,
+  h4: 22,
+  body: 20,
+  bodySm: 18,
+  caption: 18,
+  micro: 16,
+} as const;
+
 export const Weight = {
   regular: '400',
   semibold: '600',
@@ -77,6 +94,13 @@ export const Weight = {
  * | 다이얼로그(오버레이 위) | Radius.xl   | dialogShadow  |
  *
  * | 탭바 / FAB              | Radius.xl/xxl| tabBarShadow / fabShadow |
+ *
+ * | 역할                    | 쓰는 것                                                        |
+ * |-------------------------|----------------------------------------------------------------|
+ * | 섹션 제목               | `<SectionTitle>` (h3 · bold · navy · 아래 Space.sm) — 모든 화면 동일 |
+ * | 버튼                    | `<PrimaryButton>` — cta(전체 폭 48·h4) / row(시트·다이얼로그 줄 버튼·body), |
+ * |                         | filled·outline·danger. Google/Apple 로그인 버튼만 브랜딩 예외     |
+ * | 줄 높이                 | `LineHeight.<Font 와 같은 이름>` — 숫자 직접 금지               |
  *
  * 그림자는 `@/constants/colors` 의 다섯 가지만 쓴다 —
  * cardShadowSm(화면 안 카드) / cardShadow(떠 있는 것) /

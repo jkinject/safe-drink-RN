@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
-import { AppColors, StatusColors } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { SectionTitle } from '@/components/section-title';
+import { Font, IconSize, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
  * 설정 화면용 그룹 리스트.
@@ -21,7 +22,7 @@ interface SectionProps {
 export function SettingsSection({ title, children }: SectionProps) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <SectionTitle>{title}</SectionTitle>
       <View style={styles.rows}>{children}</View>
     </View>
   );
@@ -108,18 +109,13 @@ export function SettingsRow({
 
 const styles = StyleSheet.create({
   section: { marginBottom: Space.xl },
-  sectionTitle: {
-    fontSize: Font.caption,
-    fontWeight: Weight.bold,
-    color: AppColors.sub,
-    marginBottom: Space.xs,
-    marginLeft: Space.xs,
-  },
+  // 다른 화면의 섹션 카드와 같은 규칙(Radius.xl + cardShadowSm).
+  // overflow: 'hidden' 은 iOS 에서 그림자를 잘라 버려 빼고, 행 배경은 투명이라 모서리 밖으로 새지 않는다
   rows: {
     backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     paddingHorizontal: Space.lg,
-    overflow: 'hidden',
+    ...cardShadowSm,
   },
   row: {
     flexDirection: 'row',
@@ -135,7 +131,7 @@ const styles = StyleSheet.create({
   label: { fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.semibold },
   labelAccent: { color: AppColors.accent },
   labelDanger: { color: StatusColors.danger },
-  description: { fontSize: Font.caption, color: AppColors.sub, lineHeight: 18 },
+  description: { fontSize: Font.caption, color: AppColors.sub, lineHeight: LineHeight.caption },
   // 값은 라벨보다 한 톤 약하게 — 레퍼런스처럼 "라벨 좌 / 값 우"
   value: { fontSize: Font.body, color: AppColors.sub },
   pressed: { opacity: 0.55 },

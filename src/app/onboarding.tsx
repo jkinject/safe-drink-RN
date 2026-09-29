@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -22,7 +21,8 @@ import { OnboardingRestoreCard } from '@/components/onboarding-restore-card';
 import { backupStore } from '@/state/backupStore';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
-import { Space, Radius, Font, IconSize, Weight } from '@/constants/tokens';
+import { PrimaryButton } from '@/components/primary-button';
+import { Space, Radius, Font, IconSize, LineHeight, Weight } from '@/constants/tokens';
 
 interface FieldError {
   height?: string;
@@ -43,7 +43,6 @@ export default function OnboardingScreen() {
   const [saving, setSaving] = useState(false);
   // 백업 로그인·조회·복원 중에는 저장을 막는다 — 복원이 프로필을 통째로 바꾸므로 섞이면 안 된다
   const backupBusy = backupStore(s => s.status !== 'idle');
-  const saveDisabled = saving || backupBusy;
 
   // Keep locale subscription alive so re-render happens on locale change
   void locale;
@@ -132,6 +131,7 @@ export default function OnboardingScreen() {
               label={i18n.t('onboardingFieldHeight')}
               hint={i18n.t('onboardingHeightHint')}
               unit={i18n.t('unitCm')}
+              keyboardType="number-pad"
               value={height}
               onChangeText={setHeight}
               error={errors.height}
@@ -143,6 +143,7 @@ export default function OnboardingScreen() {
               label={i18n.t('onboardingFieldWeight')}
               hint={i18n.t('onboardingWeightHint')}
               unit={i18n.t('unitKg')}
+              keyboardType="decimal-pad"
               value={weight}
               onChangeText={setWeight}
               error={errors.weight}
@@ -154,6 +155,7 @@ export default function OnboardingScreen() {
               label={i18n.t('onboardingFieldBirthYear')}
               hint={i18n.t('onboardingBirthYearHint')}
               unit={i18n.t('unitYear')}
+              keyboardType="number-pad"
               value={birthYear}
               onChangeText={setBirthYear}
               error={errors.birthYear}
@@ -187,18 +189,13 @@ export default function OnboardingScreen() {
           <DisclaimerBanner />
 
           <View style={styles.saveRow}>
-            <TouchableOpacity
-              style={[styles.saveBtn, saveDisabled && styles.saveBtnDisabled]}
+            <PrimaryButton
+              label={i18n.t('onboardingSave')}
               onPress={handleSave}
-              disabled={saveDisabled}
-              activeOpacity={0.8}
-            >
-              {saving ? (
-                <ActivityIndicator color={AppColors.white} size="small" />
-              ) : (
-                <Text style={styles.saveBtnText}>{i18n.t('onboardingSave')}</Text>
-              )}
-            </TouchableOpacity>
+              loading={saving}
+              disabled={backupBusy}
+              style={styles.saveBtn}
+            />
             <Image
               source={require('../../assets/images/character/mascot_water_shield.png')}
               style={styles.shieldChar}
@@ -219,12 +216,14 @@ interface FieldRowProps {
   label: string;
   hint: string;
   unit: string;
+  /** 정수만 받는 칸은 number-pad, 소수가 가능한 칸은 decimal-pad (iOS 에서 numeric 은 문장부호 쿼티가 뜬다) */
+  keyboardType: 'number-pad' | 'decimal-pad';
   value: string;
   onChangeText: (v: string) => void;
   error?: string;
 }
 
-function FieldRow({ icon, label, hint, unit, value, onChangeText, error }: FieldRowProps) {
+function FieldRow({ icon, label, hint, unit, keyboardType, value, onChangeText, error }: FieldRowProps) {
   return (
     <View style={fieldStyles.row}>
       <View style={fieldStyles.iconCircle}>
@@ -237,7 +236,7 @@ function FieldRow({ icon, label, hint, unit, value, onChangeText, error }: Field
             style={fieldStyles.input}
             placeholder={hint}
             placeholderTextColor={AppColors.sub}
-            keyboardType="numeric"
+            keyboardType={keyboardType}
             value={value}
             onChangeText={onChangeText}
           />
@@ -299,7 +298,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     fontSize: Font.bodySm,
     color: AppColors.sub,
-    lineHeight: 20,
+    lineHeight: LineHeight.bodySm,
     marginTop: Space.sm,
   },
   headerChar: { width: 120, height: 120, marginLeft: Space.md },
@@ -317,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: Font.bodySm,
     color: AppColors.navy,
     fontWeight: Weight.regular,
-    lineHeight: 18,
+    lineHeight: LineHeight.bodySm,
   },
   inputCard: {
     backgroundColor: AppColors.cardBg,
@@ -347,16 +346,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Space.sm,
   },
-  saveBtn: {
-    flex: 1,
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
+  // 오른쪽 방패 캐릭터와 한 줄이라 남는 폭만 차지한다
+  saveBtn: { flex: 1 },
   shieldChar: { width: 54, height: 54, marginLeft: Space.sm },
   privacyNote: {
     fontSize: Font.micro,

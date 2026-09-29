@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AppColors, cardShadowSm } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { DrinkSession } from '@/core/types';
@@ -81,21 +82,11 @@ export function LastSessionCard({ session, onPress }: LastSessionCardProps) {
         </Text>
       </View>
 
-      {/* 눌러서 넘어간다는 걸 보이게 하는 알약 버튼.
-          카드 전체가 이미 눌리는 영역이라 여기에 별도 터치 대상을 겹치지 않고
-          보이기만 하는 View 로 둔다 — 중첩 터치는 눌림 반응이 어긋난다 */}
+      {/* 눌러서 넘어간다는 걸 보이게 하는 버튼 — 홈 빈 상태의 "계산법·법령 안내" 와 같은 모양(outline cta).
+          카드 전체가 이미 눌리는 영역이라 버튼은 터치를 받지 않고 보이기만 한다
+          (pointerEvents none) — 중첩 터치는 눌림 반응이 어긋난다 */}
       <View style={styles.cta} pointerEvents="none">
-        <Text style={styles.ctaText}>{i18n.t('historyViewAll')}</Text>
-        {/* 아이콘 세트에 오른쪽 화살표가 없어 아래 화살표를 돌려 쓴다.
-            Icon 은 style 을 받지 않으므로 회전은 감싼 View 에 건다 */}
-        <View style={styles.ctaChevron}>
-          <Icon
-            name="chevronDown"
-            size={IconSize.sm}
-            color={AppColors.accent}
-            strokeWidth={2.4}
-          />
-        </View>
+        <PrimaryButton variant="outline" label={i18n.t('historyViewAll')} onPress={onPress} />
       </View>
     </TouchableOpacity>
   );
@@ -125,17 +116,5 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
     backgroundColor: AppColors.border,
   },
-  cta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Space.xs,
-    backgroundColor: AppColors.bg,
-    borderRadius: Radius.pill,
-    paddingVertical: Space.md,
-    paddingHorizontal: Space.lg,
-    marginTop: Space.xs,
-  },
-  ctaText: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.accent },
-  ctaChevron: { transform: [{ rotate: '-90deg' }] },
+  cta: { marginTop: Space.xs },
 });

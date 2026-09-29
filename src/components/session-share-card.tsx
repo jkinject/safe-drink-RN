@@ -208,6 +208,7 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, flexWrap: 'wrap' },
   badge: { paddingHorizontal: Space.xs, paddingVertical: Space.xxs, borderRadius: Radius.sm, flexShrink: 1 },
   badgeText: { fontSize: Font.micro, fontWeight: Weight.bold },
+  // SectionTitle(h3) 예외 — 360pt 캡처용 소형 레이아웃이라 섹션 제목도 micro 로 작게 둔다
   sectionTitle: { fontSize: Font.micro, fontWeight: Weight.semibold, color: AppColors.sub, letterSpacing: 0.2 },
   drinks: { gap: Space.sm },
   chart: { gap: Space.xs },

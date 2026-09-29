@@ -10,9 +10,11 @@ import { useRouter } from 'expo-router';
 import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
+import { SectionTitle } from '@/components/section-title';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -26,10 +28,7 @@ interface SectionCardProps {
 function SectionCard({ icon, title, children, bgColor }: SectionCardProps) {
   return (
     <View style={[sectionStyles.card, bgColor ? { backgroundColor: bgColor } : null]}>
-      <View style={sectionStyles.header}>
-        <Icon name={icon} size={IconSize.md} color={AppColors.accent} strokeWidth={2.1} />
-        <Text style={sectionStyles.title}>{title}</Text>
-      </View>
+      <SectionTitle icon={icon}>{title}</SectionTitle>
       {children}
     </View>
   );
@@ -43,8 +42,6 @@ const sectionStyles = StyleSheet.create({
     ...cardShadowSm,
     gap: 0,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: Space.sm, marginBottom: Space.lg },
-  title: { flex: 1, fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
 });
 
 // ── Formula box ───────────────────────────────────────────────────────────────
@@ -102,7 +99,7 @@ const lawStyles = StyleSheet.create({
     gap: Space.sm,
   },
   title: { fontSize: Font.body, fontWeight: Weight.bold },
-  detail: { fontSize: Font.bodySm, color: AppColors.navy, lineHeight: 18 },
+  detail: { fontSize: Font.bodySm, color: AppColors.navy, lineHeight: LineHeight.bodySm },
 });
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -202,13 +199,7 @@ export default function InfoScreen() {
         </SectionCard>
 
         {/* Close button */}
-        <TouchableOpacity
-          style={styles.closeBtn}
-          onPress={() => router.back()}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.closeBtnText}>{i18n.t('formulaDialogClose')}</Text>
-        </TouchableOpacity>
+        <PrimaryButton label={i18n.t('formulaDialogClose')} onPress={() => router.back()} />
 
         <View style={{ height: Space.xxxl }} />
       </ScrollView>
@@ -242,7 +233,7 @@ const styles = StyleSheet.create({
   introText: {
     fontSize: Font.body,
     color: AppColors.navy,
-    lineHeight: 21,
+    lineHeight: LineHeight.body,
   },
   subtitleText: {
     fontSize: Font.caption,
@@ -268,16 +259,7 @@ const styles = StyleSheet.create({
     fontSize: Font.micro,
     color: AppColors.sub,
     fontStyle: 'italic',
-    lineHeight: 16,
+    lineHeight: LineHeight.micro,
     marginTop: Space.xs,
   },
-  closeBtn: {
-    alignSelf: 'center',
-    width: 220,
-    backgroundColor: AppColors.accent,
-    borderRadius: Radius.md,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-  },
-  closeBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

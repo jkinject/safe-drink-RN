@@ -13,6 +13,7 @@ import {
 } from '@/components/drink-icon';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
+import { SectionTitle } from '@/components/section-title';
 import { i18n } from '@/i18n';
 import { localeStore } from '@/state/localeStore';
 import { presetsStore } from '@/state/presetsStore';
@@ -329,7 +330,7 @@ function SessionCard({ session, locale, iconFor, onDelete }: SessionCardProps) {
           스크롤할 때마다 카드가 두 번 자라 보인다 */}
       {records != null && records.length > 0 && (
         <View style={cardStyles.drinkList}>
-          <Text style={cardStyles.drinkListTitle}>{i18n.t('historyDrinkList')}</Text>
+          <SectionTitle>{i18n.t('historyDrinkList')}</SectionTitle>
           {records.map((record, index) => (
             <DrinkRow
               key={record.id ?? index}
@@ -362,11 +363,6 @@ const cardStyles = StyleSheet.create({
     paddingVertical: Space.lg,
     // 행이 아이콘·2줄 텍스트·칩으로 커져서 sm 로는 서로 붙어 보인다
     gap: Space.md,
-  },
-  drinkListTitle: {
-    fontSize: Font.caption,
-    fontWeight: Weight.semibold,
-    color: AppColors.sub,
   },
 });
 

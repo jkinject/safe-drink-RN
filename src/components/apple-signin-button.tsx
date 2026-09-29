@@ -4,7 +4,7 @@
  * ⚠️ 브랜딩 예외: 이 버튼은 expo-apple-authentication 의 네이티브 `ASAuthorizationAppleIDButton` 을
  * 그대로 쓴다. Apple HIG(Sign in with Apple)가 승인된 문구·로고·색·비율을 강제하므로 앱 토큰으로
  * 색·글꼴·문구를 바꾸지 않는다(검은 BLACK 스타일 + 시스템 현지화 문구 "Apple로 로그인").
- * 앱 규칙에서 가져오는 것은 모서리(Radius.md)와 높이(SIGN_IN_BUTTON_HEIGHT — iOS 44 / 그 외 48, Google 버튼과 같은 높이)뿐이다.
+ * 앱 규칙에서 가져오는 것은 모서리(Radius.md)와 높이(SIGN_IN_BUTTON_HEIGHT — 44, Google 버튼과 같은 높이)뿐이다.
  * `style` 로 backgroundColor·borderRadius 를 주면 심사 가이드 위반이라 넣지 않는다.
  *
  * Android 이거나 이 기기에서 Apple 로그인을 쓸 수 없으면(iOS 13 미만 등) 아무것도 그리지 않는다.
@@ -19,10 +19,10 @@ import { i18n } from '@/i18n';
 
 /**
  * 로그인 버튼 높이 — Apple·Google 버튼이 같이 쓴다(HIG: 다른 제공자 버튼보다 작게 만들지 않는다).
- * iOS 는 Apple HIG 기본 44pt — 네이티브 버튼은 높이에 비례해 시스템 라벨을 키우므로 48 이면 글자가 커 보인다
- * (44 에서 라벨 ≈ 18.9pt). Android 는 Google 버튼 하나뿐이라 최소 터치 높이 48 을 유지한다.
+ * Apple HIG 기본 44pt — 네이티브 버튼은 높이에 비례해 시스템 라벨을 키우므로 48 이면 글자가 커 보인다
+ * (44 에서 라벨 ≈ 18.9pt). 플랫폼별 예외 없이 동일 UI 로 가기로 해 Android(Google 버튼)도 44 로 맞춘다.
  */
-export const SIGN_IN_BUTTON_HEIGHT = Platform.select({ ios: 44, default: 48 });
+export const SIGN_IN_BUTTON_HEIGHT = 44;
 
 /**
  * isAvailable() 결과는 기기가 바뀌지 않는 한 그대로라 앱 수명 동안 한 번만 묻는다.

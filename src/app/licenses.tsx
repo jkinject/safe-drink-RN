@@ -17,7 +17,7 @@ import { SheetHandle } from '@/components/sheet-handle';
 import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
 import licenseData from '@/constants/licenses.json';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { Font, IconSize, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
  * 오픈소스 라이선스 고지 화면.
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   appTitle: { fontSize: Font.h3, fontWeight: Weight.bold, color: AppColors.navy, flex: 1, textAlign: 'center' },
   listContent: { paddingHorizontal: Space.lg, paddingBottom: Space.xxl },
   intro: { paddingVertical: Space.md, gap: Space.xs },
-  introText: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: 20 },
+  introText: { fontSize: Font.bodySm, color: AppColors.sub, lineHeight: LineHeight.bodySm },
   introMeta: { fontSize: Font.micro, color: AppColors.sub, opacity: 0.8 },
   row: {
     flexDirection: 'row',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   licenseText: {
     fontSize: Font.micro,
     color: AppColors.sub,
-    lineHeight: 18,
+    lineHeight: LineHeight.micro,
     marginBottom: Space.lg,
   },
 });

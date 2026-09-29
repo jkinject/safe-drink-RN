@@ -1,8 +1,9 @@
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { create } from 'zustand';
-import { AppColors, StatusColors, dialogShadow  } from '@/constants/colors';
-import { Font, Radius, Space, Weight } from '@/constants/tokens';
+import { AppColors, StatusColors, dialogShadow } from '@/constants/colors';
+import { Font, LineHeight, Radius, Space, Weight } from '@/constants/tokens';
 import { Text } from '@/components/typography';
+import { PrimaryButton } from '@/components/primary-button';
 
 /**
  * 앱 공통 다이얼로그.
@@ -127,42 +128,35 @@ export function DialogHost() {
                   </Text>
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.cancelAction]}
+              <PrimaryButton
+                size="row"
+                variant="outline"
+                label={request.cancelLabel}
                 onPress={() => close(null)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.cancelText}>{request.cancelLabel}</Text>
-              </TouchableOpacity>
+              />
             </View>
           ) : request.kind === 'alert' ? (
-            <TouchableOpacity
-              style={styles.primaryBtn}
+            <PrimaryButton
+              size="row"
+              label={request.confirmLabel}
               onPress={() => close(undefined)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.primaryText}>{request.confirmLabel}</Text>
-            </TouchableOpacity>
+            />
           ) : (
             <View style={styles.row}>
-              <TouchableOpacity
-                style={[styles.cancelBtn, styles.rowItem]}
+              <PrimaryButton
+                size="row"
+                variant="outline"
+                label={request.cancelLabel}
                 onPress={() => close(false)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.cancelText}>{request.cancelLabel}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.primaryBtn,
-                  styles.rowItem,
-                  request.destructive && styles.dangerBtn,
-                ]}
+                style={styles.rowItem}
+              />
+              <PrimaryButton
+                size="row"
+                variant={request.destructive ? 'danger' : 'filled'}
+                label={request.confirmLabel}
                 onPress={() => close(true)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.primaryText}>{request.confirmLabel}</Text>
-              </TouchableOpacity>
+                style={styles.rowItem}
+              />
             </View>
           )}
         </View>
@@ -196,28 +190,13 @@ const styles = StyleSheet.create({
     fontSize: Font.body,
     color: AppColors.sub,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: LineHeight.body,
   },
   row: { flexDirection: 'row', gap: Space.md, marginTop: Space.xs },
   // row 안에서 좌우로 나눌 때만 flex 를 준다.
   // 단독으로 쓰는 알림 버튼에 flex 가 붙으면 세로 축에 작용해 높이가 0이 된다
   rowItem: { flex: 1 },
-  primaryBtn: {
-    paddingVertical: Space.md,
-    alignItems: 'center',
-    borderRadius: Radius.md,
-    backgroundColor: AppColors.accent,
-  },
-  dangerBtn: { backgroundColor: StatusColors.danger },
-  primaryText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
-  cancelBtn: {
-    paddingVertical: Space.md,
-    alignItems: 'center',
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-  },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold, fontSize: Font.body },
+  // 동작 목록의 항목은 "고르는 선택지" 라 버튼(PrimaryButton)이 아니라 목록 행 모양을 유지한다
   actionList: { gap: Space.sm },
   actionBtn: {
     paddingVertical: Space.md,
@@ -227,5 +206,4 @@ const styles = StyleSheet.create({
   },
   actionText: { color: AppColors.navy, fontWeight: Weight.semibold, fontSize: Font.body },
   destructiveText: { color: StatusColors.danger },
-  cancelAction: { backgroundColor: 'transparent' },
 });

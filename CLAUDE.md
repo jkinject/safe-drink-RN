@@ -145,5 +145,6 @@ src/
 
 - 색은 `AppColors`(바탕·글자·선·panel·selectedBg·overlay·white) + `StatusColors`(warning 노랑 / caution 주황=면허 정지 / danger 빨강=면허 취소·삭제 / info 파랑) 두 벌뿐. **화면에 hex 리터럴을 쓰지 말 것** — 2026-09-11 전수 치환함. BAC 뱃지 색은 `bacBadgeColors(level)` (core 의 `getBacBadge` 는 level 만 돌려준다).
 - 그림자는 다섯 가지 토큰만: cardShadowSm / cardShadow / dialogShadow / fabShadow / tabBarShadow. `shadowOpacity` 를 화면에서 직접 쓰지 않는다.
+- **섹션 제목은 `SectionTitle`, 버튼은 `PrimaryButton`(Google/Apple 브랜딩 버튼만 예외), 줄높이는 `LineHeight` 토큰 — 화면에서 직접 스타일 만들지 말 것.** 플랫폼별 예외 없이 동일 UI(로그인 버튼 높이도 양쪽 44). 조합 표는 `src/constants/tokens.ts`.
 - 하단 여백·FAB 위치는 `@/constants/layout` 의 `TAB_BAR_HEIGHT` 로 계산 (눈대중 90 금지). 모달·상세 화면 앱바는 제목 h3 가운데 + 좌우 슬롯 `Space.xxxl`, 탭 화면 제목은 h2 + letterSpacing -0.3.
 - 디자인 캔버스(Claude Design 아티팩트 "Safedrink 디자인")는 코드에서 뽑은 문서다. 토큰이 바뀌면 캔버스를 다시 생성해 맞춘다.
