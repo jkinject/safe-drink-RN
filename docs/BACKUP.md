@@ -188,6 +188,15 @@ npx eas-cli env:update --environment production --name EXPO_PUBLIC_BACKUP_API_UR
 
 OAuth 동의 화면은 외부·프로덕션 게시(민감 범위 없음). Android 클라이언트 ID 는 코드에 쓰지 않는다 — Google 이 패키지+SHA-1 로 자동 매칭한다.
 
+## 사용자 키 규칙 (서버·클라이언트 공통, 어긋나면 로그인이 늘 실패한다)
+
+| 제공자 | `backups.user_sub` · 세션 토큰 `sub` |
+|---|---|
+| Google | Google `sub` 그대로 (기존 Android 백업 행 호환) |
+| Apple | `apple:<sub>` |
+
+서버 `server/backup-worker/src/handler.ts` `userKeyOf` 와 앱 `src/services/auth/types.ts` `userKeyOf` 가 같은 규칙이어야 한다. `/auth/session` 응답의 `sub` 는 이 사용자 키다 — 앱은 원본 sub 가 아니라 `userKeyOf(provider, sub)` 와 비교한다(2026-09-29 실기기에서 Apple 로그인이 늘 실패하던 원인).
+
 ## 무료 한도 (공식 문서 2026-09 확인)
 
 | 항목 | Workers Free | D1 Free | 비고 |
