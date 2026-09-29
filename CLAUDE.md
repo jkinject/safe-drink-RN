@@ -121,6 +121,7 @@ src/
 - **React Compiler 실험 기능 끔** (app.json experiments) — zustand v5와 충돌해 "Should have a queue" 렌더 오류. 다시 켜지 말 것.
 - **patch-package**: `patches/expo-modules-jsi+*.patch` — 최신 Xcode Swift 타입 추론 버그 수정(`JavaScriptCodable+Date.swift` 한 줄, `abs()` → `.magnitude`). postinstall로 자동 적용.
   - **이 패치에 `apple/Products/`·`.DerivedData/`·`.generated/` 를 절대 넣지 말 것.** ExpoModulesJSI 는 빌드 시 `scripts/build-xcframework.sh` 가 소스 해시(`.build-hash`)를 비교해 xcframework 를 만드는데, 해시 파일과 0바이트 바이너리(patch-package 는 바이너리를 못 실음)가 같이 들어가면 재빌드를 건너뛰고 깨진 프레임워크를 써서 clean install 후 "malformed compiled module … ExpoModulesJSI.swiftdoc" 로 빌드가 깨진다(실제로 11MB 패치로 겪음). 재생성은 `npm pack expo-modules-jsi@<ver>` 원본 위에 한 줄만 고치고 `npx patch-package expo-modules-jsi`, 그 뒤 `grep '^diff --git'` 로 파일 하나뿐인지 확인.
+- **iOS Debug 구성은 Xcode 26.2 에서 `RNDateTimePicker` 링크 오류**(`facebook::react::Sealable::Sealable()` undefined — `REACT_NATIVE_DEBUG` 유무로 Sealable 정의가 갈리는데 pod 간 플래그가 안 맞음). 시뮬레이터 확인은 `npx expo run:ios --configuration Release --device …` 로 우회(JS 번들 내장, Metro 불필요). `ios/build` 를 지웠으면 `pod install` 을 다시 해야 codegen 산출물이 생긴다.
 - **`expo-store-review` 는 57.0.1 고정.** 57.0.2 가 `SceneGeometry`(expo-modules-core 57.0.17+) 를 참조해 현재 core 57.0.10 에서 iOS 빌드가 "cannot find 'SceneGeometry' in scope" 로 깨진다. core 를 올릴 때 같이 풀 것.
 - **react-native-svg는 height 필수** — 없으면 높이 0으로 보이지 않음. BacGraph는 onLayout 실측 폭 기반 픽셀 렌더링 사용 (viewBox 스케일링 금지).
 - **datetimepicker는 신 API** — `onValueChange`/`onDismiss` (onChange는 deprecated).

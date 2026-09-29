@@ -204,7 +204,21 @@ function CountdownCard({
 }) {
   return (
     <View style={countdownStyles.card}>
-      <Text style={countdownStyles.label}>{i18n.t('soberAt')}</Text>
+      {/* 제목 왼쪽 + 깨는 시각 알약 오른쪽 한 줄, 그 아래 타이머·진행바 — 가운데 정렬 4단이던
+          카드를 낮춘다. 타이머(display 44) 옆에 알약을 두면 폰 폭(≈338pt)에 안 들어가서 제목 줄에 붙였다 */}
+      <View style={countdownStyles.headRow}>
+        <Text style={countdownStyles.label}>{i18n.t('soberAt')}</Text>
+        {soberAtMs != null && (
+          <View style={countdownStyles.soberRow}>
+            <Icon name="clock" size={IconSize.sm} color={AppColors.accent} strokeWidth={2.2} />
+            <Text style={countdownStyles.soberText}>
+              {i18n.t('timerSoberAtClock', {
+                time: formatSoberClock(soberAtMs, locale),
+              })}
+            </Text>
+          </View>
+        )}
+      </View>
       <Text style={countdownStyles.time}>{formatDuration(remainingHrs)}</Text>
       <View style={countdownStyles.progressBg}>
         <View
@@ -214,16 +228,6 @@ function CountdownCard({
           ]}
         />
       </View>
-      {soberAtMs != null && (
-        <View style={countdownStyles.soberRow}>
-          <Icon name="clock" size={IconSize.sm} color={AppColors.accent} strokeWidth={2.2} />
-          <Text style={countdownStyles.soberText}>
-            {i18n.t('timerSoberAtClock', {
-              time: formatSoberClock(soberAtMs, locale),
-            })}
-          </Text>
-        </View>
-      )}
     </View>
   );
 }
@@ -233,16 +237,22 @@ const countdownStyles = StyleSheet.create({
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
     padding: Space.lg,
-    alignItems: 'center',
+    alignItems: 'stretch',
     ...cardShadowSm,
   },
-  label: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular },
+  label: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, flexShrink: 1 },
+  headRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Space.sm,
+  },
   time: {
     fontSize: Font.display,
     fontWeight: Weight.bold,
     color: AppColors.navy,
     letterSpacing: 2,
-    marginVertical: Space.sm,
+    marginVertical: Space.xs,
     fontVariant: ['tabular-nums'],
   },
   progressBg: {
@@ -263,14 +273,13 @@ const countdownStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Space.xs,
-    marginTop: Space.md,
     backgroundColor: AppColors.accentTint,
     paddingHorizontal: Space.md,
-    paddingVertical: Space.sm,
+    paddingVertical: Space.xs,
     borderRadius: Radius.pill,
   },
   soberText: {
-    fontSize: Font.body,
+    fontSize: Font.bodySm,
     fontWeight: Weight.bold,
     color: AppColors.accent,
   },
@@ -356,49 +365,60 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete, onDuplicat
           </View>
           <Text style={tileStyles.finishedText}>{formatRecordRange(record)}</Text>
         </View>
-        {/* 복제 → 삭제 순. 되돌릴 수 없는 삭제를 가장자리에 두어야 오탭이 덜하다 */}
+        {/* 복제 → 삭제 순. 되돌릴 수 없는 삭제를 가장자리에 두어야 오탭이 덜하다.
+            hitSlop 대신 48dp 슬롯 — 슬롯끼리, 그리고 아래 다마심과 터치 영역이 겹치지 않는다 */}
         <View style={tileStyles.actions}>
           <TouchableOpacity
             onPress={onDuplicate}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={tileStyles.actionSlot}
             accessibilityLabel={i18n.t('recordDuplicate')}
           >
-            <Icon name="copy" size={20} color={AppColors.accent} strokeWidth={1.8} />
+            <Icon name="copy" size={IconSize.md} color={AppColors.accent} strokeWidth={1.8} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onDelete}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={tileStyles.actionSlot}
             accessibilityLabel={i18n.t('recordDelete')}
           >
-            <Icon name="delete" size={20} color={AppColors.sub} strokeWidth={1.8} />
+            <Icon name="delete" size={IconSize.md} color={AppColors.sub} strokeWidth={1.8} />
           </TouchableOpacity>
         </View>
       </View>
-      {/* Row 2: 도수·용량 뱃지 (+ 다마심) */}
+      {/* Row 2: 도수·용량 뱃지 */}
       <View style={[tileStyles.row, { marginTop: Space.sm }]}>
         <View style={tileStyles.abvBadge}>
           <Text style={tileStyles.badgeText}>
             {i18n.t('recordAbvVolumeLabel', { abv: abvStr, volume: volumeStr })}
           </Text>
         </View>
-        <View style={tileStyles.spacer} />
-        {isDrinking && (
-          <TouchableOpacity
-            style={tileStyles.finishBtn}
-            onPress={onFinish}
-            activeOpacity={0.8}
-          >
-            <Text style={tileStyles.finishBtnText}>{i18n.t('finishedButton')}</Text>
-          </TouchableOpacity>
-        )}
       </View>
+      {/* Row 3: 다마심 — 술자리 중 가장 자주, 가장 안 좋은 조건(한 손·어두움·취함)에서 누르는 버튼.
+          카드 폭 전체·48dp 로 키우고, 복제·삭제와는 두 줄 떨어뜨려 오탭을 막는다 (사용자 피드백) */}
+      {isDrinking && (
+        <TouchableOpacity
+          style={tileStyles.finishBtn}
+          onPress={onFinish}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={`${title} · ${i18n.t('finishedButton')}`}
+        >
+          <Text style={tileStyles.finishBtnText}>{i18n.t('finishedButton')}</Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }
 
 const tileStyles = StyleSheet.create({
-  // 복제·삭제 두 버튼을 묶는다. 간격을 좁히면 삭제를 오탭하기 쉽다
-  actions: { flexDirection: 'row', alignItems: 'center', gap: Space.lg },
+  // 복제·삭제 두 버튼을 묶는다. 슬롯이 48dp 라 간격은 sm 으로 충분하다
+  actions: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
+  // 48dp = Space.xxl × 2. 아이콘은 20 이지만 터치 영역은 접근성 최소 크기로
+  actionSlot: {
+    width: Space.xxl * 2,
+    height: Space.xxl * 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   container: {
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.lg,
@@ -413,7 +433,6 @@ const tileStyles = StyleSheet.create({
   titleCol: { flex: 1, minWidth: 0 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: Space.sm },
   titleText: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy, flexShrink: 1 },
-  spacer: { flex: 1 },
   drinkingBadge: {
     backgroundColor: StatusColors.warningBg,
     borderRadius: Radius.sm,
@@ -433,12 +452,14 @@ const tileStyles = StyleSheet.create({
   finishedText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, flex: 1 },
   recordedTime: { fontSize: Font.micro, color: AppColors.sub },
   finishBtn: {
+    marginTop: Space.md,
+    minHeight: Space.xxl * 2,
     backgroundColor: AppColors.accent,
     borderRadius: Radius.md,
-    paddingHorizontal: Space.md,
-    paddingVertical: Space.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  finishBtnText: { color: AppColors.white, fontWeight: Weight.semibold, fontSize: Font.caption },
+  finishBtnText: { color: AppColors.white, fontWeight: Weight.semibold, fontSize: Font.h4 },
 });
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
