@@ -41,7 +41,7 @@ Safedrink — 술 깨는 시간 계산
 
 ### 홍보 문구 (170자, 심사 없이 수정 가능)
 ```
-마신 술을 한 잔씩 기록하면 내 몸에 맞춘 혈중알코올농도와 완전히 깨는 시각을 계산해 잠금화면과 다이내믹 아일랜드에서 카운트다운해 드려요. 회원가입 없음, 기록은 기기 안에만.
+마신 술을 한 잔씩 기록하면 내 몸에 맞춘 혈중알코올농도와 완전히 깨는 시각을 계산해 잠금화면과 다이내믹 아일랜드에서 카운트다운해 드려요. 회원가입 없이 바로 시작, 백업은 원할 때만.
 ```
 
 ### 키워드 (100자, 쉼표 구분, 이름·부제에 있는 단어는 중복 불필요)
@@ -74,8 +74,8 @@ Safedrink — 술 깨는 시간 계산
 ■ 지난 술자리 다시 보기
 술이 깨면 그날의 기록이 자동으로 정리되어 보관됩니다. 몇 시부터 몇 시까지 마셨는지, 몇 시에 깼는지, 총 알코올 섭취량과 최고 혈중알코올농도를 그래프와 함께 다시 볼 수 있고, 카드 이미지로 공유할 수 있습니다.
 
-■ 개인정보를 수집하지 않습니다
-회원가입이 없습니다. 입력하신 신체 정보와 음주 기록은 기기 안에만 저장되며 서버로 전송되지 않습니다. 원하신다면 설정에서 Google 또는 Apple 계정으로 로그인해 기록을 백업하고 다른 기기에서 복원할 수 있습니다(완전히 선택 사항입니다).
+■ 개인정보는 최소한으로
+회원가입 없이 바로 쓸 수 있습니다. 입력하신 신체 정보와 음주 기록은 기본적으로 기기 안에만 저장됩니다. 원하신다면 설정에서 Google 또는 Apple 계정으로 로그인해 기록을 백업하고, 재설치하거나 기기를 바꿀 때 복원할 수 있습니다. 백업은 완전히 선택 사항이며, 언제든 설정에서 백업을 삭제하고 연동을 해제할 수 있습니다.
 
 무료이며 광고가 없습니다. 한국어와 영어를 지원합니다.
 
@@ -115,7 +115,7 @@ BAC timer on your Lock Screen
 
 ### Promotional text (170)
 ```
-Log each drink and Safedrink estimates your BAC and counts down to sober — on your Lock Screen and in the Dynamic Island. No account, nothing leaves your phone.
+Log each drink and Safedrink estimates your BAC and counts down to sober — on your Lock Screen and in the Dynamic Island. No sign-up needed; backup is optional.
 ```
 
 ### Keywords (100)
@@ -148,7 +148,7 @@ The remaining time counts down on your Lock Screen and in the Dynamic Island as 
 When you sober up, the session is saved automatically: start and end time, total alcohol, peak BAC and the graph — and you can share it as a card image.
 
 ■ Private by design
-No account, no sign-up. Your body data and drink history stay on your device and are never uploaded. If you'd like, you can sign in with Google or Apple in Settings to back up your data and restore it on another device — this is entirely optional.
+No sign-up needed. Your body data and drink history stay on your device by default. If you'd like, sign in with Google or Apple in Settings to back up your data and restore it after a reinstall or on a new device — entirely optional, and you can delete the backup and unlink at any time.
 
 Safedrink is free, with no ads. Available in English and Korean.
 
@@ -171,6 +171,7 @@ First release. Log your drinks, get a BAC estimate tuned to your body, and watch
 
 ## 심사 노트 (App Review Information → Notes)
 
+**1.3.0 부터는 `store/app-review-notes-1.3.0.md` 의 축약본을 쓴다(2.1 6개 항목, 4,000자 이내).** 아래는 1.2.2 첫 제출 때 넣었던 원문.
 계정 없음 → 데모 계정 불필요. 연락처는 개발자 이메일.
 
 ```
