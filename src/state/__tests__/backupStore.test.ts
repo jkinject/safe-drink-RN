@@ -75,7 +75,9 @@ const SESSION_TTL = 30 * DAY;
 let sessionSeq = 0;
 function defaultCreateSession(provider: 'google' | 'apple', idToken: string) {
   sessionSeq += 1;
-  const sub = provider === 'apple' ? APPLE_ACCOUNT.sub : ACCOUNT.sub;
+  // 실제 Worker 처럼 사용자 키를 돌려준다 — Apple 은 `apple:` 접두사. 이걸 원본 sub 로 흉내 내면
+  // 클라이언트의 sub 비교 버그(실기기에서 Apple 로그인이 늘 실패하던 원인)를 못 잡는다
+  const sub = provider === 'apple' ? `apple:${APPLE_ACCOUNT.sub}` : ACCOUNT.sub;
   return Promise.resolve({
     sessionToken: `session-${provider}-${sessionSeq}`,
     expiresAt: Date.now() + SESSION_TTL,
@@ -457,7 +459,7 @@ describe('Apple 로그인', () => {
     expect(fetchBackup).toHaveBeenCalledWith('session-apple-1');
     expect(backupStore.getState()).toMatchObject({ account: APPLE_ACCOUNT, awaitingDecision: false });
     expect(JSON.parse((await AsyncStorage.getItem('backup_account'))!)).toEqual(APPLE_ACCOUNT);
-    expect(await storedSession()).toMatchObject({ token: 'session-apple-1', sub: APPLE_ACCOUNT.sub });
+    expect(await storedSession()).toMatchObject({ token: 'session-apple-1', sub: `apple:${APPLE_ACCOUNT.sub}` });
   });
 
   it('found — 선택 대기 동안 계정·세션을 저장하지 않고, 교체(backupNow) 때 함께 저장해 그 세션으로 올린다', async () => {
@@ -551,7 +553,8 @@ async function linkedApple(session: { expiresAt: number; token?: string }) {
       JSON.stringify({
         token: session.token ?? 'stored-apple-session',
         expiresAt: session.expiresAt,
-        sub: APPLE_ACCOUNT.sub,
+        // 저장된 세션의 sub 는 서버 사용자 키(apple: 접두사)
+        sub: `apple:${APPLE_ACCOUNT.sub}`,
       }),
     ],
   ]);

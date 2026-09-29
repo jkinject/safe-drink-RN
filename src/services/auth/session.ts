@@ -10,7 +10,7 @@
  */
 import { BackupApiError, createSession } from '../backup/api';
 import type { StoredSession } from '../../storage/backupStorage';
-import { AuthError, type AuthProvider, type ProviderSignIn } from './types';
+import { AuthError, userKeyOf, type AuthProvider, type ProviderSignIn } from './types';
 
 /** 제공자 ID 토큰 → 서버 세션. 실패는 BackupApiError(401=reauth, 503=server, 오프라인=network) */
 export async function exchangeForSession(
@@ -33,7 +33,8 @@ export async function openSession(
 ): Promise<{ accessToken: string; session: StoredSession | null }> {
   try {
     const session = await exchangeForSession(signed.provider, signed.idToken);
-    if (session.sub !== signed.sub) {
+    // 서버는 사용자 키(Apple 은 `apple:` 접두사)를 돌려준다 — 원본 sub 와 비교하면 Apple 이 늘 실패한다
+    if (session.sub !== userKeyOf(signed.provider, signed.sub)) {
       throw new AuthError('reauth', 'Session subject does not match signed-in account');
     }
     return { accessToken: session.token, session };

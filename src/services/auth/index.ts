@@ -12,7 +12,7 @@ import { BackupApiError } from '../backup/api';
 import * as apple from './apple';
 import * as google from './google';
 import { exchangeForSession } from './session';
-import { AuthError, type AuthProvider, type ProviderSignIn } from './types';
+import { AuthError, userKeyOf, type AuthProvider, type ProviderSignIn } from './types';
 
 export { apple, google };
 export { openSession } from './session';
@@ -49,7 +49,7 @@ export async function getAccessToken(account: AuthAccount): Promise<string> {
   const now = Date.now();
   const saved = await backupStorage.loadSession().catch(() => null);
   const usable =
-    saved && saved.sub === account.sub && saved.expiresAt - now > SESSION_MIN_VALID_MS
+    saved && saved.sub === userKeyOf(account.provider, account.sub) && saved.expiresAt - now > SESSION_MIN_VALID_MS
       ? saved
       : null;
   if (usable && usable.expiresAt - now >= SESSION_REFRESH_BEFORE_MS) return usable.token;

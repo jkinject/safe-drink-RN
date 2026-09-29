@@ -52,3 +52,12 @@ export function readJwtClaims(token: string): { sub: string; email: string | nul
   }
   throw new AuthError('unknown', 'Malformed ID token');
 }
+
+/**
+ * 서버(Worker)가 백업 행·세션 토큰의 `sub` 로 쓰는 사용자 키.
+ * Google 은 sub 그대로(기존 Android 백업 행과 호환), Apple 은 `apple:` 접두사 — 두 제공자의 sub 가
+ * 우연히 겹쳐도 다른 행이 되게 한다. 서버 `handler.ts` 의 `userKeyOf` 와 반드시 같아야 한다.
+ */
+export function userKeyOf(provider: AuthProvider, sub: string): string {
+  return provider === 'apple' ? `apple:${sub}` : sub;
+}
