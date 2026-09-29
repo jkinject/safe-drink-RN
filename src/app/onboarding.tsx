@@ -5,8 +5,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,20 +13,14 @@ import { Sex } from '@/core/types';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
-import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
+import { AppColors, cardShadowSm } from '@/constants/colors';
 import { DisclaimerBanner } from '@/components/disclaimer-banner';
 import { OnboardingRestoreCard } from '@/components/onboarding-restore-card';
 import { backupStore } from '@/state/backupStore';
-import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { PrimaryButton } from '@/components/primary-button';
-import { Space, Radius, Font, IconSize, LineHeight, Weight } from '@/constants/tokens';
-
-interface FieldError {
-  height?: string;
-  weight?: string;
-  birthYear?: string;
-}
+import { ProfileField, ProfileFieldErrors, ProfileFields, SexSelector } from '@/components/profile-form';
+import { Space, Radius, Font, LineHeight, Weight } from '@/constants/tokens';
 
 export default function OnboardingScreen() {
   const locale = localeStore(s => s.locale);
@@ -39,8 +31,13 @@ export default function OnboardingScreen() {
   const [weight, setWeight] = useState('');
   const [birthYear, setBirthYear] = useState('');
   const [sex, setSex] = useState<Sex>('male');
-  const [errors, setErrors] = useState<FieldError>({});
+  const [errors, setErrors] = useState<ProfileFieldErrors>({});
   const [saving, setSaving] = useState(false);
+  const setters: Record<ProfileField, (v: string) => void> = {
+    height: setHeight,
+    weight: setWeight,
+    birthYear: setBirthYear,
+  };
   // 백업 로그인·조회·복원 중에는 저장을 막는다 — 복원이 프로필을 통째로 바꾸므로 섞이면 안 된다
   const backupBusy = backupStore(s => s.status !== 'idle');
 
@@ -48,7 +45,7 @@ export default function OnboardingScreen() {
   void locale;
 
   function validate(): boolean {
-    const errs: FieldError = {};
+    const errs: ProfileFieldErrors = {};
     const h = parseFloat(height);
     const w = parseFloat(weight);
     const by = parseInt(birthYear, 10);
@@ -124,43 +121,11 @@ export default function OnboardingScreen() {
           </View>
 
           {/* Input card */}
-          <View style={styles.inputCard}>
-            {/* Height */}
-            <FieldRow
-              icon="height"
-              label={i18n.t('onboardingFieldHeight')}
-              hint={i18n.t('onboardingHeightHint')}
-              unit={i18n.t('unitCm')}
-              keyboardType="number-pad"
-              value={height}
-              onChangeText={setHeight}
-              error={errors.height}
-            />
-            <View style={styles.divider} />
-            {/* Weight */}
-            <FieldRow
-              icon="weight"
-              label={i18n.t('onboardingFieldWeight')}
-              hint={i18n.t('onboardingWeightHint')}
-              unit={i18n.t('unitKg')}
-              keyboardType="decimal-pad"
-              value={weight}
-              onChangeText={setWeight}
-              error={errors.weight}
-            />
-            <View style={styles.divider} />
-            {/* Birth Year */}
-            <FieldRow
-              icon="birthYear"
-              label={i18n.t('onboardingFieldBirthYear')}
-              hint={i18n.t('onboardingBirthYearHint')}
-              unit={i18n.t('unitYear')}
-              keyboardType="number-pad"
-              value={birthYear}
-              onChangeText={setBirthYear}
-              error={errors.birthYear}
-            />
-          </View>
+          <ProfileFields
+            values={{ height, weight, birthYear }}
+            onChange={(field, v) => setters[field](v)}
+            errors={errors}
+          />
 
           {/* 기존 백업 복원 — 백업이 꺼진 빌드에서는 렌더하지 않는다 */}
           <OnboardingRestoreCard />
@@ -169,22 +134,7 @@ export default function OnboardingScreen() {
         {/* Fixed bottom: gender + disclaimer + save */}
         <View style={styles.bottom}>
           {/* Gender */}
-          <Text style={styles.genderLabel}>{i18n.t('settingsSex')}</Text>
-          <View style={styles.genderRow}>
-            <GenderCard
-              icon="male"
-              label={i18n.t('settingsMale')}
-              selected={sex === 'male'}
-              onPress={() => setSex('male')}
-            />
-            <View style={{ width: Space.md }} />
-            <GenderCard
-              icon="female"
-              label={i18n.t('settingsFemale')}
-              selected={sex === 'female'}
-              onPress={() => setSex('female')}
-            />
-          </View>
+          <SexSelector value={sex} onChange={setSex} />
 
           <DisclaimerBanner />
 
@@ -208,70 +158,6 @@ export default function OnboardingScreen() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-interface FieldRowProps {
-  icon: IconName;
-  label: string;
-  hint: string;
-  unit: string;
-  /** 정수만 받는 칸은 number-pad, 소수가 가능한 칸은 decimal-pad (iOS 에서 numeric 은 문장부호 쿼티가 뜬다) */
-  keyboardType: 'number-pad' | 'decimal-pad';
-  value: string;
-  onChangeText: (v: string) => void;
-  error?: string;
-}
-
-function FieldRow({ icon, label, hint, unit, keyboardType, value, onChangeText, error }: FieldRowProps) {
-  return (
-    <View style={fieldStyles.row}>
-      <View style={fieldStyles.iconCircle}>
-        <Icon name={icon} size={18} color={AppColors.accent} strokeWidth={2.1} />
-      </View>
-      <View style={fieldStyles.inputWrapper}>
-        <Text style={fieldStyles.labelText}>{label}</Text>
-        <View style={fieldStyles.inputRow}>
-          <TextInput
-            style={fieldStyles.input}
-            placeholder={hint}
-            placeholderTextColor={AppColors.sub}
-            keyboardType={keyboardType}
-            value={value}
-            onChangeText={onChangeText}
-          />
-          <Text style={fieldStyles.unitText}>{unit}</Text>
-        </View>
-        {error ? <Text style={fieldStyles.errorText}>{error}</Text> : null}
-      </View>
-    </View>
-  );
-}
-
-interface GenderCardProps {
-  icon: IconName;
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}
-
-function GenderCard({ icon, label, selected, onPress }: GenderCardProps) {
-  return (
-    <TouchableOpacity
-      style={[genderStyles.card, selected && genderStyles.cardSelected]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <Icon
-        name={icon}
-        size={IconSize.lg}
-        color={selected ? AppColors.accent : AppColors.sub}
-        strokeWidth={2}
-      />
-      <Text style={[genderStyles.label, selected && genderStyles.labelSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
   );
 }
 
@@ -318,29 +204,11 @@ const styles = StyleSheet.create({
     fontWeight: Weight.regular,
     lineHeight: LineHeight.bodySm,
   },
-  inputCard: {
-    backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.xl,
-    paddingHorizontal: Space.lg,
-    paddingVertical: Space.xs,
-    ...cardShadowSm,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: AppColors.border,
-  },
   bottom: {
     paddingHorizontal: Space.xl,
     paddingBottom: Space.xs,
     gap: Space.sm,
   },
-  genderLabel: {
-    fontSize: Font.body,
-    fontWeight: Weight.semibold,
-    color: AppColors.navy,
-    marginBottom: Space.xs,
-  },
-  genderRow: { flexDirection: 'row' },
   saveRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -355,55 +223,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Space.xs,
   },
-});
-
-const fieldStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: Space.xs,
-  },
-  iconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: Radius.lg,
-    backgroundColor: AppColors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: Space.lg,
-    marginRight: Space.md,
-  },
-  inputWrapper: { flex: 1, paddingVertical: Space.xxs },
-  labelText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, marginTop: Space.sm },
-  inputRow: { flexDirection: 'row', alignItems: 'center' },
-  input: {
-    flex: 1,
-    fontSize: Font.h4,
-    fontWeight: Weight.semibold,
-    color: AppColors.navy,
-    paddingVertical: Space.xs,
-  },
-  unitText: { fontSize: Font.bodySm, color: AppColors.sub, marginLeft: Space.xs },
-  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xxs },
-});
-
-const genderStyles = StyleSheet.create({
-  card: {
-    flex: 1,
-    backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.lg,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    paddingVertical: Space.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Space.sm,
-  },
-  cardSelected: {
-    backgroundColor: AppColors.bg,
-    borderColor: AppColors.accent,
-    borderWidth: 2,
-  },
-  label: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
-  labelSelected: { color: AppColors.accent },
 });

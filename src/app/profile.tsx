@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -13,14 +12,14 @@ import { AppColors } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { alert } from '@/components/dialog';
 import { Text } from '@/components/typography';
-import { FloatingLabelInput } from '@/components/floating-label-input';
 import { PrimaryButton } from '@/components/primary-button';
+import { ProfileField, ProfileFieldErrors, ProfileFields, SexSelector } from '@/components/profile-form';
 import { CharacterImage } from '@/components/character-image';
 import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
 import { Sex } from '@/core/types';
 import { i18n } from '@/i18n';
-import { FORM_BOTTOM_GAP, Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { FORM_BOTTOM_GAP, Font, IconSize, Space, Weight } from '@/constants/tokens';
 
 /**
  * 프로필 수정 화면.
@@ -29,12 +28,6 @@ import { FORM_BOTTOM_GAP, Font, IconSize, Radius, Space, Weight } from '@/consta
  * 인라인으로 있으면 그것만으로 화면 절반을 차지해, 정작 자주 보는 토글·언어가
  * 스크롤 아래로 밀린다. 설정에는 값만 읽기 전용으로 보여주고 편집은 여기서 한다.
  */
-
-interface ProfileErrors {
-  height?: string;
-  weight?: string;
-  birthYear?: string;
-}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -49,7 +42,7 @@ export default function ProfileScreen() {
   const [birthYear, setBirthYear] = useState('');
   const [sex, setSex] = useState<Sex>('male');
   const [initialized, setInitialized] = useState(false);
-  const [errors, setErrors] = useState<ProfileErrors>({});
+  const [errors, setErrors] = useState<ProfileFieldErrors>({});
   const [saving, setSaving] = useState(false);
 
   // 저장된 값으로 한 번만 채운다 (입력 중 프로필이 갱신돼도 덮어쓰지 않게)
@@ -63,8 +56,20 @@ export default function ProfileScreen() {
     }
   }, [profile, initialized]);
 
+  const setters: Record<ProfileField, (v: string) => void> = {
+    height: setHeight,
+    weight: setWeight,
+    birthYear: setBirthYear,
+  };
+
+  // 고친 칸의 에러는 바로 지운다
+  function handleFieldChange(field: ProfileField, v: string) {
+    setters[field](v);
+    setErrors(e => ({ ...e, [field]: undefined }));
+  }
+
   function validate(): boolean {
-    const errs: ProfileErrors = {};
+    const errs: ProfileFieldErrors = {};
     const h = parseFloat(height);
     const w = parseFloat(weight);
     const by = parseInt(birthYear, 10);
@@ -130,54 +135,13 @@ export default function ProfileScreen() {
             <Text style={styles.heroDesc}>{i18n.t('settingsProfileDesc')}</Text>
           </View>
 
-          <View style={styles.card}>
-            <FloatingLabelInput
-              label={i18n.t('settingsHeightLabel')}
-              value={height}
-              onChangeText={v => { setHeight(v); setErrors(e => ({ ...e, height: undefined })); }}
-              keyboardType="number-pad"
-              error={errors.height ?? null}
-            />
-            <FloatingLabelInput
-              label={i18n.t('settingsWeightLabel')}
-              value={weight}
-              onChangeText={v => { setWeight(v); setErrors(e => ({ ...e, weight: undefined })); }}
-              keyboardType="decimal-pad"
-              error={errors.weight ?? null}
-            />
-            <FloatingLabelInput
-              label={i18n.t('settingsBirthYearLabel')}
-              value={birthYear}
-              onChangeText={v => { setBirthYear(v); setErrors(e => ({ ...e, birthYear: undefined })); }}
-              keyboardType="number-pad"
-              error={errors.birthYear ?? null}
-            />
+          <ProfileFields
+            values={{ height, weight, birthYear }}
+            onChange={handleFieldChange}
+            errors={errors}
+          />
 
-            <Text style={styles.label}>{i18n.t('settingsSex')}</Text>
-            <View style={styles.sexRow}>
-              {(['male', 'female'] as const).map(option => {
-                const active = sex === option;
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    style={[styles.sexBtn, active && styles.sexBtnActive]}
-                    onPress={() => setSex(option)}
-                    activeOpacity={0.8}
-                  >
-                    <Icon
-                      name={option}
-                      size={16}
-                      color={active ? AppColors.accent : AppColors.sub}
-                      strokeWidth={2.1}
-                    />
-                    <Text style={[styles.sexLabel, active && styles.sexLabelActive]}>
-                      {i18n.t(option === 'male' ? 'settingsMale' : 'settingsFemale')}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
+          <SexSelector value={sex} onChange={setSex} />
 
           <PrimaryButton label={i18n.t('settingsSave')} onPress={handleSave} loading={saving} />
 
@@ -208,30 +172,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Space.lg,
   },
-  card: {
-    backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.lg,
-    padding: Space.lg,
-  },
-  label: {
-    fontSize: Font.bodySm,
-    color: AppColors.sub,
-    marginBottom: Space.sm,
-  },
-  sexRow: { flexDirection: 'row', gap: Space.md },
-  sexBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: Space.sm,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    paddingVertical: Space.md,
-    alignItems: 'center',
-    backgroundColor: AppColors.bg,
-  },
-  sexBtnActive: { borderColor: AppColors.accent, borderWidth: 2, backgroundColor: AppColors.selectedBg },
-  sexLabel: { fontSize: Font.body, color: AppColors.navy },
-  sexLabelActive: { color: AppColors.accent, fontWeight: Weight.bold },
 });
