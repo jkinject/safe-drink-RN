@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { SheetHandle } from '@/components/sheet-handle';
+import { Font, Radius, Space, Weight } from '@/constants/tokens';
 
 export interface SelectOption<T extends string> {
   label: string;
@@ -16,13 +16,6 @@ interface SheetProps<T extends string> {
   title: string;
   visible: boolean;
   onClose: () => void;
-  value: T;
-  options: SelectOption<T>[];
-  onChange: (value: T) => void;
-}
-
-interface Props<T extends string> {
-  title: string;
   value: T;
   options: SelectOption<T>[];
   onChange: (value: T) => void;
@@ -55,7 +48,7 @@ export function SelectSheet<T extends string>({
           // 시트를 눌렀을 때 오버레이의 닫기가 실행되지 않도록 흡수만 한다
           onPress={() => {}}
         >
-          <View style={styles.handle} />
+          <SheetHandle />
           <Text style={styles.sheetTitle}>{title}</Text>
           {options.map(option => {
             const selected = option.value === value;
@@ -83,66 +76,7 @@ export function SelectSheet<T extends string>({
   );
 }
 
-/**
- * 값 하나를 고르는 선택 필드.
- *
- * 선택지를 카드에 전부 나열하면 항목이 늘어날수록 설정 화면이 계속 길어진다.
- * 평소에는 현재 값 한 줄만 보여주고, 누르면 시트에서 고르게 한다.
- *
- * 시트를 쓰는 이유: RN 에는 웹의 <select> 같은 기본 위젯이 없고,
- * Picker 계열은 iOS/Android 생김새가 크게 달라 이 앱의 카드 디자인과 겉돈다.
- */
-export function SelectField<T extends string>({
-  title,
-  value,
-  options,
-  onChange,
-}: Props<T>) {
-  const [open, setOpen] = useState(false);
-  const current = options.find(o => o.value === value);
-
-  return (
-    <>
-      <Pressable
-        style={styles.field}
-        onPress={() => setOpen(true)}
-        accessibilityRole="button"
-        accessibilityLabel={`${title}: ${current?.label ?? ''}`}
-      >
-        <Text style={styles.fieldValue}>{current?.label ?? ''}</Text>
-        <Icon
-          name="chevronDown"
-          size={IconSize.sm}
-          color={AppColors.sub}
-          strokeWidth={2.2}
-        />
-      </Pressable>
-
-      <SelectSheet
-        title={title}
-        visible={open}
-        onClose={() => setOpen(false)}
-        value={value}
-        options={options}
-        onChange={onChange}
-      />
-    </>
-  );
-}
-
 const styles = StyleSheet.create({
-  field: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Space.md,
-    paddingHorizontal: Space.md,
-    borderRadius: Radius.md,
-    backgroundColor: AppColors.bg,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-  },
-  fieldValue: { fontSize: Font.body, color: AppColors.navy, fontWeight: Weight.semibold },
   overlay: { flex: 1, backgroundColor: AppColors.overlay, justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: AppColors.cardBg,
@@ -151,14 +85,6 @@ const styles = StyleSheet.create({
     paddingTop: Space.md,
     paddingHorizontal: Space.xl,
     gap: Space.xs,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: Radius.xxs,
-    backgroundColor: AppColors.border,
-    marginBottom: Space.lg,
   },
   sheetTitle: {
     fontSize: Font.h4,

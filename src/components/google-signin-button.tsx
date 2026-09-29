@@ -13,9 +13,10 @@ import Svg, { Path } from 'react-native-svg';
 import { AppColors } from '@/constants/colors';
 import { Text } from '@/components/typography';
 import { Font, Radius, Space, Weight } from '@/constants/tokens';
+import { SIGN_IN_BUTTON_HEIGHT } from '@/components/apple-signin-button';
 import { i18n } from '@/i18n';
 
-/** 로고 한 변(px) — 라벨(Font.body) 과 눈높이를 맞춘 크기 */
+/** 로고 한 변(px) — 라벨(Font.h4) 과 눈높이를 맞춘 크기 */
 const LOGO_SIZE = 18;
 
 /** Google 공식 G 마크 (48×48 기준 경로, 가이드 배포 SVG 그대로) */
@@ -89,7 +90,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Space.sm,
-    minHeight: 48,
+    // Apple 버튼과 같은 높이 (iOS 44 / Android 48)
+    minHeight: SIGN_IN_BUTTON_HEIGHT,
     paddingHorizontal: Space.lg,
     borderRadius: Radius.md,
     borderWidth: 1,
@@ -104,8 +106,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: Font.body,
-    fontWeight: Weight.semibold,
+    fontSize: Font.h4,
+    fontWeight: Weight.bold,
     color: AppColors.navy,
     flexShrink: 1,
   },

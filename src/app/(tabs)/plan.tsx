@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import {
-  Modal,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -23,58 +21,6 @@ import { calculate as planCalculate } from '@/core/planCalculator';
 import { PlanResult } from '@/core/types';
 import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 import { TAB_BAR_HEIGHT } from '@/constants/layout';
-
-// ── Simple time picker modal ──────────────────────────────────────────────────
-
-
-const pickerStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: AppColors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.xl,
-    padding: Space.xxl,
-    width: 280,
-    gap: Space.lg,
-    ...cardShadow,
-  },
-  title: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy, textAlign: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Space.sm },
-  input: {
-    width: 72,
-    height: 52,
-    borderWidth: 2,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    textAlign: 'center',
-    fontSize: Font.h2,
-    fontWeight: Weight.bold,
-    color: AppColors.navy,
-  },
-  colon: { fontSize: Font.h1, fontWeight: Weight.bold, color: AppColors.navy },
-  actions: { flexDirection: 'row', gap: Space.md },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: Space.md,
-    alignItems: 'center',
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: AppColors.border,
-  },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold },
-  confirmBtn: {
-    flex: 1,
-    paddingVertical: Space.md,
-    alignItems: 'center',
-    borderRadius: Radius.md,
-    backgroundColor: AppColors.accent,
-  },
-  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
-});
 
 // ── Main screen ───────────────────────────────────────────────────────────────
 
@@ -169,7 +115,7 @@ export default function PlanScreen() {
         <Text style={styles.appTitle}>{i18n.t('planTitle')}</Text>
         <TouchableOpacity
           onPress={() => router.push('/info')}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={{ top: Space.sm, bottom: Space.sm, left: Space.sm, right: Space.sm }}
         >
           <Icon name="info" size={IconSize.lg} color={AppColors.sub} strokeWidth={2} />
         </TouchableOpacity>
@@ -282,7 +228,7 @@ const styles = StyleSheet.create({
     ...cardShadowSm,
   },
   fieldLabel: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy, marginBottom: Space.sm },
-  fieldGap: { height: 16 },
+  fieldGap: { height: Space.lg },
   timeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -293,20 +239,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Space.lg,
     paddingVertical: Space.md,
   },
-  timeBtnIcon: { fontSize: Font.h3 },
   timeBtnText: { fontSize: Font.body, fontWeight: Weight.semibold, color: AppColors.navy },
-  textInput: {
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    paddingHorizontal: Space.lg,
-    paddingVertical: Space.md,
-    fontSize: Font.body,
-    color: AppColors.navy,
-    fontWeight: Weight.regular,
-  },
-  textInputError: { borderColor: StatusColors.danger },
-  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xs },
   calcBtn: {
     backgroundColor: AppColors.accent,
     borderRadius: Radius.md,
@@ -314,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calcBtnDisabled: { opacity: 0.5 },
-  calcBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  calcBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
   errorCard: {
     backgroundColor: StatusColors.dangerBg,
     borderRadius: Radius.xl,
@@ -331,7 +264,7 @@ const styles = StyleSheet.create({
     ...cardShadow,
     gap: Space.xs,
   },
-  resultLabel: { fontSize: Font.bodySm, fontWeight: Weight.regular, color: 'rgba(255,255,255,0.75)' },
+  resultLabel: { fontSize: Font.bodySm, fontWeight: Weight.regular, color: AppColors.onAccentSub },
   resultValue: { fontSize: Font.h1, fontWeight: Weight.bold, color: AppColors.white },
-  resultSub: { fontSize: Font.bodySm, color: 'rgba(255,255,255,0.75)' },
+  resultSub: { fontSize: Font.bodySm, color: AppColors.onAccentSub },
 });

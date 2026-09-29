@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { AppColors, StatusColors, cardShadow, cardShadowSm  } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
 import { i18n } from '@/i18n';
@@ -27,7 +27,7 @@ function SectionCard({ icon, title, children, bgColor }: SectionCardProps) {
   return (
     <View style={[sectionStyles.card, bgColor ? { backgroundColor: bgColor } : null]}>
       <View style={sectionStyles.header}>
-        <Icon name={icon} size={20} color={AppColors.accent} strokeWidth={2.1} />
+        <Icon name={icon} size={IconSize.md} color={AppColors.accent} strokeWidth={2.1} />
         <Text style={sectionStyles.title}>{title}</Text>
       </View>
       {children}
@@ -44,7 +44,6 @@ const sectionStyles = StyleSheet.create({
     gap: 0,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: Space.sm, marginBottom: Space.lg },
-  icon: { fontSize: Font.h2 },
   title: { flex: 1, fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
 });
 
@@ -67,7 +66,7 @@ function FormulaBox({ title, children }: FormulaBoxProps) {
 const formulaStyles = StyleSheet.create({
   box: {
     backgroundColor: AppColors.panel,
-    borderRadius: Radius.md,
+    borderRadius: Radius.lg,
     padding: Space.lg,
     marginBottom: Space.sm,
   },
@@ -96,8 +95,8 @@ function LawBox({ title, detail, titleColor, borderColor, bgColor }: LawBoxProps
 
 const lawStyles = StyleSheet.create({
   box: {
-    borderRadius: Radius.md,
-    borderWidth: 1.5,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
     padding: Space.lg,
     marginBottom: Space.sm,
     gap: Space.sm,
@@ -136,7 +135,7 @@ export default function InfoScreen() {
         {/* Card 1: Calculation method */}
         <SectionCard icon="height" title={i18n.t('infoCard1Title')}>
           <Text style={styles.introText}>{i18n.t('infoCard1Intro')}</Text>
-          <View style={{ height: 12 }} />
+          <View style={{ height: Space.md }} />
 
           <FormulaBox title={i18n.t('infoFormula1Title')}>
             <Text style={styles.monoText}>{i18n.t('infoFormula1')}</Text>
@@ -164,7 +163,7 @@ export default function InfoScreen() {
         {/* Card 2: Law */}
         <SectionCard icon="weight" title={i18n.t('infoCard2Title')}>
           <Text style={styles.subtitleText}>{i18n.t('infoCard2Subtitle')}</Text>
-          <View style={{ height: 12 }} />
+          <View style={{ height: Space.md }} />
 
           <LawBox
             title={i18n.t('infoLaw1Title')}
@@ -211,7 +210,7 @@ export default function InfoScreen() {
           <Text style={styles.closeBtnText}>{i18n.t('formulaDialogClose')}</Text>
         </TouchableOpacity>
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: Space.xxxl }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -279,7 +278,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     paddingVertical: Space.lg,
     alignItems: 'center',
-    ...cardShadow,
   },
-  closeBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  closeBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

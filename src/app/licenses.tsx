@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { AppColors } from '@/constants/colors';
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/typography';
+import { SheetHandle } from '@/components/sheet-handle';
 import { localeStore } from '@/state/localeStore';
 import { i18n } from '@/i18n';
 import licenseData from '@/constants/licenses.json';
@@ -114,7 +115,7 @@ export default function LicensesScreen() {
             style={[styles.sheet, { paddingBottom: Space.xl + insets.bottom }]}
             onPress={() => {}}
           >
-            <View style={styles.handle} />
+            <SheetHandle />
             <Text style={styles.sheetTitle}>{selected?.name}</Text>
             <Text style={styles.sheetMeta}>
               {selected?.version} · {selected?.license}
@@ -172,14 +173,6 @@ const styles = StyleSheet.create({
     paddingTop: Space.md,
     paddingHorizontal: Space.xl,
     maxHeight: '80%',
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: Radius.xxs,
-    backgroundColor: AppColors.border,
-    marginBottom: Space.lg,
   },
   sheetTitle: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
   sheetMeta: { fontSize: Font.caption, color: AppColors.sub, marginBottom: Space.md },

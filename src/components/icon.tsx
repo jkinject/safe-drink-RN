@@ -31,6 +31,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { AppColors } from '@/constants/colors';
+import { IconSize } from '@/constants/tokens';
 
 /**
  * 앱에서 쓰는 아이콘은 전부 여기를 거친다.
@@ -85,7 +86,7 @@ interface IconProps {
 
 export function Icon({
   name,
-  size = 20,
+  size = IconSize.md,
   color = AppColors.navy,
   strokeWidth = 2,
 }: IconProps) {

@@ -22,7 +22,7 @@ import { OnboardingRestoreCard } from '@/components/onboarding-restore-card';
 import { backupStore } from '@/state/backupStore';
 import { Icon, IconName } from '@/components/icon';
 import { Text } from '@/components/typography';
-import { Space, Radius, Font, Weight } from '@/constants/tokens';
+import { Space, Radius, Font, IconSize, Weight } from '@/constants/tokens';
 
 interface FieldError {
   height?: string;
@@ -175,7 +175,7 @@ export default function OnboardingScreen() {
               selected={sex === 'male'}
               onPress={() => setSex('male')}
             />
-            <View style={{ width: 12 }} />
+            <View style={{ width: Space.md }} />
             <GenderCard
               icon="female"
               label={i18n.t('settingsFemale')}
@@ -265,7 +265,7 @@ function GenderCard({ icon, label, selected, onPress }: GenderCardProps) {
     >
       <Icon
         name={icon}
-        size={24}
+        size={IconSize.lg}
         color={selected ? AppColors.accent : AppColors.sub}
         strokeWidth={2}
       />
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saveBtnDisabled: { opacity: 0.6 },
+  saveBtnDisabled: { opacity: 0.5 },
   saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
   shieldChar: { width: 54, height: 54, marginLeft: Space.sm },
   privacyNote: {
@@ -382,7 +382,6 @@ const fieldStyles = StyleSheet.create({
     marginTop: Space.lg,
     marginRight: Space.md,
   },
-  iconText: { fontSize: Font.h4 },
   inputWrapper: { flex: 1, paddingVertical: Space.xxs },
   labelText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, marginTop: Space.sm },
   inputRow: { flexDirection: 'row', alignItems: 'center' },

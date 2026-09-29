@@ -352,7 +352,7 @@ function RecordTile({ record, presetIcon, onEdit, onFinish, onDelete, onDuplicat
       {/* Row 1: 이모지 + 이름/시각 + 삭제 */}
       <View style={tileStyles.row}>
         <View style={tileStyles.iconCircle}>
-          <DrinkIcon name={presetIcon} size={24} />
+          <DrinkIcon name={presetIcon} size={IconSize.lg} />
         </View>
         <View style={tileStyles.titleCol}>
           <View style={tileStyles.titleRow}>
@@ -427,7 +427,7 @@ const tileStyles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: Space.sm },
   iconCircle: {
-    width: 40, height: 40, borderRadius: Radius.xl,
+    width: Space.xxxl + Space.sm, height: Space.xxxl + Space.sm, borderRadius: Radius.xl,
     backgroundColor: AppColors.bg, alignItems: 'center', justifyContent: 'center',
   },
   titleCol: { flex: 1, minWidth: 0 },
@@ -450,7 +450,6 @@ const tileStyles = StyleSheet.create({
   },
   badgeText: { fontSize: Font.micro, color: AppColors.accent, fontWeight: Weight.regular },
   finishedText: { fontSize: Font.caption, color: AppColors.sub, fontWeight: Weight.regular, flex: 1 },
-  recordedTime: { fontSize: Font.micro, color: AppColors.sub },
   finishBtn: {
     marginTop: Space.md,
     minHeight: Space.xxl * 2,
@@ -459,7 +458,7 @@ const tileStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  finishBtnText: { color: AppColors.white, fontWeight: Weight.semibold, fontSize: Font.h4 },
+  finishBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });
 
 // ── BAC comparison card ───────────────────────────────────────────────────────
@@ -551,7 +550,7 @@ function MethodPanel({
         <Text style={compStyles.bigBacUnit}>%</Text>
       </View>
       <View style={compStyles.timeRow}>
-        <Icon name="clock" size={13} color={AppColors.sub} strokeWidth={2} />
+        <Icon name="clock" size={IconSize.sm} color={AppColors.sub} strokeWidth={2} />
         <Text style={compStyles.timeText}>
           {soberMs != null ? formatTime(soberMs) : '--:--'}
         </Text>
@@ -569,9 +568,9 @@ const compStyles = StyleSheet.create({
     gap: Space.md,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy },
-  statusBadge: { borderRadius: Radius.xl, paddingHorizontal: Space.md, paddingVertical: Space.xs },
-  statusBadgeText: { fontSize: Font.caption, fontWeight: Weight.bold },
+  title: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy },
+  statusBadge: { borderRadius: Radius.sm, paddingHorizontal: Space.sm, paddingVertical: Space.xxs },
+  statusBadgeText: { fontSize: Font.micro, fontWeight: Weight.bold },
   panels: { flexDirection: 'row', gap: Space.md },
   panel: {
     flex: 1,
@@ -580,7 +579,7 @@ const compStyles = StyleSheet.create({
     padding: Space.md,
   },
   panelConservative: {
-    borderWidth: 1.2,
+    borderWidth: 1,
     borderColor: StatusColors.infoBorder,
   },
   panelLabelRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs },
@@ -597,7 +596,6 @@ const compStyles = StyleSheet.create({
   bigBac: { fontSize: Font.h2, fontWeight: Weight.bold, color: AppColors.accent, letterSpacing: -0.5 },
   bigBacUnit: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.accent, marginLeft: 1 },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: Space.xs, marginTop: Space.xs },
-  timeIcon: { fontSize: Font.micro },
   timeText: { fontSize: Font.bodySm, fontWeight: Weight.semibold, color: AppColors.navy },
   footnote: { fontSize: Font.micro, color: AppColors.sub, lineHeight: 16 },
 });
@@ -617,7 +615,7 @@ function SafeStatusDisplay({
       <Text style={safeStyles.title}>{i18n.t('safeStatus')}</Text>
       <Text style={safeStyles.subtitle}>{i18n.t('safeStatusSubtitle')}</Text>
       <TouchableOpacity style={safeStyles.infoBtn} onPress={onInfoPress} activeOpacity={0.8}>
-        <Icon name="guide" size={15} color={AppColors.accent} strokeWidth={2} />
+        <Icon name="guide" size={IconSize.sm} color={AppColors.accent} strokeWidth={2} />
         <Text style={safeStyles.infoBtnText}>{i18n.t('infoScreenTitle')}</Text>
       </TouchableOpacity>
     </View>
@@ -646,7 +644,7 @@ const safeStyles = StyleSheet.create({
 function TipBanner() {
   return (
     <View style={tipStyles.container}>
-      <Icon name="water" size={24} color={AppColors.accent} strokeWidth={1.9} />
+      <Icon name="water" size={IconSize.lg} color={AppColors.accent} strokeWidth={1.9} />
       <Text style={tipStyles.text}>{i18n.t('tipBannerText')}</Text>
     </View>
   );
@@ -990,7 +988,7 @@ const styles = StyleSheet.create({
   drinkingOnlyBadge: {
     alignSelf: 'center',
     backgroundColor: StatusColors.warningBg,
-    borderRadius: Radius.md,
+    borderRadius: Radius.sm,
     paddingHorizontal: Space.lg,
     paddingVertical: Space.sm,
     borderWidth: 1,

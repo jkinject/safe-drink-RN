@@ -87,6 +87,12 @@ export const Weight = {
  * 하단 여백은 `@/constants/layout` 의 TAB_BAR_HEIGHT 로 계산한다 (눈대중 90 금지).
  */
 
+/** 입력 칸·드롭다운 필드 높이 (FloatingLabelInput·DrinkIconSelect 공용) */
+export const INPUT_HEIGHT = 52;
+
+/** 폼 화면(술 추가·프로필) 스크롤 끝 여백 — 마지막 입력 아래 키보드·버튼과의 간격 */
+export const FORM_BOTTOM_GAP = 40;
+
 /** 아이콘 크기 — 글자 크기와 짝을 맞춘다 */
 export const IconSize = {
   /** 본문 옆 작은 아이콘 */

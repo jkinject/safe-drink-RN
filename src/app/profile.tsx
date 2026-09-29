@@ -20,7 +20,7 @@ import { profileStore } from '@/state/profileStore';
 import { localeStore } from '@/state/localeStore';
 import { Sex } from '@/core/types';
 import { i18n } from '@/i18n';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { FORM_BOTTOM_GAP, Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /**
  * 프로필 수정 화면.
@@ -192,7 +192,7 @@ export default function ProfileScreen() {
             )}
           </TouchableOpacity>
 
-          <View style={{ height: 40 }} />
+          <View style={{ height: FORM_BOTTOM_GAP }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -251,6 +251,6 @@ const styles = StyleSheet.create({
     paddingVertical: Space.lg,
     alignItems: 'center',
   },
-  saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  saveBtnDisabled: { opacity: 0.5 },
+  saveBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

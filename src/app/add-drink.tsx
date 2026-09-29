@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   KeyboardAvoidingView,
   Modal,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { AppColors, StatusColors, cardShadow, cardShadowSm, dialogShadow  } from '@/constants/colors';
+import { AppColors, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { TimePickerModal } from '@/components/time-picker-sheet';
 import { FloatingLabelInput } from '@/components/floating-label-input';
@@ -34,7 +32,7 @@ import { DrinkPreset, DrinkRecord } from '@/core/types';
 import { estimatedSoberAt } from '@/core/bacCalculator';
 import { profileStore } from '@/state/profileStore';
 import * as notificationService from '@/services/notifications';
-import { Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
+import { FORM_BOTTOM_GAP, Font, IconSize, Radius, Space, Weight } from '@/constants/tokens';
 
 /** 빠른 선택 그리드 열 수 */
 const PRESET_COLUMNS = 3;
@@ -58,51 +56,6 @@ function formatSimDelta(ms: number): string {
   if (hours === 0) return i18n.t('addDrinkSimDeltaMinutes', { minutes });
   return i18n.t('addDrinkSimDeltaHours', { hours, minutes });
 }
-
-// ── Time picker modal ─────────────────────────────────────────────────────────
-
-
-const tpStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: AppColors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    backgroundColor: AppColors.cardBg,
-    borderRadius: Radius.xl,
-    padding: Space.xxl,
-    width: 280,
-    gap: Space.lg,
-    ...dialogShadow,
-  },
-  title: { fontSize: Font.body, fontWeight: Weight.bold, color: AppColors.navy, textAlign: 'center' },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Space.sm },
-  input: {
-    width: 72,
-    height: 52,
-    borderWidth: 2,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    textAlign: 'center',
-    fontSize: Font.h2,
-    fontWeight: Weight.bold,
-    color: AppColors.navy,
-  },
-  colon: { fontSize: Font.h1, fontWeight: Weight.bold, color: AppColors.navy },
-  actions: { flexDirection: 'row', gap: Space.md },
-  cancelBtn: {
-    flex: 1, paddingVertical: Space.md, alignItems: 'center', borderRadius: Radius.md,
-    borderWidth: 1, borderColor: AppColors.border,
-  },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold },
-  confirmBtn: {
-    flex: 1, paddingVertical: Space.md, alignItems: 'center', borderRadius: Radius.md,
-    backgroundColor: AppColors.accent,
-  },
-  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
-});
 
 // ── Custom preset dialog ──────────────────────────────────────────────────────
 
@@ -253,33 +206,17 @@ const dlgStyles = StyleSheet.create({
   scrollContent: { gap: Space.sm, paddingBottom: Space.xs },
   title: { fontSize: Font.h4, fontWeight: Weight.bold, color: AppColors.navy, marginBottom: Space.sm },
   iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Space.sm, marginBottom: Space.sm },
-  iconBtn: {
-    width: 44, height: 44, borderRadius: Radius.xl,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: 'transparent',
-  },
-  iconBtnSelected: {
-    borderColor: AppColors.accent,
-    backgroundColor: AppColors.bg,
-  },
-  input: {
-    borderWidth: 1, borderColor: AppColors.border, borderRadius: Radius.md,
-    paddingHorizontal: Space.lg, paddingVertical: Space.md, fontSize: Font.body,
-    color: AppColors.navy,
-  },
-  inputError: { borderColor: StatusColors.danger },
-  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: -4 },
   actions: { flexDirection: 'row', gap: Space.md, marginTop: Space.sm },
   cancelBtn: {
     flex: 1, paddingVertical: Space.md, alignItems: 'center',
     borderRadius: Radius.md, borderWidth: 1, borderColor: AppColors.border,
   },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold },
+  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold, fontSize: Font.body },
   saveBtn: {
     flex: 1, paddingVertical: Space.md, alignItems: 'center',
     borderRadius: Radius.md, backgroundColor: AppColors.accent,
   },
-  saveText: { color: AppColors.white, fontWeight: Weight.bold },
+  saveText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
 });
 
 // ── Preset card ───────────────────────────────────────────────────────────────
@@ -770,7 +707,7 @@ export default function AddDrinkScreen() {
                   style={styles.nowBtn}
                   onPress={() => applyTimes(Date.now(), finishedAt)}
                 >
-                  <Icon name="clock" size={13} color={AppColors.accent} strokeWidth={2.2} />
+                  <Icon name="clock" size={IconSize.sm} color={AppColors.accent} strokeWidth={2.2} />
                   <Text style={styles.nowBtnText}>{i18n.t('addDrinkSetNow')}</Text>
                 </TouchableOpacity>
               </View>
@@ -790,7 +727,7 @@ export default function AddDrinkScreen() {
                   style={styles.nowBtn}
                   onPress={() => applyTimes(consumedAt, Date.now())}
                 >
-                  <Icon name="clock" size={13} color={AppColors.accent} strokeWidth={2.2} />
+                  <Icon name="clock" size={IconSize.sm} color={AppColors.accent} strokeWidth={2.2} />
                   <Text style={styles.nowBtnText}>{i18n.t('addDrinkSetNow')}</Text>
                 </TouchableOpacity>
               </View>
@@ -802,7 +739,7 @@ export default function AddDrinkScreen() {
                     style={styles.revertBtn}
                     onPress={() => { setFinishedAt(null); setTimeNotice(''); }}
                   >
-                    <Icon name="restore" size={13} color={AppColors.sub} strokeWidth={2.2} />
+                    <Icon name="restore" size={IconSize.sm} color={AppColors.sub} strokeWidth={2.2} />
                     <Text style={styles.revertBtnText}>{i18n.t('editRecordMarkDrinking')}</Text>
                   </TouchableOpacity>
                 </View>
@@ -812,7 +749,7 @@ export default function AddDrinkScreen() {
             </>
           )}
 
-          <View style={{ height: 12 }} />
+          <View style={{ height: Space.md }} />
 
           {/* 추가 전 시뮬레이션 — 도수·용량을 바꾸면 즉시 다시 계산된다 */}
           {simulation && (
@@ -848,7 +785,7 @@ export default function AddDrinkScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: FORM_BOTTOM_GAP }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -914,24 +851,6 @@ const styles = StyleSheet.create({
     padding: Space.lg,
     ...cardShadowSm,
   },
-  iconField: { marginBottom: Space.lg },
-  iconFieldLabel: {
-    fontSize: Font.caption,
-    color: AppColors.sub,
-    marginBottom: Space.sm,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: AppColors.border,
-    borderRadius: Radius.md,
-    paddingHorizontal: Space.lg,
-    paddingVertical: Space.md,
-    fontSize: Font.body,
-    color: AppColors.navy,
-    fontWeight: Weight.regular,
-  },
-  inputError: { borderColor: StatusColors.danger },
-  errorText: { fontSize: Font.micro, color: StatusColors.danger, marginTop: Space.xs },
   timeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -977,8 +896,8 @@ const styles = StyleSheet.create({
   },
   // 흰 카드 안이라 그림자 대신 연보라 채움으로 구분한다
   simCard: {
-    backgroundColor: AppColors.bg,
-    borderRadius: Radius.md,
+    backgroundColor: AppColors.panel,
+    borderRadius: Radius.lg,
     padding: Space.lg,
     marginBottom: Space.md,
     gap: Space.xxs,
@@ -991,6 +910,6 @@ const styles = StyleSheet.create({
     color: AppColors.accent,
   },
   simSoberAt: { fontSize: Font.bodySm, color: AppColors.navy },
-  submitBtnDisabled: { opacity: 0.6 },
-  submitBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
+  submitBtnDisabled: { opacity: 0.5 },
+  submitBtnText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.h4 },
 });

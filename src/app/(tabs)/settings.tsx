@@ -170,7 +170,7 @@ export default function SettingsScreen() {
             <Text style={styles.greetingTitle}>{i18n.t('settingsGreeting')}</Text>
             <Text style={styles.greetingSubtitle}>{i18n.t('settingsProfileEdit')}</Text>
           </View>
-          <Icon name="chevronRight" size={IconSize.md} color="rgba(255,255,255,0.8)" strokeWidth={2.2} />
+          <Icon name="chevronRight" size={IconSize.md} color={AppColors.onAccentSub} strokeWidth={2.2} />
         </Pressable>
 
         {/* 내 정보 — 읽기 전용. 값만 확인하고, 고치려면 위 카드로 들어간다 */}
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.85 },
   greetingText: { flex: 1 },
   greetingTitle: { color: AppColors.white, fontSize: Font.h2, fontWeight: Weight.bold },
-  greetingSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: Font.bodySm, marginTop: Space.xxs },
+  greetingSubtitle: { color: AppColors.onAccentSub, fontSize: Font.bodySm, marginTop: Space.xxs },
   versionBox: { alignItems: 'center', gap: Space.xxs, marginTop: Space.sm },
   versionText: { fontSize: Font.caption, color: AppColors.sub },
   versionSub: { fontSize: Font.micro, color: AppColors.sub, opacity: 0.7 },

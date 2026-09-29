@@ -17,6 +17,8 @@ export const AppColors = {
   borderStrong: '#C9C4F0',
   /** 다이얼로그·시트 뒤 어두운 오버레이 — 검정이 아니라 네이비 톤 */
   overlay: 'rgba(45,43,82,0.45)',
+  /** accent 채움 카드 위 보조 글자·chevron (흰색 75%) */
+  onAccentSub: 'rgba(255,255,255,0.75)',
   white: '#FFFFFF',
 } as const;
 

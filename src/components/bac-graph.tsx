@@ -10,7 +10,7 @@ import Svg, {
   Stop,
   Text as SvgText,
 } from 'react-native-svg';
-import { AppColors, StatusColors, cardShadow } from '@/constants/colors';
+import { AppColors, StatusColors, cardShadowSm } from '@/constants/colors';
 import { i18n } from '@/i18n';
 import { Text } from '@/components/typography';
 import { Space, Radius, Font, Weight } from '@/constants/tokens';
@@ -135,7 +135,7 @@ export function BacGraph({
       )}
       <View onLayout={onLayout}>
         {width > 0 && (
-          <Svg width={width} height={CHART_HEIGHT}>
+          <Svg width={width} height={height}>
             <Defs>
               <LinearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                 <Stop offset="0%" stopColor={AppColors.accent} stopOpacity="0.25" />
@@ -157,7 +157,7 @@ export function BacGraph({
             <SvgText
               x={PAD_LEFT + innerW + 6}
               y={yRev + 3}
-              fontSize="10"
+              fontSize={String(Font.micro)}
               fill={StatusColors.danger}
             >
               {i18n.t('bacChartDrivingLimitLabel')}
@@ -177,7 +177,7 @@ export function BacGraph({
             <SvgText
               x={PAD_LEFT + innerW + 6}
               y={ySus + 3}
-              fontSize="10"
+              fontSize={String(Font.micro)}
               fill={StatusColors.caution}
             >
               {i18n.t('bacChartCautionLimitLabel')}
@@ -232,7 +232,7 @@ export function BacGraph({
                 <SvgText
                   x={Math.max(PAD_LEFT + 14, Math.min(clampedNowX, PAD_LEFT + innerW - 14))}
                   y={PAD_TOP - 3}
-                  fontSize="10"
+                  fontSize={String(Font.micro)}
                   fontWeight="600"
                   fill={AppColors.navy}
                   textAnchor="middle"
@@ -262,10 +262,10 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
     padding: Space.lg,
-    ...cardShadow,
+    ...cardShadowSm,
   },
   title: {
-    fontSize: Font.body,
+    fontSize: Font.h4,
     fontWeight: Weight.bold,
     color: AppColors.navy,
     marginBottom: Space.md,

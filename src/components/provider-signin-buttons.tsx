@@ -5,7 +5,7 @@
  * - Android, 또는 Apple 을 쓸 수 없는 iOS: [Google] 하나
  *
  * App Store 심사 4.8 / Apple HIG: Apple 버튼은 다른 제공자 버튼보다 작거나 덜 눈에 띄면 안 된다 —
- * 두 버튼 모두 부모 폭을 꽉 채우고 높이 48 로 같다. Apple 가능 여부를 확인하는 동안(첫 렌더 한 틱)은
+ * 두 버튼 모두 부모 폭을 꽉 채우고 높이 SIGN_IN_BUTTON_HEIGHT(iOS 44 / Android 48) 로 같다. Apple 가능 여부를 확인하는 동안(첫 렌더 한 틱)은
  * Google 만 보이다가 Apple 이 위에 붙는다.
  *
  * 한 제공자를 누르면 끝날 때까지(onSignIn 이 돌려준 Promise) 그 버튼에만 스피너, 다른 버튼은 비활성.

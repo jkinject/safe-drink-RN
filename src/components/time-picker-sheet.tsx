@@ -100,13 +100,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.overlay,
     justifyContent: 'center',
-    alignItems: 'center',
+    padding: Space.xxl,
   },
   container: {
-    width: '82%',
     backgroundColor: AppColors.cardBg,
     borderRadius: Radius.xl,
-    padding: Space.xl,
+    padding: Space.xxl,
     ...dialogShadow,
   },
   title: {
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     alignItems: 'center',
   },
-  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold },
+  cancelText: { color: AppColors.sub, fontWeight: Weight.semibold, fontSize: Font.body },
   confirmBtn: {
     flex: 1,
     backgroundColor: AppColors.accent,
@@ -134,5 +133,5 @@ const styles = StyleSheet.create({
     paddingVertical: Space.md,
     alignItems: 'center',
   },
-  confirmText: { color: AppColors.white, fontWeight: Weight.bold },
+  confirmText: { color: AppColors.white, fontWeight: Weight.bold, fontSize: Font.body },
 });

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { AppColors, StatusColors } from '@/constants/colors';
 import { Text, TextInput } from '@/components/typography';
-import { Space, Radius, Font } from '@/constants/tokens';
+import { INPUT_HEIGHT, Space, Radius, Font } from '@/constants/tokens';
 
 interface FloatingLabelInputProps extends Omit<TextInputProps, 'placeholder'> {
   label: string;
@@ -110,12 +110,12 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     backgroundColor: AppColors.cardBg,
     paddingHorizontal: Space.lg,
-    height: 52,
+    height: INPUT_HEIGHT,
     justifyContent: 'center',
   },
   label: {
     position: 'absolute',
-    left: 12,
+    left: Space.md,
     paddingHorizontal: Space.xs,
     backgroundColor: AppColors.cardBg,
     zIndex: 1,
