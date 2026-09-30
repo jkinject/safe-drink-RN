@@ -26,7 +26,31 @@ Features are identical everywhere; no geo-gating. Two things follow the display 
 Unchanged from the previous submission, with one addition: account deletion. A user who signed in for backup can permanently delete the server-side backup and account identifiers at any time from Settings > Backup > "Delete backup and unlink", effective immediately. A user who uninstalled the app can request the same by email, per the in-app privacy policy and the linked web deletion page. No account or backup data is kept beyond what the user explicitly enabled.
 ```
 
-## 전체본 (Resolution Center 회신용)
+## Resolution Center 회신 본문 (2026-09-30 전송, 4,000자 제한이라 축약본을 더 줄임 — 3,923자)
+
+```
+Thank you for the review. We have replaced the build with version 1.3.0 (build 5) and updated the App Review notes, App Privacy and screenshots accordingly. The same answers are in App Review Information > Notes. Our answers to the six items:
+
+1. Screen recording
+Attached: a screen recording made on a physical iPad (iPad mini 6, iPadOS 18.6.2) running this exact build (1.3.0, build 5). It shows: launch, profile setup, adding a drink, marking it finished, the Home timer and BAC chart, the Lock Screen Live Activity countdown, then Settings > Backup: Sign in with Apple and backup, deleting and reinstalling the app, restoring the backup during onboarding (Sign in with Apple again), and clearing all local records from Settings. The "Delete backup and unlink" (account deletion) option is visible in Settings > Backup in the same recording.
+
+2. Purpose and target audience
+Safedrink is an offline reference timer that estimates how long it takes for a user's blood alcohol concentration (BAC) to return to zero after drinking. People often guess ("I slept, so I must be fine"), a common cause of next-morning drunk driving. The user logs drinks; the app shows the estimated BAC, time until zero and a chart. A local notification and a Live Activity keep a countdown on the Lock Screen. Target audience: adults of legal drinking age (rated 18+, 19+ in Korea). It does not promote alcohol; it is a reference tool, not a medical/legal instrument, with a permanent disclaimer, and never tells the user it is safe to drive.
+
+3. Setup and access to main features
+No account or login is required for any core feature. Every feature is available right after launch. New in this version: Settings > Backup offers an entirely optional sign-in (Google or Sign in with Apple) used only to back up and restore local data (records, presets, profile, language and notification settings) after a reinstall or device change. Declining has no effect on other features. Sign in with Apple is offered alongside Google (Guideline 4.8). To test: finish onboarding, add a drink, open Settings > Backup and tap either sign-in button - any Google or Apple ID works, no demo account needed. The screen then shows "Last backed up: just now". "Delete backup and unlink" removes the server-side backup only.
+
+4. External services
+All BAC calculation, timers and notifications run on the device with no network, as before. The only new network service is our own backup server (Cloudflare Workers + D1), contacted only if the user opts in via Settings > Backup. It stores the account identifier (Google sub or Apple user ID), the account email (or Apple's Hide My Email relay address) and one JSON snapshot of the user's local data. Apple sign-in users also get a 180-day session token stored on the device to authenticate later backup requests. Apple/Google sign-in is used solely to authenticate for this feature. No analytics, crash reporting, advertising identifiers or AI services.
+
+5. Regional differences
+Features are identical everywhere; no geo-gating. Two things follow the display language, not location: the UI language (English/Korean, changeable in Settings) and the default drink presets (Korean list includes soju and makgeolli; English list is international). The legal-threshold badges and legal reference section describe South Korean road traffic law (0.03% suspension, 0.08% revocation), the app's primary market, shown as reference information in all regions alongside the permanent disclaimer.
+
+6. Regulated industry / third-party material
+Unchanged from the previous submission, with one addition: account deletion. A user who signed in for backup can permanently delete the server-side backup and account identifiers at any time from Settings > Backup > "Delete backup and unlink", effective immediately. Users who uninstalled can request deletion by email (see privacy policy). Nothing is kept beyond what the user enabled.
+```
+
+## 전체본 (참고용 원문 — 회신·메모 어디에도 그대로는 안 들어감, 둘 다 4,000자 제한)
 
 ---
 
