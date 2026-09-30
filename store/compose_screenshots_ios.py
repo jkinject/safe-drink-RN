@@ -4,10 +4,11 @@
 사용법:
   python3 store/compose_screenshots_ios.py ko          # store/raw/ios/ko/NN-*.png → store/screenshots/ios/ko/
   python3 store/compose_screenshots_ios.py en
-  python3 store/compose_screenshots_ios.py ko ipad13   # store/raw/ios/ipad13/ → store/screenshots/ios/ipad13/ (ko 캡션)
+  python3 store/compose_screenshots_ios.py ko ipad13   # store/raw/ios/ipad13/ → store/screenshots/ios/ipad13/
+  python3 store/compose_screenshots_ios.py en ipad13   # store/raw/ios/ipad13-en/ → store/screenshots/ios/ipad13-en/
 
 원본 캡처는 iPhone 17 Pro Max 시뮬레이터(1320×2868, `xcrun simctl io <udid> screenshot`),
-iPad 는 iPad Pro 13-inch 시뮬레이터(2064×2752). iPad 원본 폴더는 언어와 무관하게 `raw/ios/ipad13/` 하나다.
+iPad 는 iPad Pro 13-inch 시뮬레이터(2064×2752). iPad 원본은 ko `raw/ios/ipad13/`, en `raw/ios/ipad13-en/`.
 Play 판(`compose_screenshots.py`)과 같은 스타일이고 크기·캡션(05 = Live Activity)만 다르다.
 캡처는 Metro 를 `EXPO_PUBLIC_HIDE_ADS=1` 로 띄워 배너 없이 찍는다(디버그 빌드는 테스트 광고가 뜬다).
 """
@@ -24,6 +25,7 @@ DEVICES = {
     'iphone': (1320, 2868, 1000, 420, 90, 84, 48),
     'ipad13': (2064, 2752, 1560, 480, 60, 110, 60),
 }
+# iPad 원본 폴더: ko 는 raw/ios/ipad13, en 은 raw/ios/ipad13-en (같은 캔버스, 캡션만 언어별)
 W, H, FRAME_W, FRAME_Y, RADIUS, HEAD_PT, SUB_PT = DEVICES['iphone']
 NAVY = (45, 43, 82)
 SUB = (110, 107, 150)
@@ -104,7 +106,7 @@ def main():
     lang = sys.argv[1] if len(sys.argv) > 1 else 'ko'
     device = sys.argv[2] if len(sys.argv) > 2 else 'iphone'
     W, H, FRAME_W, FRAME_Y, RADIUS, HEAD_PT, SUB_PT = DEVICES[device]
-    sub_dir = lang if device == 'iphone' else device
+    sub_dir = lang if device == 'iphone' else (device if lang == 'ko' else f'{device}-{lang}')
     raw_dir = os.path.join(ROOT, 'raw', 'ios', sub_dir)
     out_dir = os.path.join(ROOT, 'screenshots', 'ios', sub_dir)
     os.makedirs(out_dir, exist_ok=True)
