@@ -8,7 +8,7 @@
 
 ```
 1. Screen recording
-A screen recording made on a physical iPad (iPad mini 6, iPadOS 18.6.2) running this exact build (1.3.0, build 5) is attached to our reply in the App Review message thread. It shows: launch, profile setup, adding a drink, marking it finished, the Home timer and BAC chart, the Lock Screen countdown, then Settings > Backup: Sign in with Apple, first backup, deleting and reinstalling the app, restoring from the backup during onboarding, and finally "Delete backup and unlink" (account deletion). The app has no user-generated or paid content.
+A screen recording made on a physical iPad (iPad mini 6, iPadOS 18.6.2) running this exact build (1.3.0, build 5) is attached to our reply in the App Review message thread. It shows: launch, profile setup, adding a drink, marking it finished, the Home timer and BAC chart, the Lock Screen Live Activity countdown, then Settings > Backup: Sign in with Apple and backup, deleting and reinstalling the app, restoring the backup during onboarding (Sign in with Apple again), and clearing all local records from Settings. The "Delete backup and unlink" (account deletion) option is visible in Settings > Backup in the same recording. The app has no user-generated or paid content.
 
 2. Purpose and target audience
 Safedrink is an offline reference timer that estimates how long it takes for a user's blood alcohol concentration (BAC) to return to zero after drinking. People often guess ("I slept, so I must be fine"), a common cause of next-morning drunk driving. The user logs drinks; the app shows the estimated BAC, time until zero and a chart. A local notification and a Live Activity keep a countdown on the Lock Screen. Target audience: adults of legal drinking age (rated 18+, 19+ in Korea). The app does not sell or promote alcohol. It is a reference tool, not a medical or legal instrument or a breathalyzer; a permanent disclaimer says so on the main screen, and the app never tells the user it is safe to drive.
@@ -32,7 +32,7 @@ Unchanged from the previous submission, with one addition: account deletion. A u
 
 **1. Screen recording**
 
-A screen recording captured on a physical iPad (iPad mini 6th gen, iPadOS 18.6.2) running this exact build (1.3.0, build 5) is attached to our reply in App Review's message thread for this app. It starts from launching the app and shows the typical flow: profile setup, adding a drink, marking it finished, the Home timer and BAC chart, the Lock Screen countdown notification, then Settings → Backup: Sign in with Apple, first backup, deleting the app, reinstalling, and restoring the data from the backup during onboarding, and finally "Delete backup and unlink" (account deletion). There is no user-generated content or paid content in the app.
+A screen recording captured on a physical iPad (iPad mini 6th gen, iPadOS 18.6.2) running this exact build (1.3.0, build 5) is attached to this reply. It starts from launching the app and shows the typical flow: profile setup, adding a drink, marking it finished, the Home timer and BAC chart, the Lock Screen Live Activity countdown, then Settings → Backup: Sign in with Apple and backup, deleting the app and reinstalling it, restoring the data from the backup during onboarding (Sign in with Apple again), and clearing all local records from Settings. The "Delete backup and unlink" option (account deletion) is visible in Settings → Backup in the same recording. There is no user-generated content or paid content in the app.
 
 
 **2. Purpose of the app and target audience**
