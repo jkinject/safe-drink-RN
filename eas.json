@@ -24,9 +24,11 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "jkinject@gmail.com",
         "appleTeamId": "GZNYLNJY9P",
-        "ascAppId": "6813104713"
+        "ascAppId": "6813104713",
+        "ascApiKeyPath": "/Users/tim/Documents/keys/AuthKey_YNW2JAD99P.p8",
+        "ascApiKeyId": "YNW2JAD99P",
+        "ascApiKeyIssuerId": "b150a34b-ac56-4ac9-b5c0-08869e227569"
       }
     }
   }
