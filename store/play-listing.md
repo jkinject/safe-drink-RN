@@ -212,3 +212,19 @@ https://developers.google.com/admob/android/privacy/play-data-disclosure — SDK
   기존 Google Mobile Ads SDK 신고는 그대로 유지.
 - 제출 전 `docs/privacy-policy.html` 3절(Google 계정 연동 백업)·`docs/delete-account.html` 이
   실제로 게시돼 있는지(GitHub Pages, HTTP 200) 확인할 것.
+
+## 출시 노트 — 1.3.0 (vc 8)
+
+ko-KR (500자 이내):
+```
+• 선택 백업: 설정에서 Google 계정으로 로그인하면 음주 기록·자주 마시는 술·프로필이 자동 백업되고, 앱을 다시 설치하거나 기기를 바꿨을 때 그대로 복원할 수 있어요. 로그인하지 않아도 모든 기능을 그대로 쓸 수 있어요.
+• '다 마심' 버튼을 크게 키워 술자리에서도 누르기 쉽게 했어요.
+• 프로필 입력은 숫자 키패드로, 화면 디자인을 정리했어요.
+```
+
+en-US:
+```
+• Optional backup: sign in with Google in Settings to back up your drink history, saved drinks and profile automatically, and restore them after reinstalling or on a new phone. Everything still works without signing in.
+• A bigger "Finished" button that's easier to tap mid-night-out.
+• Number keypad for profile fields and a tidier design.
+```
