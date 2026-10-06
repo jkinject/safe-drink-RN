@@ -213,6 +213,11 @@ https://developers.google.com/admob/android/privacy/play-data-disclosure — SDK
 - 제출 전 `docs/privacy-policy.html` 3절(Google 계정 연동 백업)·`docs/delete-account.html` 이
   실제로 게시돼 있는지(GitHub Pages, HTTP 200) 확인할 것.
 
+## 1.3.0 출시 기록
+
+- 2026-10-07: EAS 빌드 `7b35534f`(1.3.0, vc 8, AAB 103MB) → Play Console(jkinject@gmail.com /u/0, 앱 권한으로 충분 — 소유자 계정 불필요) 프로덕션 100% 릴리스 + 데이터 보안 설문 갱신 → **"검토를 위해 변경사항 2개 전송"** (프로덕션 8 (1.3.0) / 데이터 보안). 검토 경고는 R8 가독화 파일 없음 1건뿐.
+- 데이터 보안 실제 답: 위 체크리스트 4개 유형(이메일·사용자 ID·건강 정보·기타 사용자 제작 콘텐츠, 모두 선택·앱 기능·공유 안 함), 계정 생성 = **OAuth**, 계정 삭제 URL = delete-account.html. OAuth 를 고르면 "계정을 삭제하지 않고 데이터 일부 삭제 요청 방법 제공?"(선택 질문)이 생기는데 **예 + 같은 URL** 로 답했다 — 이 앱에는 연동을 유지한 채 백업만 지우는 기능은 없으므로 다음 설문 수정 때 "아니요" 로 바로잡거나 delete-account.html 에 '기록 전체 삭제(기기)'를 데이터 삭제 방법으로 적을 것.
+
 ## 출시 노트 — 1.3.0 (vc 8)
 
 ko-KR (500자 이내):
