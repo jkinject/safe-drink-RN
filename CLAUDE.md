@@ -53,11 +53,10 @@ Flutter 폴더는 계산 검증 수치·디자인 레퍼런스 참고용으로�
 - 시작 시 자동 확인·즉시 적용: `src/hooks/useOtaUpdates.ts` (루트 레이아웃에서 호출)
 - 상세: `docs/OTA-UPDATE.md`
 
-## App Store Connect API
+## App Store Connect
 
-- **심사 상태는 `node scripts/asc-status.mjs`(`--builds` 로 빌드 처리 상태까지)** — 브라우저 로그인·2FA 없이 API 키로 조회한다. Aside 로 ASC 웹을 열면 세션이 몇 시간마다 풀려 매번 사용자가 비밀번호를 쳐야 했다.
-- 키: 팀 키 `YNW2JAD99P`(App Manager), 파일 `/Users/tim/Documents/keys/AuthKey_YNW2JAD99P.p8` — **리포에 복사하지 말 것.** Issuer ID 와 함께 `.env.local` 의 `ASC_KEY_ID`·`ASC_ISSUER_ID`·`ASC_KEY_PATH` 로 읽는다. `eas.json` submit 프로필도 같은 키를 쓰므로 `eas submit -p ios` 에 Apple ID 로그인이 필요 없다.
-- API 로 안 되는 것(Resolution Center 답글, 일부 메타데이터 화면)만 Aside 웹으로 하고, 그때만 사용자 로그인이 필요하다.
+- **심사 상태는 공용 스킬로**: `node ~/.claude/skills/app-store-connect/asc.mjs status [--builds]` (이 폴더에서 실행하면 Safedrink 자동 인식). 계정 키는 `~/.appstoreconnect/config.json` 의 `epsoft` 프로필(팀 GZNYLNJY9P, 같은 계정에 Stow 도 있음). 심사 함정·Aside 웹 사용 기준은 그 스킬의 SKILL.md.
+- `eas.json` submit 프로필도 같은 API 키(`/Users/tim/Documents/keys/AuthKey_YNW2JAD99P.p8`)를 써서 `eas submit -p ios` 에 Apple ID 로그인이 필요 없다. 키 파일은 리포에 복사하지 말 것.
 
 ## Android 권한 (Play 정책)
 
