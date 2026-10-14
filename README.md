@@ -10,7 +10,7 @@ An open-source Android app that estimates blood alcohol concentration (BAC) from
 - Keeps counting in the notification shade after the app is closed (system chronometer), then sends a "safe now" notification.
 - Graph with 0.03 % / 0.08 % reference lines, session history, share card.
 
-Calculation core lives in [`src/core/`](src/core/) as pure TypeScript with 60+ unit tests; the same module is built into the [web calculator](https://jkinject.github.io/safe-drink-RN/calc/?lang=en). Play Store: <https://play.google.com/store/apps/details?id=com.safedrink.app>
+Calculation core lives in [`src/core/`](src/core/) as pure TypeScript with 60+ unit tests; the same module is built into the [web calculator](https://jkinject.github.io/safe-drink-RN/calc/?lang=en). App Store: <https://apps.apple.com/app/id6813104713> · Play Store: <https://play.google.com/store/apps/details?id=com.safedrink.app>
 
 > ⚠️ Reference estimate only. Not a medical device and never a basis for deciding whether to drive.
 

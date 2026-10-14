@@ -37,6 +37,14 @@
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
     },
     {
+      "@type": "SoftwareApplication",
+      "name": "Safedrink — 술 깨는 시간 계산",
+      "operatingSystem": "iOS",
+      "applicationCategory": "LifestyleApplication",
+      "installUrl": "https://apps.apple.com/app/id6813104713",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+    },
+    {
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "소주 한 병 마시면 몇 시간 뒤에 깨나요?",
@@ -103,7 +111,8 @@
   .store img { width:56px; height:56px; border-radius:14px; }
   .store p { margin:0; font-size:13px; color:var(--sub); }
   .store strong { display:block; font-size:15px; color:var(--navy); margin-bottom:2px; }
-  .store a.get { margin-left:auto; background:var(--accent); color:#fff; text-decoration:none; font-weight:700; padding:10px 16px; border-radius:12px; white-space:nowrap; font-size:14px; }
+  .store .gets { margin-left:auto; display:flex; flex-direction:column; gap:6px; }
+  .store a.get { background:var(--accent); color:#fff; text-decoration:none; font-weight:700; padding:9px 14px; border-radius:12px; white-space:nowrap; font-size:13px; text-align:center; }
   .faq h3 { font-size:14px; margin:14px 0 4px; } .faq p { margin:0; font-size:13px; color:#55527A; }
   footer { font-size:12px; color:var(--sub); text-align:center; margin-top:32px; }
   .hidden { display:none; }
@@ -166,8 +175,11 @@
 
   <section class="card store">
     <img src="../icon.png" alt="Safedrink 앱 아이콘" width="56" height="56">
-    <p><strong id="st-title">앱으로 쓰면 더 편해요</strong><span id="st-desc">잔을 비울 때마다 기록하고, 앱을 끄고도 알림창에서 남은 시간을 봅니다.</span></p>
-    <a class="get" id="st-get" href="https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dcalc%26utm_medium%3Dweb">Google Play</a>
+    <p><strong id="st-title">앱으로 쓰면 더 편해요</strong><span id="st-desc">잔을 비울 때마다 기록하고, 앱을 끄고도 잠금화면·알림창에서 남은 시간을 봅니다.</span></p>
+    <div class="gets">
+      <a class="get" id="st-ios" href="https://apps.apple.com/app/id6813104713">App Store</a>
+      <a class="get" id="st-get" href="https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dcalc%26utm_medium%3Dweb">Google Play</a>
+    </div>
   </section>
 
   <section class="card faq" id="faq">
@@ -197,7 +209,7 @@ const EN = {
   disc:'For reference only — not a legal or medical standard. If you have been drinking, do not drive.', profile:'About you', height:'Height (cm)', weight:'Weight (kg)', year:'Birth year', sex:'Sex', male:'Male', female:'Female',
   drinks:'What you drank', abv:'ABV (%)', vol:'Volume (ml)', add:'Add', last:'Last drink finished at', now:'Current time', calc:'Calculate', remaining:'Time until fully sober',
   soberAt:t=>`Fully sober at ${t}`, nextDay:t=>`Fully sober tomorrow at ${t}`, safe:'You are already fully sober', bac:'Current BAC', peak:'Peak BAC', g:'Pure alcohol',
-  badge:{caution:'Over 0.03% (license suspension in KR)', danger:'Over 0.08% (license revocation in KR)'}, stTitle:'Easier in the app', stDesc:'Log each drink as you go and watch the countdown from your notification shade.',
+  badge:{caution:'Over 0.03% (license suspension in KR)', danger:'Over 0.08% (license revocation in KR)'}, stTitle:'Easier in the app', stDesc:'Log each drink as you go and watch the countdown on your Lock Screen or notification shade.',
   presets:[['Beer 500ml',4.5,500,'beerMug'],['Beer can 355ml',4.5,355,'beerCan'],['Wine glass',12,150,'wineGlass'],['Whisky shot',40,44,'whiskyGlass'],['Vodka shot',40,44,'sojuGlass'],['Cocktail',12,200,'cocktail'],['Highball',8,300,'highball'],['Champagne',12,150,'champagne']],
 };
 let T = KO, lang = 'ko';
