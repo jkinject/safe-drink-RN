@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://jkinject.github.io/safe-drink-RN/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://jkinject.github.io/safe-drink-RN/calc/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://jkinject.github.io/safe-drink-RN/</loc><lastmod>2026-10-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jkinject.github.io/safe-drink-RN/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jkinject.github.io/safe-drink-RN/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://jkinject.github.io/safe-drink-RN/en/"/>
+  </url>
+  <url><loc>https://jkinject.github.io/safe-drink-RN/en/</loc><lastmod>2026-10-14</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://jkinject.github.io/safe-drink-RN/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://jkinject.github.io/safe-drink-RN/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://jkinject.github.io/safe-drink-RN/en/"/>
+  </url>
+  <url><loc>https://jkinject.github.io/safe-drink-RN/calc/</loc><lastmod>2026-10-14</lastmod><changefreq>monthly</changefreq><priority>1.0</priority></url>
   <url><loc>https://jkinject.github.io/safe-drink-RN/privacy-policy.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
   <url><loc>https://jkinject.github.io/safe-drink-RN/delete-account.html</loc><lastmod>2026-09-28</lastmod><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

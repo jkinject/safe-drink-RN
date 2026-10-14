@@ -8,8 +8,12 @@
   <title>Safedrink — 술 깨는 시간 계산 앱 | 혈중알코올농도 타이머</title>
   <meta name="description" content="마신 술을 한 잔씩 기록하면 내 몸에 맞춘 혈중알코올농도 계산과 술 깨는 시각 카운트다운을 보여주는 무료 iPhone·Android 앱. 앱을 꺼도 잠금화면·알림창에서 확인하세요.">
   <link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/">
+  <link rel="alternate" hreflang="ko" href="https://jkinject.github.io/safe-drink-RN/">
+  <link rel="alternate" hreflang="en" href="https://jkinject.github.io/safe-drink-RN/en/">
+  <link rel="alternate" hreflang="x-default" href="https://jkinject.github.io/safe-drink-RN/en/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ko_KR">
+  <meta property="og:locale:alternate" content="en_US">
   <meta property="og:title" content="Safedrink — 술 깨는 시간, 정확하게">
   <meta property="og:description" content="내 몸에 맞춘 혈중알코올농도 계산과 술 깨는 시각 카운트다운. 회원가입 없이 사용하는 무료 iPhone·Android 앱.">
   <meta property="og:image" content="https://jkinject.github.io/safe-drink-RN/og-calc.png">
@@ -59,6 +63,9 @@
     .skip { position: absolute; top: -80px; left: 20px; padding: 12px; background: white; z-index: 10; }
     .skip:focus { top: 12px; }
     .hero { padding-top: 32px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .lang { font-size: 13px; color: var(--muted); }
+    .lang a { display: inline-flex; align-items: center; min-height: 44px; }
     .brand { display: inline-flex; align-items: center; gap: 12px; }
     .brand img { width: 48px; height: 48px; border-radius: 12px; box-shadow: var(--shadow); }
     .brand-name { display: block; font-size: 20px; font-weight: 700; letter-spacing: -.04em; }
@@ -155,9 +162,12 @@
   <a class="skip" href="#features">주요 기능으로 건너뛰기</a>
   <main class="wrap">
     <section class="hero" aria-labelledby="hero-title">
-      <div class="brand">
-        <img src="./icon.png" alt="Safedrink 앱 아이콘" width="48" height="48">
-        <div><span class="brand-name">Safedrink</span><span class="brand-description">술 깨는 시간 계산</span></div>
+      <div class="topbar">
+        <div class="brand">
+          <img src="./icon.png" alt="Safedrink 앱 아이콘" width="48" height="48">
+          <div><span class="brand-name">Safedrink</span><span class="brand-description">술 깨는 시간 계산</span></div>
+        </div>
+        <p class="lang">한국어 · <a href="./en/" hreflang="en" lang="en">English</a></p>
       </div>
       <div class="hero-grid">
         <div>
@@ -225,7 +235,7 @@
         <figure><img src="./img/screen-01-timer.png" alt="술 깨는 예상 시각과 남은 시간을 보여주는 타이머 화면" width="405" height="720" loading="lazy"><figcaption><span>01</span> 남은 시간 확인</figcaption></figure>
         <figure><img src="./img/screen-02-graph.png" alt="시간에 따른 혈중알코올농도 변화와 면허 정지·취소 기준선을 보여주는 그래프 화면" width="405" height="720" loading="lazy"><figcaption><span>02</span> 농도 변화 한눈에</figcaption></figure>
         <figure><img src="./img/screen-03-add.png" alt="마신 술을 선택하고 잔 단위로 추가하는 기록 화면" width="405" height="720" loading="lazy"><figcaption><span>03</span> 한 잔씩 간편하게</figcaption></figure>
-        <figure><img src="./img/screen-05-notification.png" alt="앱을 닫아도 남은 시간을 확인할 수 있는 Android 알림창" width="405" height="720" loading="lazy"><figcaption><span>04</span> 알림창에서도 계속</figcaption></figure>
+        <figure><img src="./img/screen-05-notification.png" alt="앱을 닫아도 남은 시간을 확인할 수 있는 알림창 카운트다운" width="405" height="720" loading="lazy"><figcaption><span>04</span> 알림창에서도 계속</figcaption></figure>
       </div>
     </section>
 
@@ -234,8 +244,8 @@
         <div><p class="eyebrow">부담 없이 시작해요</p><h2 id="trust-title">내 기록은 내 손안에.</h2><p class="section-intro">꼭 필요한 것만 담았어요.<br>계정도, 복잡한 시작도 필요 없어요.</p></div>
         <ul>
           <li><strong>회원가입 없음</strong><p>계정을 만들지 않고 바로 사용해요.</p></li>
-          <li><strong>기록은 기기 안에만</strong><p>프로필과 음주 기록은 기기에만 저장하고, 서버로 보내지 않아요.</p></li>
-          <li><strong>광고 하나, 3,300원으로 영구 제거</strong><p>작은 배너 광고와 함께 무료로 사용해요. 광고 제거는 한 번만 결제하면 돼요.</p></li>
+          <li><strong>기록은 기기 안에, 백업은 원할 때만</strong><p>프로필과 음주 기록은 기본적으로 기기에만 저장해요. 원하면 Google·Apple 계정으로 백업해 재설치나 기기 변경 후에도 복원할 수 있어요.</p></li>
+          <li><strong>무료 · 광고는 최소로</strong><p>iPhone 은 광고 없이, Android 는 작은 배너 하나와 함께 무료예요. 광고는 3,300원 한 번 결제로 영구 제거할 수 있어요.</p></li>
           <li><strong><a href="https://github.com/jkinject/safe-drink-RN">오픈소스</a></strong><p>어떻게 만들어졌는지 GitHub에서 코드를 직접 확인할 수 있어요.</p></li>
         </ul>
       </div>

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#EEEDF8">
+  <title>Safedrink — Sober Up Timer &amp; BAC Calculator App for iPhone and Android</title>
+  <meta name="description" content="How long until you're sober? Log each drink and Safedrink estimates your blood alcohol concentration (BAC) and the time it reaches zero, tuned to your height, weight and sex — with a countdown on your Lock Screen. Free for iPhone and Android.">
+  <link rel="canonical" href="https://jkinject.github.io/safe-drink-RN/en/">
+  <link rel="alternate" hreflang="ko" href="https://jkinject.github.io/safe-drink-RN/">
+  <link rel="alternate" hreflang="en" href="https://jkinject.github.io/safe-drink-RN/en/">
+  <link rel="alternate" hreflang="x-default" href="https://jkinject.github.io/safe-drink-RN/en/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="ko_KR">
+  <meta property="og:site_name" content="Safedrink">
+  <meta property="og:title" content="Safedrink — know when you'll be sober">
+  <meta property="og:description" content="A sober-up timer that estimates your BAC and counts down to zero, tuned to your body. Free for iPhone and Android, no sign-up.">
+  <meta property="og:image" content="https://jkinject.github.io/safe-drink-RN/og-calc.png">
+  <meta property="og:url" content="https://jkinject.github.io/safe-drink-RN/en/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../icon.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Safedrink — Sober Up Timer",
+    "operatingSystem": "iOS, Android",
+    "applicationCategory": "LifestyleApplication",
+    "inLanguage": "en",
+    "installUrl": ["https://apps.apple.com/app/id6813104713", "https://play.google.com/store/apps/details?id=com.safedrink.app&referrer=utm_source%3Dsite_en%26utm_medium%3Dweb"],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "description": "Estimates your blood alcohol concentration (BAC) and counts down to the time you'll be sober, tuned to your height, weight and sex. Free for iPhone and Android."
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #EEEDF8;
+      --card: #FFFFFF;
+      --accent: #6C63E0;
+      --navy: #2D2B52;
+      --sub: #9E9AC8;
+      --muted: #625E82;
+      --border: #E8E6FF;
+      --chip: #F0EEFF;
+      --panel: #F4F3FC;
+      --shadow: 0 2px 8px rgba(108,99,224,.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--navy);
+      font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-size: 16px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-underline-offset: 4px; }
+    a:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--navy); outline-offset: 5px; }
+    img { display: block; max-width: 100%; height: auto; }
+    h1, h2, h3, p, figure { margin: 0; }
+    h1, h2, h3 { font-weight: 700; line-height: 1.35; letter-spacing: -.04em; }
+    h2 { font-size: clamp(28px, 3vw, 36px); }
+    h3 { font-size: 20px; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    .skip { position: absolute; top: -80px; left: 20px; padding: 12px; background: white; z-index: 10; }
+    .skip:focus { top: 12px; }
+    .hero { padding-top: 32px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .lang { font-size: 13px; color: var(--muted); }
+    .lang a { display: inline-flex; align-items: center; min-height: 44px; }
+    .brand { display: inline-flex; align-items: center; gap: 12px; }
+    .brand img { width: 48px; height: 48px; border-radius: 12px; box-shadow: var(--shadow); }
+    .brand-name { display: block; font-size: 20px; font-weight: 700; letter-spacing: -.04em; }
+    .brand-description { display: block; color: var(--muted); font-size: 12px; }
+    .hero-grid { display: grid; gap: 16px; padding-top: 40px; align-items: center; }
+    .eyebrow { color: #554CC0; font-size: 12px; font-weight: 700; letter-spacing: .08em; margin-bottom: 16px; }
+    .pill { display: inline-flex; padding: 4px 12px; background: var(--chip); border: 1px solid #D8D4F5; border-radius: 40px; }
+    h1 { font-size: clamp(40px, 5vw, 64px); line-height: 1.2; letter-spacing: -.055em; }
+    h1 span { display: block; color: var(--accent); }
+    .hero-description { max-width: 440px; margin-top: 24px; color: var(--muted); font-size: 17px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 52px; padding: 12px 20px; border-radius: 12px; text-decoration: none;
+      background: var(--accent); color: white; font-size: 14px; font-weight: 700;
+      transition: background-color .15s;
+    }
+    .button:hover { background: #5B52CC; }
+    .button.secondary { background: white; color: var(--navy); border: 1px solid var(--border); }
+    .button.secondary:hover { background: var(--panel); }
+    .hero-note { margin-top: 12px; font-size: 12px; color: var(--muted); }
+    .hero-art { position: relative; width: min(100%, 480px); margin: 0 auto; padding-bottom: 24px; }
+    .hero-art > img { width: 100%; border-radius: 40px; }
+    .art-note {
+      position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+      width: max-content; max-width: 100%; padding: 12px 24px; border: 1px solid var(--border);
+      background: white; border-radius: 16px; box-shadow: var(--shadow); font-size: 14px;
+    }
+    .art-note strong { color: #554CC0; font-weight: 700; }
+    .section { padding-top: 80px; }
+    .section-intro { margin-top: 12px; color: var(--muted); max-width: 600px; }
+    .features { display: grid; gap: 16px; margin-top: 32px; }
+    .card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); }
+    .feature { padding: 28px; }
+    .feature-icon {
+      display: flex; align-items: center; justify-content: center; width: 72px; height: 72px;
+      margin-bottom: 24px; background: var(--panel); border-radius: 20px; overflow: hidden;
+    }
+    .feature-icon img { width: 56px; height: 56px; object-fit: contain; }
+    .feature-icon.mascot { background: var(--bg); }
+    .feature-icon.mascot img { width: 72px; height: 72px; }
+    .feature p { margin-top: 12px; color: var(--muted); font-size: 15px; }
+    .steps-panel { margin-top: 32px; padding: 28px; }
+    .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 32px; }
+    .step-number {
+      display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+      margin-bottom: 16px; border-radius: 12px; background: var(--chip); color: #554CC0; font-weight: 700;
+    }
+    .steps p { color: var(--muted); font-size: 15px; margin-top: 8px; }
+    .formula { margin-top: 32px; padding: 20px; border-radius: 12px; background: var(--panel); font-size: 13px; color: var(--muted); }
+    .formula strong { display: block; color: var(--navy); margin-bottom: 4px; font-weight: 600; }
+    .gallery {
+      display: grid; grid-auto-flow: column; grid-auto-columns: 76%; gap: 16px;
+      overflow-x: auto; scroll-snap-type: x mandatory; margin-top: 32px; padding: 4px 4px 20px;
+      scrollbar-color: var(--sub) var(--border); scrollbar-width: thin;
+    }
+    .gallery figure { min-width: 0; scroll-snap-align: start; }
+    .gallery img { width: 100%; border-radius: 20px; box-shadow: var(--shadow); }
+    .gallery figcaption { display: flex; gap: 8px; align-items: baseline; padding: 16px 4px 0; font-size: 14px; font-weight: 600; }
+    .gallery figcaption span { color: #625AAB; font-size: 12px; }
+    .swipe-note { color: var(--muted); font-size: 12px; margin-top: 16px; }
+    .trust { padding: 32px 28px; display: grid; gap: 32px; }
+    .trust ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
+    .trust li strong { display: block; font-weight: 600; }
+    .trust li p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .trust a { text-decoration-color: var(--sub); }
+    .disclaimer { margin-top: 40px; padding: 24px; border: 1px solid #FFD97D; border-radius: 20px; background: #FFF8E1; color: #7A6000; font-size: 14px; }
+    .disclaimer h2 { font-size: 16px; letter-spacing: -.02em; margin-bottom: 8px; }
+    footer { padding: 32px 0 40px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; font-size: 12px; color: var(--muted); }
+    footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+    footer a { display: inline-flex; align-items: center; min-height: 44px; }
+    footer > p { align-self: center; }
+    @media (max-width: 479px) {
+      .actions { flex-direction: column; }
+      .hero-art { width: 288px; }
+    }
+    @media (min-width: 768px) {
+      .hero { padding-top: 40px; }
+      .hero-grid { grid-template-columns: 1.15fr 1fr; gap: 24px; padding-top: 48px; }
+      .features { grid-template-columns: repeat(3, 1fr); }
+      .feature { padding: 24px; }
+      .steps { grid-template-columns: repeat(3, 1fr); gap: 40px; }
+      .steps-panel { padding: 40px; }
+      .gallery { grid-auto-flow: initial; grid-auto-columns: auto; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+      .swipe-note { display: none; }
+      .trust { padding: 40px; grid-template-columns: .85fr 1.4fr; gap: 48px; }
+      .trust ul { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .section { padding-top: 96px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#features">Skip to features</a>
+  <main class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="topbar">
+        <div class="brand">
+          <img src="../icon.png" alt="Safedrink app icon" width="48" height="48">
+          <div><span class="brand-name">Safedrink</span><span class="brand-description">Sober up timer</span></div>
+        </div>
+        <p class="lang"><a href="../" hreflang="ko" lang="ko">한국어</a> · English</p>
+      </div>
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow pill">Free for iPhone &amp; Android</p>
+          <h1 id="hero-title">When will you be sober?<span>Know, not guess.</span></h1>
+          <p class="hero-description">Log each drink as you go.<br>Safedrink estimates your BAC and the time you'll be fully sober — then counts it down for you.</p>
+          <div class="actions">
+            <a class="button" href="https://apps.apple.com/app/id6813104713">Download on the App Store</a>
+            <a class="button" href="https://play.google.com/store/apps/details?id=com.safedrink.app&amp;referrer=utm_source%3Dsite_en%26utm_medium%3Dweb">Get it on Google Play</a>
+            <a class="button secondary" href="../calc/?lang=en">Try the web calculator</a>
+          </div>
+          <p class="hero-note">No sign-up needed · Results are estimates and vary from person to person.</p>
+        </div>
+        <div class="hero-art">
+          <img src="../img/male_drinking.png" alt="Safedrink's 3D character holding a glass of beer" width="480" height="480" fetchpriority="high">
+          <p class="art-note">From your first drink <strong>to the last minute.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features" aria-labelledby="features-title">
+      <p class="eyebrow">Your drinks, tracked</p>
+      <h2 id="features-title">Easy to log, clear at a glance.</h2>
+      <div class="features">
+        <article class="feature card">
+          <div class="feature-icon mascot"><img src="../img/mascot_water_tip.png" alt="" width="72" height="72" loading="lazy"></div>
+          <h3>Tuned to your body</h3>
+          <p>Uses your height, weight, sex and age. The same drink hits people differently, so Safedrink estimates your BAC from your own body water.</p>
+        </article>
+        <article class="feature card">
+          <div class="feature-icon"><img src="../calc/img/beerMug.png" alt="" width="56" height="56" loading="lazy"></div>
+          <h3>Log by the glass, preview the next one</h3>
+          <p>Beer, wine, whisky, cocktails — one tap each. Before adding another, see how much longer it would keep you from sobering up.</p>
+        </article>
+        <article class="feature card">
+          <div class="feature-icon mascot"><img src="../img/mascot_water_shield.png" alt="" width="72" height="72" loading="lazy"></div>
+          <h3>Countdown on your<br>Lock Screen</h3>
+          <p>The countdown keeps going after you close the app — on the Lock Screen and Dynamic Island on iPhone, and in the notification shade on Android.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="steps-title">
+      <p class="eyebrow">Three simple steps</p>
+      <h2 id="steps-title">How it works</h2>
+      <div class="steps-panel card">
+        <ol class="steps">
+          <li><span class="step-number" aria-hidden="true">01</span><h3>Set up your profile</h3><p>Enter your height, weight, sex and birth year so the estimate fits your body.</p></li>
+          <li><span class="step-number" aria-hidden="true">02</span><h3>Log your drinks</h3><p>Pick what you drank, how much and when you finished it. Had another? Add it.</p></li>
+          <li><span class="step-number" aria-hidden="true">03</span><h3>Watch the countdown</h3><p>See when you'll be fully sober, the time left, and a chart of your BAC over time.</p></li>
+        </ol>
+        <div class="formula">
+          <strong>The math, in the open.</strong>
+          <p>Your distribution factor (r) comes from the Watson total-body-water formula and feeds the Widmark formula, with an elimination rate of 0.015% per hour. Real elimination varies with health, food and individual differences, so the time shown does not guarantee you are actually sober.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="screens-title">
+      <p class="eyebrow">Inside the app</p>
+      <h2 id="screens-title">Just what you need, clearly.</h2>
+      <p class="section-intro">From the time left to every drink you logged. The BAC chart also shows reference lines at 0.03% and 0.08% — the license suspension and revocation limits under South Korean law.</p>
+      <p class="swipe-note" id="swipe-hint">Swipe sideways to see four app screens.</p>
+      <div class="gallery" tabindex="0" role="region" aria-label="Four app screens, scrolls horizontally" aria-describedby="swipe-hint">
+        <figure><img src="../img/en/screen-01-timer.png" alt="Timer screen showing the estimated sober time and the time remaining" width="405" height="720" loading="lazy"><figcaption><span>01</span> Time until sober</figcaption></figure>
+        <figure><img src="../img/en/screen-02-graph.png" alt="Chart of BAC over time with 0.03% and 0.08% reference lines" width="405" height="720" loading="lazy"><figcaption><span>02</span> BAC over time</figcaption></figure>
+        <figure><img src="../img/en/screen-03-add.png" alt="Add drink screen with one-tap drink presets" width="405" height="720" loading="lazy"><figcaption><span>03</span> Log in one tap</figcaption></figure>
+        <figure><img src="../img/en/screen-05-lockscreen.png" alt="iPhone Lock Screen showing the countdown as a Live Activity" width="405" height="720" loading="lazy"><figcaption><span>04</span> Keeps counting on the Lock Screen</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="trust-title">
+      <div class="trust card">
+        <div><p class="eyebrow">Start in seconds</p><h2 id="trust-title">Your data stays yours.</h2><p class="section-intro">Only what you need.<br>No account, no setup.</p></div>
+        <ul>
+          <li><strong>No sign-up</strong><p>Open the app and start logging — no account required.</p></li>
+          <li><strong>On your device, backup only if you want</strong><p>Your profile and drink history stay on your device by default. Optionally sign in with Apple or Google to back up and restore after a reinstall or on a new phone.</p></li>
+          <li><strong>Free, ads kept minimal</strong><p>No ads on iPhone. On Android there is one small banner, removable forever with a one-time purchase.</p></li>
+          <li><strong><a href="https://github.com/jkinject/safe-drink-RN">Open source</a></strong><p>See exactly how it works — the code is on GitHub.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <aside class="disclaimer" aria-labelledby="disclaimer-title">
+      <h2 id="disclaimer-title">Please remember</h2>
+      <p>Safedrink is for reference only and is not a legal or medical standard. If you have been drinking, do not drive.</p>
+    </aside>
+  </main>
+  <footer class="wrap">
+    <p>Safedrink · Sober up timer</p>
+    <nav aria-label="About">
+      <a href="../privacy-policy.html#en">Privacy policy</a>
+      <a href="https://github.com/jkinject/safe-drink-RN">GitHub</a>
+      <a href="mailto:jkinject@gmail.com">Contact jkinject@gmail.com</a>
+    </nav>
+  </footer>
+</body>
+</html>
