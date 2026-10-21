@@ -1,5 +1,16 @@
 import { Platform } from 'react-native';
+import * as Updates from 'expo-updates';
 import { BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+
+/**
+ * iOS 1.3.x 바이너리는 Info.plist 에 Google 샘플 앱 ID 가 박혀 있다(AdMob iOS 앱이 1.4.0 에서
+ * 들어감). 그 바이너리가 OTA 로 이 번들을 받아도 광고·광고 제거 구매가 켜지지 않게, 네이티브
+ * 런타임 버전으로 막는다. 런타임이 없는 개발 빌드는 테스트 단위라 상관없다.
+ */
+const IOS_RUNTIMES_WITHOUT_ADMOB_APP_ID = ['1.3.0', '1.3.1'];
+const IOS_BINARY_HAS_ADMOB_APP_ID = !IOS_RUNTIMES_WITHOUT_ADMOB_APP_ID.includes(
+  Updates.runtimeVersion ?? '',
+);
 
 /**
  * AdMob 광고 단위 ID.
@@ -13,8 +24,7 @@ import { BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
  */
 const PRODUCTION_BOTTOM_BANNER_UNIT_ID: string | null = Platform.select({
   android: 'ca-app-pub-3101837066146809/3087280996',
-  // iOS 는 앱스토어 등록 뒤 AdMob 에 앱을 추가할 예정. 그때 iOS 전용 단위를 여기 넣고
-  // app.json 플러그인 옵션의 iosAppId 도 실제 값으로 바꾼다.
+  ios: IOS_BINARY_HAS_ADMOB_APP_ID ? 'ca-app-pub-3101837066146809/7660333242' : null,
   default: null,
 });
 
