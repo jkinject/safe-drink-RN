@@ -49,14 +49,14 @@
 
 <div class="card">
   <h1>Safedrink 개인정보처리방침</h1>
-  <p class="meta">최종 수정일: 2026년 9월 29일 · 앱 버전 1.3.0</p>
+  <p class="meta">최종 수정일: 2026년 10월 22일 · 앱 버전 Android 1.3.0 / iOS 1.4.0</p>
 
   <div class="lead">
     <strong>요약: 회원가입 없이 앱을 사용할 수 있으며, 기본적으로 입력하신 신체 정보와 음주 기록은
     기기 안에만 저장됩니다.</strong> 다만 설정 → 백업에서 <strong>Google 계정 연동 백업</strong> 또는
     (iOS) <strong>Apple로 로그인해 백업</strong>을 선택하면 기기의 데이터가 백업을 위해 당사가
     처리를 위탁한 서버(Cloudflare)에 저장되며, 언제든 연동을 해제하고 백업을 삭제할 수 있습니다
-    (제3절 참고). Android 앱 1.2.0부터 화면 하단에
+    (제3절 참고). Android 앱 1.2.0, iOS 앱 1.4.0부터 화면 하단에
     <strong>Google AdMob 배너 광고</strong>가 표시되며, 이를 위해 Google의 광고 SDK가 광고 식별자 등
     일부 기기 정보를 수집합니다(제4절 참고). 광고는 1회 인앱 결제로 영구히 제거할 수 있습니다.
   </div>
@@ -141,7 +141,7 @@
       <td>
         음주 기록·술자리 요약, 자주 마시는 술(커스텀 프리셋), 프로필(성별·키·몸무게·출생연도),
         언어 설정, 알림 설정을 하나의 스냅샷으로 저장합니다.
-        <strong>광고 제거 구매 여부는 백업하지 않습니다</strong>(Google Play가 별도로 보관·확인합니다).
+        <strong>광고 제거 구매 여부는 백업하지 않습니다</strong>(Google Play 또는 App Store가 별도로 보관·확인합니다).
       </td>
     </tr>
   </table>
@@ -186,13 +186,13 @@
 
   <h2>4. 광고 (Google AdMob)</h2>
   <p>
-    Android 앱은 화면 하단에 Google AdMob 배너 광고를 표시합니다. 광고를 불러오기 위해
+    앱은 화면 하단에 Google AdMob 배너 광고를 표시합니다(Android 1.2.0, iOS 1.4.0부터). 광고를 불러오기 위해
     Google Mobile Ads SDK가 다음 정보를 Google에 전송하며, Google은 이를 광고 게재·측정,
     사기 방지, 서비스 개선 목적으로 처리합니다.
   </p>
   <table>
     <tr><th>항목</th><th>내용</th></tr>
-    <tr><td>기기 또는 기타 식별자</td><td>Android 광고 ID(AAID), 앱 세트 ID</td></tr>
+    <tr><td>기기 또는 기타 식별자</td><td>Android: 광고 ID(AAID), 앱 세트 ID / iOS: 공급업체 식별자(IDFV). iOS 앱은 앱 추적 투명성(ATT) 허용을 요청하지 않으므로 광고 식별자(IDFA)는 수집되지 않습니다</td></tr>
     <tr><td>대략적인 위치</td><td>IP 주소로 추정되는 국가·지역 수준의 위치 (앱은 위치 권한을 요청하지 않습니다)</td></tr>
     <tr><td>앱 상호작용</td><td>앱 실행, 광고 노출·탭 등 광고 관련 이용 정보</td></tr>
     <tr><td>진단 정보</td><td>앱·SDK 성능 관련 정보</td></tr>
@@ -204,22 +204,23 @@
     <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 개인정보처리방침</a>을 참고하십시오.
   </p>
   <p>
-    광고 ID는 기기의 <strong>설정 → Google → 광고</strong>에서 재설정하거나 삭제할 수 있고,
-    맞춤 광고를 끌 수 있습니다. 앱 설정의 <strong>광고 제거</strong>를 구매하면 배너가 표시되지
+    Android에서는 기기의 <strong>설정 → Google → 광고</strong>에서 광고 ID를 재설정하거나 삭제할 수 있고,
+    맞춤 광고를 끌 수 있습니다. iOS에서는 <strong>설정 → 개인정보 보호 및 보안 → Apple 광고</strong> 등
+    기기의 광고 설정을 따릅니다. 앱 설정의 <strong>광고 제거</strong>를 구매하면 배너가 표시되지
     않으며 광고 SDK가 광고를 요청하지 않습니다.
   </p>
 
-  <h2>5. 인앱 결제 (Google Play 결제)</h2>
+  <h2>5. 인앱 결제 (Google Play 결제 · App Store 인앱 구입)</h2>
   <p>
-    "광고 제거"는 Google Play 결제 시스템을 통해 1회 결제하는 상품입니다. 결제 정보(카드,
-    계좌 등)는 Google Play가 처리하며 <strong>앱과 개발자는 결제 수단 정보를 받지 않습니다.</strong>
-    앱은 구매 여부만 Google Play에서 확인해 기기에 저장합니다. 앱을 다시 설치하거나 기기를
+    "광고 제거"는 Android에서는 Google Play 결제 시스템, iOS에서는 App Store 인앱 구입으로 1회 결제하는
+    상품입니다. 결제 정보(카드, 계좌 등)는 Google Play 또는 Apple이 처리하며 <strong>앱과 개발자는 결제 수단
+    정보를 받지 않습니다.</strong> 앱은 구매 여부만 스토어에서 확인해 기기에 저장합니다. 앱을 다시 설치하거나 기기를
     바꾼 경우 설정의 "구매 복원"으로 되찾을 수 있습니다.
   </p>
 
   <h2>6. 앱이 사용하는 네트워크 통신</h2>
   <p>
-    Safedrink가 인터넷에 연결하는 경우는 <strong>앱 업데이트 확인, 광고 요청, Google Play 결제</strong>
+    Safedrink가 인터넷에 연결하는 경우는 <strong>앱 업데이트 확인, 광고 요청, 스토어 결제(Google Play·App Store)</strong>
     세 가지이며, <strong>Google 또는 Apple 계정을 연동한 경우에는 백업 업로드·복원</strong>이 추가됩니다.
     업데이트 확인은 앱을 실행할 때 Expo(EAS Update) 서버(<code>u.expo.dev</code>)에
     새 버전이 있는지 묻고, 있으면 앱 코드를 내려받습니다.
@@ -306,7 +307,7 @@
 
 <div class="card" id="en">
   <h1>Safedrink Privacy Policy</h1>
-  <p class="meta">Last updated: September 29, 2026 · App version 1.3.0</p>
+  <p class="meta">Last updated: October 22, 2026 · App version Android 1.3.0 / iOS 1.4.0</p>
 
   <div class="lead">
     <strong>Summary: you can use the app without an account, and by default the body
@@ -314,7 +315,7 @@
     turn on <strong>Google account backup</strong>, or (iOS) <strong>sign in with Apple to back
     up</strong>, in Settings → Backup, your device data is stored on a server we have engaged
     (Cloudflare) to process it for backup, and you can unlink and delete that backup at any time
-    (see section 3). Starting with Android version 1.2.0 the
+    (see section 3). Starting with Android version 1.2.0 and iOS version 1.4.0 the
     app shows a <strong>Google AdMob banner</strong>, and Google's ads SDK collects some device
     information such as the advertising ID for that purpose (see section 4). A one-time in-app
     purchase removes ads permanently.
@@ -391,7 +392,7 @@
         Drink records and session summaries, your custom drink presets, your profile (sex,
         height, weight, birth year), language setting, and notification setting, stored as a
         single snapshot. <strong>Whether you purchased Remove Ads is not backed up</strong>
-        (Google Play remains the source of truth for that).
+        (Google Play or the App Store remains the source of truth for that).
       </td>
     </tr>
   </table>
@@ -439,13 +440,13 @@
 
   <h2>4. Advertising (Google AdMob)</h2>
   <p>
-    The Android app shows a Google AdMob banner at the bottom of the screen. To serve ads, the
+    The app shows a Google AdMob banner at the bottom of the screen (Android 1.2.0+, iOS 1.4.0+). To serve ads, the
     Google Mobile Ads SDK sends the following to Google, which processes it for ad delivery and
     measurement, fraud prevention, and service improvement.
   </p>
   <table>
     <tr><th>Category</th><th>Details</th></tr>
-    <tr><td>Device or other identifiers</td><td>Android advertising ID (AAID), app set ID</td></tr>
+    <tr><td>Device or other identifiers</td><td>Android: advertising ID (AAID), app set ID / iOS: identifier for vendor (IDFV). The iOS app does not request App Tracking Transparency permission, so the advertising identifier (IDFA) is not collected</td></tr>
     <tr><td>Approximate location</td><td>Country/region-level location inferred from the IP address (the app does not request location permission)</td></tr>
     <tr><td>App interactions</td><td>App launches, ad impressions and taps</td></tr>
     <tr><td>Diagnostics</td><td>App and SDK performance information</td></tr>
@@ -457,23 +458,25 @@
     <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
   </p>
   <p>
-    You can reset or delete your advertising ID and opt out of personalized ads under
-    <strong>Settings → Google → Ads</strong> on your device. Purchasing <strong>Remove Ads</strong>
+    On Android you can reset or delete your advertising ID and opt out of personalized ads under
+    <strong>Settings → Google → Ads</strong>. On iOS, your device's ad settings (such as
+    <strong>Settings → Privacy &amp; Security → Apple Advertising</strong>) apply. Purchasing <strong>Remove Ads</strong>
     in the app's settings hides the banner and stops ad requests.
   </p>
 
-  <h2>5. In-app purchase (Google Play Billing)</h2>
+  <h2>5. In-app purchase (Google Play Billing · App Store)</h2>
   <p>
-    "Remove Ads" is a one-time purchase handled by Google Play's billing system. Payment details
-    are processed by Google Play; <strong>the app and the developer never receive them.</strong>
-    The app only checks with Google Play whether the purchase exists and stores that status on the
+    "Remove Ads" is a one-time purchase handled by Google Play's billing system on Android and by
+    App Store in-app purchase on iOS. Payment details are processed by Google Play or Apple;
+    <strong>the app and the developer never receive them.</strong>
+    The app only checks with the store whether the purchase exists and stores that status on the
     device. After reinstalling or switching devices, use "Restore Purchases" in Settings.
   </p>
 
   <h2>6. Network usage</h2>
   <p>
     Safedrink connects to the internet for three reasons: <strong>checking for app updates,
-    requesting ads, and Google Play billing</strong> — plus <strong>backup upload/restore if you
+    requesting ads, and store billing (Google Play / App Store)</strong> — plus <strong>backup upload/restore if you
     have linked a Google or Apple account</strong>. On launch it asks the Expo (EAS Update)
     server (<code>u.expo.dev</code>) whether a newer version of the app code exists and downloads it if so.
   </p>
