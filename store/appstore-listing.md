@@ -1,7 +1,7 @@
 # App Store 등록정보 (iOS 첫 출시, 1.2.2)
 
 Play 등록정보(`play-listing.md`, `play-listing-en.md`)를 iOS 사정에 맞춰 옮긴 것.
-차이점: **광고·인앱결제 없음**(첫 iOS 출시는 광고 없이 — 문구에 광고 언급 금지), 알림창 카운트다운 대신
+차이점: 광고·인앱결제는 **1.4.0 부터**(1.2.2~1.3.1 은 광고 없음), 알림창 카운트다운 대신
 **잠금화면·다이내믹 아일랜드 Live Activity**. 기능이 바뀌면 세 파일을 같이 고친다.
 
 App Store Connect 계정: EPSOFT(이피소프트) 법인, 판매자 표시 이름 "이피소프트"(첫 앱 생성 때 확정, 변경 불가). 번들 ID `com.safedrink.app`.
@@ -77,7 +77,7 @@ Safedrink — 술 깨는 시간 계산
 ■ 개인정보는 최소한으로
 회원가입 없이 바로 쓸 수 있습니다. 입력하신 신체 정보와 음주 기록은 기본적으로 기기 안에만 저장됩니다. 원하신다면 설정에서 Google 또는 Apple 계정으로 로그인해 기록을 백업하고, 재설치하거나 기기를 바꿀 때 복원할 수 있습니다. 백업은 완전히 선택 사항이며, 언제든 설정에서 백업을 삭제하고 연동을 해제할 수 있습니다.
 
-무료이며 광고가 없습니다. 한국어와 영어를 지원합니다.
+무료이며, 화면 하단에 작은 배너 광고가 표시됩니다. 한 번 구매로 광고를 영구히 없앨 수 있습니다. 한국어와 영어를 지원합니다.
 
 
 [ 반드시 읽어주세요 ]
@@ -150,7 +150,7 @@ When you sober up, the session is saved automatically: start and end time, total
 ■ Private by design
 No sign-up needed. Your body data and drink history stay on your device by default. If you'd like, sign in with Google or Apple in Settings to back up your data and restore it after a reinstall or on a new device — entirely optional, and you can delete the backup and unlink at any time.
 
-Safedrink is free, with no ads. Available in English and Korean.
+Safedrink is free, with a small banner ad at the bottom of the screen. A one-time purchase removes ads permanently. Available in English and Korean.
 
 
 [ Please read ]
@@ -181,7 +181,7 @@ Important context for review:
 - It is a reference/educational estimate based on published formulas (Widmark with Watson total-body-water). It is NOT a medical device and does NOT tell users whether they may drive. A disclaimer banner ("This app is for reference only and is not a legal or medical standard") is always visible at the top of every main screen, and the onboarding, info screen and store description repeat that users must not drive after drinking.
 - The "You're safe now" notification means the estimated BAC has reached zero; the info screen explains this is not a driving authorization.
 - The app does not encourage drinking. Its purpose is to help users understand how long alcohol stays in the body and plan a safe way home.
-- No account, no server, no analytics, no ads. All data stays on the device.
+- (1.2.2 당시 메모 — 1.4.0 부터는 광고·인앱 구입이 있으므로 이 줄을 쓰지 말 것. 1.4.0 메모는 ASC 버전 페이지 참고) No account, no server, no analytics, no ads.
 - Live Activity (iOS 16.2+) shows the countdown on the Lock Screen / Dynamic Island. Notification permission is requested when the first drink is finished.
 
 How to test: complete onboarding (any height/weight/sex), tap + to add a drink (e.g. "Beer 500ml"), tap "Finished" on the record. The timer starts and a Live Activity appears when you lock the screen.
@@ -217,8 +217,9 @@ How to test: complete onboarding (any height/weight/sex), tap + to add a drink (
 - 모든 항목 "Used for Tracking" 은 아니요, "Third-Party Advertising"·"Analytics" 목적 없음.
 - 세션 토큰(Apple 로그인, 180일)은 Apple 설문의 별도 데이터 유형이 아니라 위 User ID/인증 흐름의
   일부로 취급한다(토큰 자체는 개인 식별 정보를 담지 않음).
-- Android 광고(AdMob)는 iOS 에는 적용되지 않으므로(iOS 는 광고 없음, `docs/ADMOB.md` 참고) 이
-  설문에 포함하지 않는다.
+- **1.4.0 부터 AdMob 항목 추가(2026-10-22 게시)** — 모두 '사용자에게 연결 안 됨'·'추적 안 함'(ATT 미요청, IDFA 미사용):
+  위치>대략적인 위치(제3자 광고), 식별자>기기 ID·사용 데이터>제품 상호작용·광고 데이터·진단>충돌·성능·기타 진단(제3자 광고, 분석).
+  추적으로 신고하면 ATT 프롬프트를 요구받으므로 ATT 를 넣기 전까지는 추적 '아니요'를 유지한다.
 - 설문 갱신 후 `docs/privacy-policy.html` 3절과 내용이 일치하는지 다시 확인할 것.
 
 ## 제출 순서

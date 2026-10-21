@@ -8,9 +8,10 @@
 |------|----|------|
 | Android 앱 ID | `ca-app-pub-3101837066146809~5991615665` | `app.json` 플러그인 옵션 `androidAppId` |
 | Android 하단 배너 단위 | `ca-app-pub-3101837066146809/3087280996` | `src/config/ads.ts` |
-| iOS | **앱스토어 등록 후 AdMob 추가 예정 — 그때까지 광고·광고 제거 구매 비활성** (`ADS_SUPPORTED = false`) | `src/config/ads.ts` 의 `Platform.select` |
+| iOS 앱 ID | `ca-app-pub-3101837066146809~2953793289` | `app.json` 플러그인 옵션 `iosAppId` |
+| iOS 하단 배너 단위 | `ca-app-pub-3101837066146809/7660333242` (이름 "하단광고영역", Android 와 동일) | `src/config/ads.ts` |
 
-- iOS 의 `iosAppId` 는 Google 샘플 값 그대로 둔다 — SDK 가 Info.plist 에 앱 ID 가 없으면 초기화 시 죽기 때문에 자리만 채운 것이고, `ADS_SUPPORTED` 가 false 라 초기화 자체를 부르지 않는다. 앱스토어 등록 후 AdMob 에 iOS 앱을 추가하면 `iosAppId` 와 `src/config/ads.ts` 의 iOS 단위 ID 두 곳을 채운다(네이티브 변경이라 새 바이너리 필요).
+- iOS 광고는 1.4.0 바이너리부터 켜진다. 그 전 iOS 바이너리(1.3.x)는 Info.plist 에 Google 샘플 앱 ID 가 들어 있고 JS 의 iOS 단위가 null 이라 광고·광고 제거 구매가 숨겨져 있었다. AdMob iOS 앱 인증은 App Store Marketing URL(개발자 웹사이트) 도메인 루트의 app-ads.txt 로 한다(2026-10-18 인증).
 - 라이브러리는 `react-native-google-mobile-ads@16.3.0` 고정. 16.4+ 는 play-services-ads 25.4(Kotlin 2.3 컴파일)를 물어 RN 0.86 의 Kotlin 2.1 과 충돌한다.
 - 앱 ID 는 네이티브(AndroidManifest)에 새겨지므로 바꾸면 `version` 을 올리고 새 바이너리를 내야 한다 — OTA 로는 못 바꾼다.
 - 개발 빌드(`__DEV__`)는 Google 공식 테스트 단위(`TestIds.ADAPTIVE_BANNER`)를 자동으로 쓴다. 실단위로 개발 중 노출·클릭이 쌓이면 무효 트래픽으로 계정이 정지될 수 있다. 시뮬레이터·에뮬레이터는 항상 테스트 기기로 취급된다.
@@ -54,7 +55,7 @@
 
 ### 스토어 등록 체크리스트
 
-- App Store Connect: 앱 → 인앱 구입 → 비소모성 `remove_ads`, 가격·현지화 입력, **심사용 스크린샷** 필수. 앱 심사 제출 시 인앱 구입을 같이 제출.
+- App Store Connect: 비소모성 `remove_ads`(IAP ID 6825393033, KOR 기준 ₩3,300, ko/en 현지화, 175개 지역) — 2026-10-22 API 로 생성. **심사용 스크린샷** 필수. 첫 인앱 구입은 앱 버전 심사 제출 때 버전 페이지의 '인앱 구입' 에 붙여 같이 제출해야 한다. 유료 앱 계약(Paid Apps Agreement)이 활성이어야 판매된다.
 - Play Console: **먼저 판매자 계정(결제 프로필) 설정** — 이게 없으면 '수익 창출 → 제품' 메뉴 자체가 열리지 않는다(2026-09-09 확인). 그 다음 인앱 상품 `remove_ads` 활성화. 결제 라이브러리 권한(`com.android.vending.BILLING`)은 expo-iap 플러그인이 넣는다. 라이선스 테스터에는 jkinject@gmail.com 이 등록돼 있다.
 - 광고 SDK 가 `AD_ID` 권한을 넣으므로 Play 데이터 보안 설문에 광고 ID 수집을 반영해야 한다.
 - 로컬 릴리스 APK 는 Play 에서 설치된 앱 위에 못 올라간다(서명 불일치·versionCode). 기기 테스트는 기존 앱을 지우거나 내부 테스트 트랙으로 배포해서 한다.
