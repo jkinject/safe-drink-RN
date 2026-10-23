@@ -1,4 +1,6 @@
-# App Store 등록정보 (iOS 첫 출시, 1.2.2)
+# App Store 등록정보 (iOS 첫 출시 1.2.2 → 1.4.0 반영)
+
+> **2026-10-23 1.4.0 반려(지침 1.4 Physical Harm: "하드웨어 없이 소프트웨어·Widmark 공식만으로 혈중알코올을 계산하는 앱은 부적절").** 그 뒤 iOS 문구에서 '계산기'·Widmark·Watson·BAC 측정 표현과 운전 관련 키워드를 뺐다. **iOS 등록정보에 이 표현을 다시 넣지 말 것.** (Play 등록정보는 별개)
 
 Play 등록정보(`play-listing.md`, `play-listing-en.md`)를 iOS 사정에 맞춰 옮긴 것.
 차이점: 광고·인앱결제는 **1.4.0 부터**(1.2.2~1.3.1 은 광고 없음), 알림창 카운트다운 대신
@@ -35,7 +37,7 @@ Safedrink — 술 깨는 시간 계산
 
 ### 부제 (30자)
 ```
-혈중알코올농도 타이머, 잠금화면 카운트다운
+술 깨는 시간 참고 타이머
 ```
 (24자)
 
@@ -46,7 +48,7 @@ Safedrink — 술 깨는 시간 계산
 
 ### 키워드 (100자, 쉼표 구분, 이름·부제에 있는 단어는 중복 불필요)
 ```
-음주,숙취,알코올,소주,맥주,회식,대리운전,음주측정,위드마크,분해시간,운전,술자리,주량,취함,알콜
+음주,숙취,알코올,소주,맥주,회식,술자리기록,분해시간,술자리,주량,취함,알콜,음주기록,술약속
 ```
 (공백 없이 쉼표만. 100자 이내 확인 필요 — 위 문자열은 약 60자)
 
@@ -54,10 +56,10 @@ Safedrink — 술 깨는 시간 계산
 ```
 술자리가 끝나고 "언제쯤 깰까?" 궁금하셨다면 Safedrink를 써보세요.
 
-마신 술을 기록하면 혈중알코올농도와 완전히 깨는 예상 시각을 계산해 남은 시간을 카운트다운으로 보여주는 음주 타이머입니다. 혈중알코올농도 계산기이자 술 깨는 시간 알림 앱이에요.
+마신 술을 기록하면 혈중알코올농도와 완전히 깨는 예상 시각을 참고용으로 추정해 남은 시간을 카운트다운으로 보여주는 음주 타이머입니다.
 
-■ 내 몸에 맞춘 계산
-키·몸무게·성별·출생연도를 바탕으로 Watson 총체수분량 공식을 적용해 개인별 체수분량을 반영합니다. 같은 술을 마셔도 사람마다 결과가 다릅니다. 성별 상수만 쓰는 표준 Widmark 방식 결과도 함께 보여드려 두 값을 비교할 수 있습니다.
+■ 내 몸을 반영한 추정
+키·몸무게·성별·출생연도를 반영해 추정하므로 같은 술을 마셔도 사람마다 결과가 다릅니다. 실제 수치는 체질·음식·컨디션에 따라 크게 달라질 수 있습니다.
 
 ■ 잔 단위로 기록
 맥주·소주·와인·양주·막걸리·하이볼 등 자주 마시는 술은 한 번의 탭으로 추가됩니다. 도수·용량·아이콘을 지정해 나만의 술로 저장해 두세요. "마시는 중"과 "다 마심"을 구분해 기록하므로 아직 비우지 않은 잔은 계산에서 빠집니다.
@@ -110,7 +112,7 @@ BAC countdown on your Lock Screen
 ```
 (31 — 초과. 대안: `BAC timer on your Lock Screen` = 29)
 ```
-BAC timer on your Lock Screen
+Sober-up reference timer
 ```
 
 ### Promotional text (170)
@@ -120,17 +122,17 @@ Log each drink and Safedrink estimates your BAC and counts down to sober — on 
 
 ### Keywords (100)
 ```
-alcohol,drinks,hangover,drunk,sobriety,widmark,blood alcohol,drink tracker,beer,wine,soju,dui,drive
+alcohol,drinks,hangover,drunk,sobriety,drink log,drink tracker,beer,wine,soju,sober,party,nightlife
 ```
 
 ### Description (4000)
 ```
 Wondering when you'll be sober after a night out? Safedrink tells you.
 
-Log what you drink and Safedrink estimates your blood alcohol concentration (BAC) and the time it will reach zero, then counts it down for you.
+Log what you drink and Safedrink gives a reference estimate of how long alcohol takes to clear from your body, then counts it down for you.
 
-■ Tuned to your body
-Uses your height, weight, sex and birth year with the Watson total-body-water formula, so the same drinks give different results for different people. A standard Widmark estimate is shown side by side for comparison.
+■ Reflects your body
+The estimate takes your height, weight, sex and birth year into account, so the same drinks give different results for different people. Real values vary widely with metabolism, food and health.
 
 ■ Log by the glass
 Beer, wine, whisky, vodka, cocktails and highballs are one tap away. Save your own drinks with custom strength, volume and icon. Mark a drink as "still drinking" and it stays out of the calculation until you finish it.
@@ -138,8 +140,8 @@ Beer, wine, whisky, vodka, cocktails and highballs are one tap away. Save your o
 ■ Check before you drink
 Before adding a drink, see how much longer it would keep you from sobering up. Try different sizes and plan your evening.
 
-■ Your BAC over time
-A graph shows each drink pushing your BAC up and the slow decline afterwards, with reference lines at 0.03% and 0.08%.
+■ Estimated curve over time
+A graph shows how each drink is estimated to raise your BAC and how it slowly declines afterwards, with reference lines at 0.03% and 0.08%.
 
 ■ Works with the app closed
 The remaining time counts down on your Lock Screen and in the Dynamic Island as a Live Activity (iOS 16.2 or later), and a "You're sober now" alert arrives when it reaches zero. You can turn this off in Settings.
